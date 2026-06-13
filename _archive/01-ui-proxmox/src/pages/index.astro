@@ -1,0 +1,26 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import Console from '../components/Console.astro';
+import Footer from '../components/Footer.astro';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const decisions = await getCollection('decisions');
+
+const title = 'Ianis Puichaud — SysOps · portfolio';
+const description =
+  'Portfolio SysOps déguisé en console Proxmox VE : homelab 2 nœuds reconstruit en ' +
+  'Infrastructure-as-Code (Terraform + Ansible), projets data & automation, et un journal ' +
+  'de décisions et postmortems.';
+---
+
+<Base title={title} description={description}>
+  <Hero />
+  <p class="section-label" aria-hidden="true">
+    ▼ pve-portfolio — cliquez sur un node, un LXC, ou l'onglet Décisions
+  </p>
+  <Console projects={projects} decisions={decisions} />
+  <Footer />
+  <script src="../scripts/console.ts"></script>
+</Base>

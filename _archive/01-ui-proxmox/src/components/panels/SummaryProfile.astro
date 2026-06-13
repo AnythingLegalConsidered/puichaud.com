@@ -1,0 +1,52 @@
+---
+// Datacenter-level Summary = the CV. Gauges hydrate from stats.json client-side.
+import { PROFILE } from '../../data/profile';
+---
+
+<div class="fiche">
+  <h1>{PROFILE.name}</h1>
+  <p class="tagline">{PROFILE.title} — vue d'ensemble du datacenter</p>
+
+  <p class="stale-banner" id="stale-banner" role="status"></p>
+
+  <div class="gauges">
+    <div class="gauge">
+      <div class="glabel">Uptime 30j</div>
+      <div class="gval" style="color:var(--color-success)"><span data-stat="uptime">99.2</span>%</div>
+      <div class="bar"><i data-bar="uptime" style="width:99%"></i></div>
+    </div>
+    <div class="gauge">
+      <div class="glabel">CPU cluster</div>
+      <div class="gval"><span data-stat="cpu">3</span>%</div>
+      <div class="bar"><i data-bar="cpu" style="width:3%"></i></div>
+    </div>
+    <div class="gauge">
+      <div class="glabel">RAM cluster</div>
+      <div class="gval"><span data-stat="ram">48</span>%</div>
+      <div class="bar"><i data-bar="ram" style="width:48%"></i></div>
+    </div>
+    <div class="gauge">
+      <div class="glabel">Sous Terraform</div>
+      <div class="gval" style="color:var(--color-accent)">
+        <span data-stat="iac">12</span> <span style="font-size:0.6em;color:var(--color-text-muted)">LXC</span>
+      </div>
+      <div class="bar"><i data-bar="iac" style="width:70%"></i></div>
+    </div>
+  </div>
+
+  <h2>Profil</h2>
+  {PROFILE.lines.map((line) => <p>{line}</p>)}
+
+  <h2>Compétences</h2>
+  <div class="badges">
+    {PROFILE.skills.map((s) => <span class="badge">{s}</span>)}
+  </div>
+
+  <h2>Contact</h2>
+  <p>
+    <a href={`mailto:${PROFILE.email}`}>{PROFILE.email}</a> ·{' '}
+    <a class="gh-link" style="margin:0" href={`https://${PROFILE.github}`} target="_blank" rel="noopener">
+      {PROFILE.github}
+    </a>
+  </p>
+</div>

@@ -1,0 +1,114 @@
+---
+// The embedded "Proxmox console": header, tree, tabs, panels, status bar.
+// All panels are pre-rendered statically (SEO) and toggled client-side.
+import { NODES, GUESTS } from '../data/infrastructure';
+import { PROFILE } from '../data/profile';
+import Tree from './Tree.astro';
+import SummaryProfile from './panels/SummaryProfile.astro';
+import NotesPanel from './panels/NotesPanel.astro';
+import DecisionsPanel from './panels/DecisionsPanel.astro';
+import TerminalPanel from './panels/TerminalPanel.astro';
+import DocsPanel from './panels/DocsPanel.astro';
+import NodeFiche from './panels/NodeFiche.astro';
+import GuestFiche from './panels/GuestFiche.astro';
+import ProjectFiche from './panels/ProjectFiche.astro';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  projects: CollectionEntry<'projects'>[];
+  decisions: CollectionEntry<'decisions'>[];
+}
+const { projects, decisions } = Astro.props;
+
+const runningGuests = GUESTS.filter((g) => g.status === 'running').length;
+
+// Build-time payload for the fake shell (no runtime API calls).
+const termData = {
+  user: PROFILE.name,
+  email: PROFILE.email,
+  projects: projects.map((p) => ({
+    vmid: p.data.vmid,
+    name: p.data.name,
+    tagline: p.data.tagline,
+  })),
+  decisions: decisions.length,
+};
+---
+
+<div class="console" id="console">
+  <header class="px-header">
+    <div class="px-logo">
+      <span class="mark" aria-hidden="true">▣</span> pve-portfolio
+      <span class="ver">v2026.06</span>
+    </div>
+    <div class="actions">
+      <a class="px-btn" href={`https://${PROFILE.github}`} target="_blank" rel="noopener">GitHub</a>
+      <a class="px-btn primary" href={PROFILE.cvHref} download>CV.pdf</a>
+    </div>
+  </header>
+
+  <div class="px-body">
+    <Tree projects={projects} />
+
+    <main class="px-main">
+      <div class="px-tabs" role="tablist" aria-label="Onglets de la console">
+        <button class="px-tab active" role="tab" aria-selected="true"
+          data-panel="panel-summary" data-crumb="Datacenter › Summary">Summary</button>
+        <button class="px-tab" role="tab" aria-selected="false"
+          data-panel="panel-notes" data-crumb="Datacenter › Notes">Notes</button>
+        <button class="px-tab" role="tab" aria-selected="false"
+          data-panel="panel-decisions" data-crumb="Datacenter › Décisions & postmortems">Décisions</button>
+        <button class="px-tab" role="tab" aria-selected="false"
+          data-panel="panel-terminal" data-crumb="Datacenter › Console">&gt;_ Console</button>
+      </div>
+
+      <div class="px-crumb" id="crumb" aria-live="polite">Datacenter › Summary</div>
+
+      <div class="px-content" id="content">
+        <section class="px-panel" id="panel-summary" aria-label="Summary">
+          <SummaryProfile />
+        </section>
+        <section class="px-panel" id="panel-notes" aria-label="Notes — à propos" hidden>
+          <NotesPanel />
+        </section>
+        <section class="px-panel" id="panel-decisions" aria-label="Décisions et postmortems" hidden>
+          <DecisionsPanel decisions={decisions} />
+        </section>
+        <section class="px-panel" id="panel-terminal" aria-label="Console interactive" hidden>
+          <TerminalPanel />
+        </section>
+        <section class="px-panel" id="panel-docs" aria-label="Stockage de documents" hidden>
+          <DocsPanel />
+        </section>
+
+        {NODES.map((n) => (
+          <section class="px-panel" id={`panel-node-${n.id}`} aria-label={n.label} hidden>
+            <NodeFiche node={n} guests={GUESTS} projects={projects} />
+          </section>
+        ))}
+
+        {GUESTS.map((g) => (
+          <section class="px-panel" id={`panel-guest-${g.vmid}`} aria-label={`LXC ${g.vmid} ${g.name}`} hidden>
+            <GuestFiche guest={g} />
+          </section>
+        ))}
+
+        {projects.map((p) => (
+          <section class="px-panel" id={`panel-project-${p.data.vmid}`} aria-label={`Projet ${p.data.name}`} hidden>
+            <ProjectFiche project={p} />
+          </section>
+        ))}
+      </div>
+    </main>
+  </div>
+
+  <footer class="px-status">
+    <span>Status: <b>OK</b></span>
+    <span>Nodes: <span id="stat-nodes">1/2</span> online</span>
+    <span>Guests: {runningGuests} running</span>
+    <span>IaC: <span id="stat-iac-foot">12</span> LXC</span>
+    <span id="stat-scan">Dernier scan : —</span>
+  </footer>
+</div>
+
+<script type="application/json" id="term-data" set:html={JSON.stringify(termData)} />

@@ -1,0 +1,46 @@
+---
+// Project card: Problème → Stack → Résultat → Leçons (+ repo & activity badge).
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+}
+const { project } = Astro.props;
+const p = project.data;
+---
+
+<div class="fiche">
+  <h1>
+    {p.name}
+    {p.flagship && <span class="flag flagship">★ projet phare</span>}
+  </h1>
+  <p class="tagline">{p.tagline}</p>
+
+  <h2>Problème</h2>
+  <p>{p.probleme}</p>
+
+  <h2>Stack</h2>
+  <div class="badges">
+    {p.stack.map((s) => <span class="badge">{s}</span>)}
+  </div>
+
+  <h2>Résultat</h2>
+  <p>{p.resultat}</p>
+
+  <h2>Leçons</h2>
+  <p>{p.lecons}</p>
+
+  {p.repo && p.repoPublic && (
+    <a class="gh-link" href={`https://${p.repo}`} target="_blank" rel="noopener">⎇ {p.repo} ↗</a>
+  )}
+  {p.repo && !p.repoPublic && (
+    <p class="commit-badge">
+      ⎇ <b>{p.repo}</b> <span class="flag private">dépôt privé — visite guidée sur demande</span>
+    </p>
+  )}
+  {p.commits && (
+    <p class="commit-badge">
+      <b>{p.commits.toLocaleString('fr-FR')}</b> commits{p.activeSince && ` · actif depuis ${p.activeSince}`}
+    </p>
+  )}
+</div>

@@ -1,0 +1,83 @@
+---
+import { projects } from '../data/projects.js';
+---
+
+<!-- ============ PROJETS ============ -->
+<section id="projets">
+  <div class="wrap">
+    <div class="sec-head"><h2>Projets</h2><div class="rule"></div></div>
+    <p class="sec-intro">
+      Des services que je conçois, opère et documente — chaque choix tracé,
+      avec ses alternatives évaluées. Cliquez sur « détails » pour creuser.
+    </p>
+
+    <div class="cards">
+      {projects.map((p) => (
+        <div class={p.featured ? 'card featured' : 'card'}>
+          {p.pill && <span class="pill" set:html={p.pill} />}
+          <div class="c-head">
+            <h3 set:html={p.name} />
+            <span class="c-status" set:html={p.cardStatus} />
+          </div>
+          <p set:html={p.cardText} />
+          <div class="c-foot">
+            <div class="tags">
+              {p.tags.map((t) => <span class="tag">{t}</span>)}
+            </div>
+            <div class="c-actions">
+              {p.link && (
+                <a href={p.link.href} target="_blank" rel="noopener">{p.link.label}</a>
+              )}
+              <button class="more-btn" data-dialog={`dlg-${p.id}`}>voir les détails →</button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- ============ MODALES PROJETS ============ -->
+{projects.map((p) => (
+  <dialog class="proj-modal" id={`dlg-${p.id}`}>
+    <div class="m-head">
+      <div>
+        <h3 set:html={p.name} />
+        <span class="c-status" set:html={p.modalStatus} />
+      </div>
+      <button class="m-close" aria-label="Fermer">×</button>
+    </div>
+    <div class="m-body">
+      <p set:html={p.modalIntro} />
+      {p.sections.map((s) => (
+        <>
+          <h4 set:html={s.title} />
+          <ul>
+            {s.items.map((item) => <li set:html={item} />)}
+          </ul>
+        </>
+      ))}
+      {p.modalLink && (
+        <a class="m-link" href={p.modalLink.href} target="_blank" rel="noopener">{p.modalLink.label}</a>
+      )}
+      <div class="tags">
+        {p.tags.map((t) => <span class="tag">{t}</span>)}
+      </div>
+    </div>
+  </dialog>
+))}
+
+<script>
+  document.querySelectorAll('.more-btn[data-dialog]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = (btn as HTMLElement).dataset.dialog;
+      if (id) (document.getElementById(id) as HTMLDialogElement | null)?.showModal();
+    });
+  });
+  document.querySelectorAll('.proj-modal').forEach((d) => {
+    const dialog = d as HTMLDialogElement;
+    dialog.querySelector('.m-close')?.addEventListener('click', () => dialog.close());
+    // click on the backdrop (outside the content) closes the dialog
+    dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+  });
+</script>

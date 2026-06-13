@@ -1,0 +1,10 @@
+---
+import { PROFILE } from '../data/profile';
+const year = new Date().getFullYear();
+---
+
+<footer class="contact">
+  <a href={`mailto:${PROFILE.email}`}>{PROFILE.email}</a>
+  · <a href={`https://${PROFILE.github}`} target="_blank" rel="noopener">GitHub</a>
+  · {PROFILE.site} — © {year}
+</footer>

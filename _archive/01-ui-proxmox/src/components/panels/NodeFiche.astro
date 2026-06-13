@@ -1,0 +1,46 @@
+---
+// Fiche for a tree node (real hypervisor / virtual project node).
+import type { InfraNode, Guest } from '../../data/infrastructure';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  node: InfraNode;
+  guests: Guest[];
+  projects: CollectionEntry<'projects'>[];
+}
+const { node, guests, projects } = Astro.props;
+
+const [shortName, role] = node.label.split(' — ');
+const children: { name: string; status: string; iac: boolean }[] =
+  node.kind === 'virtual'
+    ? projects
+        .filter((p) => p.data.node === node.id)
+        .map((p) => ({ name: p.data.name, status: p.data.status, iac: false }))
+    : guests
+        .filter((g) => g.node === node.id)
+        .map((g) => ({ name: g.name, status: g.status, iac: g.iac }));
+---
+
+<div class="fiche">
+  <h1>
+    {shortName}
+    {node.kind === 'virtual' && <span class="flag iac">virtuel</span>}
+    {!node.online && <span class="flag private">stopped</span>}
+  </h1>
+  <p class="tagline">{role}</p>
+  <p>{node.summary}</p>
+
+  {children.length > 0 && (
+    <>
+      <h2>Contenu ({children.length})</h2>
+      <div class="badges">
+        {children.map((c) => (
+          <span class="badge">
+            <span class={`dot ${c.status}`} aria-hidden="true"></span>
+            {c.name}{c.iac ? ' ⚙' : ''}
+          </span>
+        ))}
+      </div>
+    </>
+  )}
+</div>

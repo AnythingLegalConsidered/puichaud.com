@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IanisOS — Portfolio</title>
+<style>
+  /* ============ RESET & THEME ============ */
+  :root {
+    --bg: #1e1e2e;
+    --bg-alt: #181825;
+    --surface: #313244;
+    --surface-alt: #45475a;
+    --text: #cdd6f4;
+    --text-dim: #a6adc8;
+    --accent: #89b4fa;
+    --green: #a6e3a1;
+    --red: #f38ba8;
+    --yellow: #f9e2af;
+    --orange: #fab387;
+    --mauve: #cba6f7;
+    --teal: #94e2d5;
+    --titlebar-h: 34px;
+    --taskbar-h: 44px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    user-select: none;
+  }
+  .mono { font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace; }
+
+  /* ============ BOOT SCREEN ============ */
+  #boot {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #0a0a12;
+    font-family: Consolas, monospace; font-size: 13px;
+    color: #9ece6a; padding: 24px;
+    transition: opacity .4s;
+  }
+  #boot.done { opacity: 0; pointer-events: none; }
+  #boot .line { opacity: 0; animation: bootline .05s forwards; }
+  @keyframes bootline { to { opacity: 1; } }
+
+  /* ============ DESKTOP ============ */
+  #desktop {
+    position: fixed; inset: 0 0 var(--taskbar-h) 0;
+    background:
+      radial-gradient(ellipse at 70% 20%, #2a2a45 0%, transparent 55%),
+      radial-gradient(ellipse at 20% 80%, #1f2a3a 0%, transparent 50%),
+      linear-gradient(160deg, #1a1a2e 0%, #16161e 100%);
+    overflow: hidden;
+  }
+  /* grid pattern wallpaper */
+  #desktop::before {
+    content: ''; position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(137,180,250,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(137,180,250,.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* ============ DESKTOP ICONS ============ */
+  #icons {
+    position: absolute; top: 16px; left: 16px;
+    display: grid; grid-template-rows: repeat(auto-fill, 92px);
+    grid-auto-flow: column; gap: 8px;
+    height: calc(100% - 32px);
+  }
+  .icon {
+    width: 84px; height: 88px;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 6px; padding: 8px 4px;
+    border-radius: 8px; cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .icon:hover { background: rgba(137,180,250,.10); border-color: rgba(137,180,250,.25); }
+  .icon .glyph {
+    width: 44px; height: 44px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    background: linear-gradient(145deg, var(--surface), var(--bg-alt));
+    box-shadow: 0 2px 8px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.07);
+  }
+  .icon .label {
+    font-size: 11.5px; text-align: center; line-height: 1.25;
+    color: var(--text); text-shadow: 0 1px 3px rgba(0,0,0,.8);
+  }
+
+  /* ============ WINDOWS ============ */
+  .window {
+    position: absolute;
+    min-width: 320px; min-height: 200px;
+    background: var(--bg-alt);
+    border: 1px solid var(--surface-alt);
+    border-radius: 10px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.55);
+    display: flex; flex-direction: column;
+    resize: both; overflow: hidden;
+    animation: winopen .15s ease-out;
+  }
+  @keyframes winopen { from { transform: scale(.95); opacity: 0; } }
+  .window.focused { border-color: var(--accent); }
+  .window.minimized { display: none; }
+  .window.maximized {
+    inset: 0 0 var(--taskbar-h) 0 !important;
+    width: auto !important; height: auto !important;
+    border-radius: 0; resize: none;
+  }
+  .titlebar {
+    height: var(--titlebar-h); flex: none;
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 10px;
+    background: var(--surface);
+    cursor: grab; font-size: 13px;
+  }
+  .window.focused .titlebar { background: linear-gradient(180deg, #3a3c55, var(--surface)); }
+  .titlebar:active { cursor: grabbing; }
+  .titlebar .t-icon { font-size: 14px; }
+  .titlebar .t-title { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--text-dim); }
+  .window.focused .titlebar .t-title { color: var(--text); }
+  .titlebar .t-btns { display: flex; gap: 6px; }
+  .t-btn {
+    width: 14px; height: 14px; border-radius: 50%;
+    border: none; cursor: pointer; font-size: 0;
+  }
+  .t-btn.min { background: var(--yellow); }
+  .t-btn.max { background: var(--green); }
+  .t-btn.close { background: var(--red); }
+  .t-btn:hover { filter: brightness(1.25); }
+  .win-body { flex: 1; overflow: auto; user-select: text; }
+
+  /* ============ TASKBAR ============ */
+  #taskbar {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    height: var(--taskbar-h); z-index: 5000;
+    background: rgba(24,24,37,.92);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--surface);
+    display: flex; align-items: center; gap: 6px; padding: 0 8px;
+  }
+  #start-btn {
+    height: 34px; padding: 0 14px; border-radius: 8px;
+    border: none; cursor: pointer;
+    background: linear-gradient(145deg, var(--accent), var(--mauve));
+    color: #11111b; font-weight: 700; font-size: 13px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  #start-btn:hover { filter: brightness(1.1); }
+  #task-items { flex: 1; display: flex; gap: 4px; overflow-x: auto; }
+  .task-item {
+    height: 32px; padding: 0 12px; border-radius: 6px;
+    border: 1px solid var(--surface); background: transparent;
+    color: var(--text-dim); font-size: 12px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px; white-space: nowrap;
+  }
+  .task-item.active { background: var(--surface); color: var(--text); border-color: var(--accent); }
+  #clock { font-size: 12px; color: var(--text-dim); padding: 0 10px; font-family: Consolas, monospace; }
+  #tray-status { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--green); padding-right: 6px; }
+  #tray-status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 50% { opacity: .4; } }
+
+  /* ============ START MENU ============ */
+  #start-menu {
+    position: fixed; left: 8px; bottom: calc(var(--taskbar-h) + 8px);
+    width: 300px; z-index: 6000;
+    background: rgba(24,24,37,.97); backdrop-filter: blur(12px);
+    border: 1px solid var(--surface-alt); border-radius: 12px;
+    padding: 10px; display: none;
+    box-shadow: 0 12px 40px rgba(0,0,0,.6);
+  }
+  #start-menu.open { display: block; animation: winopen .12s ease-out; }
+  #start-menu .sm-header { padding: 8px 10px 12px; border-bottom: 1px solid var(--surface); margin-bottom: 8px; }
+  #start-menu .sm-header b { font-size: 14px; }
+  #start-menu .sm-header span { display: block; font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .sm-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: 8px; cursor: pointer; font-size: 13px;
+  }
+  .sm-item:hover { background: var(--surface); }
+  .sm-item .glyph { font-size: 17px; width: 24px; text-align: center; }
+
+  /* ============ APP: TERMINAL ============ */
+  .term {
+    background: #11111b; color: #cdd6f4;
+    font-family: 'Cascadia Code', Consolas, monospace; font-size: 13px;
+    padding: 12px; min-height: 100%;
+    line-height: 1.5; cursor: text;
+  }
+  .term .out { white-space: pre-wrap; word-break: break-word; }
+  .term .prompt-line { display: flex; }
+  .term .ps1 { color: var(--green); white-space: pre; }
+  .term input {
+    flex: 1; background: transparent; border: none; outline: none;
+    color: inherit; font: inherit;
+  }
+  .term .c-accent { color: var(--accent); }
+  .term .c-green { color: var(--green); }
+  .term .c-yellow { color: var(--yellow); }
+  .term .c-red { color: var(--red); }
+  .term .c-dim { color: #6c7086; }
+  .term .c-mauve { color: var(--mauve); }
+
+  /* ============ APP: MONITORING ============ */
+  .mon { padding: 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+  .mon .panel {
+    background: var(--surface); border: 1px solid var(--surface-alt);
+    border-radius: 8px; padding: 12px;
+  }
+  .mon .panel h4 { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--text-dim); margin-bottom: 8px; }
+  .mon .big { font-size: 26px; font-weight: 700; font-family: Consolas, monospace; }
+  .mon .big small { font-size: 12px; color: var(--text-dim); font-weight: 400; }
+  .mon .green { color: var(--green); } .mon .yellow { color: var(--yellow); } .mon .accent { color: var(--accent); }
+  .mon .spark { width: 100%; height: 60px; margin-top: 6px; }
+  .skillbar { margin-bottom: 8px; }
+  .skillbar .sb-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 3px; }
+  .skillbar .sb-track { height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+  .skillbar .sb-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--teal)); animation: fillbar 1s ease-out; }
+  @keyframes fillbar { from { width: 0; } }
+  .mon table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .mon table td { padding: 5px 4px; border-bottom: 1px solid var(--surface-alt); }
+  .mon .badge { padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .mon .badge.ok { background: rgba(166,227,161,.15); color: var(--green); }
+  .mon .badge.warn { background: rgba(249,226,175,.15); color: var(--yellow); }
+
+  /* ============ APP: PIPELINE ============ */
+  .pipe { padding: 24px 18px; }
+  .pipe .stage { display: flex; gap: 14px; position: relative; padding-bottom: 28px; }
+  .pipe .stage:not(:last-child)::before {
+    content: ''; position: absolute; left: 15px; top: 34px; bottom: 0;
+    width: 2px; background: var(--surface-alt);
+  }
+  .pipe .stage.done:not(:last-child)::before { background: var(--green); }
+  .pipe .s-dot {
+    width: 32px; height: 32px; flex: none; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; z-index: 1;
+    background: var(--surface); border: 2px solid var(--surface-alt);
+  }
+  .pipe .done .s-dot { border-color: var(--green); background: rgba(166,227,161,.12); }
+  .pipe .running .s-dot { border-color: var(--yellow); background: rgba(249,226,175,.12); animation: pulse 1.5s infinite; }
+  .pipe .s-body { flex: 1; }
+  .pipe .s-title { font-weight: 600; font-size: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .pipe .s-tag { font-size: 10px; font-family: Consolas, monospace; padding: 1px 8px; border-radius: 4px; }
+  .pipe .done .s-tag { background: rgba(166,227,161,.15); color: var(--green); }
+  .pipe .running .s-tag { background: rgba(249,226,175,.15); color: var(--yellow); }
+  .pipe .pending .s-tag { background: var(--surface); color: var(--text-dim); }
+  .pipe .s-detail { font-size: 12.5px; color: var(--text-dim); margin-top: 4px; line-height: 1.5; }
+  .pipe .s-log {
+    margin-top: 8px; padding: 8px 10px; border-radius: 6px;
+    background: #11111b; font-family: Consolas, monospace;
+    font-size: 11px; color: #7f849c; line-height: 1.6;
+  }
+  .pipe .s-log .ok { color: var(--green); }
+
+  /* ============ APP: PROJETS ============ */
+  .proj { display: flex; min-height: 100%; }
+  .proj .p-side {
+    width: 190px; flex: none; border-right: 1px solid var(--surface);
+    background: var(--bg-alt); padding: 8px;
+  }
+  .proj .p-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 10px; border-radius: 8px; cursor: pointer;
+    font-size: 12.5px; margin-bottom: 2px; color: var(--text-dim);
+  }
+  .proj .p-item:hover { background: var(--surface); }
+  .proj .p-item.active { background: var(--surface); color: var(--text); border-left: 3px solid var(--accent); }
+  .proj .p-detail { flex: 1; padding: 18px 20px; line-height: 1.65; font-size: 13px; overflow: auto; }
+  .proj .p-detail h2 { font-size: 17px; margin-bottom: 2px; }
+  .proj .p-detail .p-sub { color: var(--text-dim); font-size: 12px; margin-bottom: 14px; }
+  .proj .p-detail h3 { font-size: 12px; color: var(--accent); margin: 14px 0 5px; text-transform: uppercase; letter-spacing: .5px; }
+  .proj .p-detail ul { padding-left: 18px; }
+  .proj .p-detail li { margin-bottom: 3px; }
+  .proj .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 12px; }
+  .proj .tag {
+    font-size: 10.5px; font-family: Consolas, monospace;
+    padding: 2px 9px; border-radius: 10px;
+    background: rgba(137,180,250,.12); color: var(--accent);
+    border: 1px solid rgba(137,180,250,.25);
+  }
+  .proj .stat-row { display: flex; gap: 10px; margin: 10px 0; flex-wrap: wrap; }
+  .proj .stat {
+    background: var(--surface); border-radius: 8px; padding: 8px 14px;
+    text-align: center;
+  }
+  .proj .stat b { display: block; font-size: 17px; font-family: Consolas, monospace; color: var(--green); }
+  .proj .stat span { font-size: 10.5px; color: var(--text-dim); }
+
+  /* ============ APP: NETWORK MAP ============ */
+  .netmap { width: 100%; height: 100%; min-height: 380px; display: block; }
+  .netmap .node { cursor: pointer; }
+  .netmap .node circle { fill: var(--surface); stroke: var(--surface-alt); stroke-width: 2; transition: all .15s; }
+  .netmap .node:hover circle { stroke: var(--accent); fill: #3a3c55; }
+  .netmap .node.core circle { fill: rgba(137,180,250,.15); stroke: var(--accent); }
+  .netmap .node text { fill: var(--text); font-size: 11px; text-anchor: middle; pointer-events: none; }
+  .netmap .node .nico { font-size: 16px; }
+  .netmap line { stroke: var(--surface-alt); stroke-width: 1.5; stroke-dasharray: 4 4; animation: dashmove 20s linear infinite; }
+  @keyframes dashmove { to { stroke-dashoffset: -200; } }
+  .net-info {
+    padding: 10px 14px; font-size: 12.5px; color: var(--text-dim);
+    border-top: 1px solid var(--surface); background: var(--bg-alt);
+    min-height: 58px; line-height: 1.5;
+  }
+  .net-info b { color: var(--text); }
+
+  /* ============ APP: INCIDENT ============ */
+  .incident { padding: 20px; font-size: 13.5px; line-height: 1.7; max-width: 640px; }
+  .incident .inc-banner {
+    background: rgba(243,139,168,.12); border: 1px solid var(--red);
+    border-radius: 8px; padding: 10px 14px; margin-bottom: 18px;
+    color: var(--red); font-weight: 600; font-size: 13px;
+    display: flex; gap: 8px; align-items: center;
+  }
+  .incident h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .8px; color: var(--text-dim); margin: 18px 0 6px; }
+  .incident .resolved { color: var(--green); font-weight: 600; }
+  .incident a { color: var(--accent); }
+  .incident code { background: var(--surface); padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+
+  /* ============ APP: ABOUT / README ============ */
+  .about { padding: 22px; max-width: 600px; line-height: 1.7; font-size: 13.5px; }
+  .about h2 { font-size: 19px; margin-bottom: 4px; }
+  .about .subtitle { color: var(--text-dim); font-size: 13px; margin-bottom: 16px; }
+  .about h3 { font-size: 13px; color: var(--accent); margin: 16px 0 6px; text-transform: uppercase; letter-spacing: .5px; }
+  .about ul { padding-left: 20px; }
+  .about li { margin-bottom: 4px; }
+  .about kbd {
+    background: var(--surface); border: 1px solid var(--surface-alt);
+    border-radius: 4px; padding: 1px 6px; font-size: 11px; font-family: Consolas, monospace;
+  }
+
+  /* ============ APP: CONTACT ============ */
+  .contact { padding: 24px; max-width: 520px; }
+  .contact .row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px; border: 1px solid var(--surface); border-radius: 8px;
+    margin-bottom: 10px; font-size: 13.5px;
+  }
+  .contact .row .glyph { font-size: 20px; }
+  .contact .row a { color: var(--accent); text-decoration: none; }
+  .contact .row a:hover { text-decoration: underline; }
+  .contact .row small { display: block; color: var(--text-dim); font-size: 11.5px; }
+</style>
+</head>
+<body>
+
+<!-- BOOT -->
+<div id="boot"></div>
+
+<!-- DESKTOP -->
+<div id="desktop">
+  <div id="icons"></div>
+</div>
+
+<!-- START MENU -->
+<div id="start-menu">
+  <div class="sm-header">
+    <b>Ianis Puichaud</b>
+    <span>AdminSys & Réseau → DevOps · Nantes</span>
+  </div>
+  <div id="sm-items"></div>
+</div>
+
+<!-- TASKBAR -->
+<div id="taskbar">
+  <button id="start-btn">⬢ ianisOS</button>
+  <div id="task-items"></div>
+  <div id="tray-status"><span class="dot"></span>dispo Master 09/2026</div>
+  <div id="clock"></div>
+</div>
+
+<script>
+/* ================================================================
+   IanisOS — prototype portfolio "OS dans le navigateur" — v2
+   Contenu réel issu du parcours (Equans, EPSI, homelab, Hexalith).
+   Single-file, zero dependency.
+   ================================================================ */
+
+/* ---------- Window Manager ---------- */
+const WM = {
+  z: 100,
+  windows: new Map(),
+  desktop: document.getElementById('desktop'),
+  taskItems: document.getElementById('task-items'),
+  cascade: 0,
+
+  open(appId) {
+    const existing = this.windows.get(appId);
+    if (existing) {
+      existing.el.classList.remove('minimized');
+      this.focus(appId);
+      return;
+    }
+    const app = APPS[appId];
+    const el = document.createElement('div');
+    el.className = 'window';
+    el.style.width = (app.w || 560) + 'px';
+    el.style.height = (app.h || 420) + 'px';
+    const offset = 40 + (this.cascade++ % 6) * 32;
+    el.style.left = Math.min(offset + 120, window.innerWidth - 600) + 'px';
+    el.style.top = offset + 'px';
+
+    el.innerHTML = `
+      <div class="titlebar">
+        <span class="t-icon">${app.icon}</span>
+        <span class="t-title">${app.title}</span>
+        <span class="t-btns">
+          <button class="t-btn min" title="Réduire"></button>
+          <button class="t-btn max" title="Agrandir"></button>
+          <button class="t-btn close" title="Fermer"></button>
+        </span>
+      </div>
+      <div class="win-body"></div>`;
+    this.desktop.appendChild(el);
+
+    const body = el.querySelector('.win-body');
+    app.render(body, el);
+
+    const task = document.createElement('button');
+    task.className = 'task-item';
+    task.innerHTML = `<span>${app.icon}</span>${app.name}`;
+    task.onclick = () => {
+      if (el.classList.contains('minimized')) {
+        el.classList.remove('minimized');
+        this.focus(appId);
+      } else if (el.classList.contains('focused')) {
+        el.classList.add('minimized');
+        task.classList.remove('active');
+      } else {
+        this.focus(appId);
+      }
+    };
+    this.taskItems.appendChild(task);
+
+    this.windows.set(appId, { el, task });
+
+    el.querySelector('.t-btn.close').onclick = (e) => { e.stopPropagation(); this.close(appId); };
+    el.querySelector('.t-btn.min').onclick = (e) => { e.stopPropagation(); el.classList.add('minimized'); task.classList.remove('active'); };
+    el.querySelector('.t-btn.max').onclick = (e) => { e.stopPropagation(); el.classList.toggle('maximized'); };
+    el.querySelector('.titlebar').ondblclick = () => el.classList.toggle('maximized');
+    el.addEventListener('pointerdown', () => this.focus(appId));
+
+    this.makeDraggable(el);
+    this.focus(appId);
+  },
+
+  close(appId) {
+    const w = this.windows.get(appId);
+    if (!w) return;
+    w.el.remove();
+    w.task.remove();
+    this.windows.delete(appId);
+  },
+
+  focus(appId) {
+    for (const [id, w] of this.windows) {
+      const on = id === appId;
+      w.el.classList.toggle('focused', on);
+      w.task.classList.toggle('active', on);
+      if (on) w.el.style.zIndex = ++this.z;
+    }
+    const w = this.windows.get(appId);
+    const inp = w?.el.querySelector('.term input');
+    if (inp) setTimeout(() => inp.focus(), 0);
+  },
+
+  makeDraggable(el) {
+    const bar = el.querySelector('.titlebar');
+    bar.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('.t-btn') || el.classList.contains('maximized')) return;
+      const startX = e.clientX, startY = e.clientY;
+      const rect = el.getBoundingClientRect();
+      const move = (ev) => {
+        el.style.left = Math.max(-rect.width + 80, rect.left + ev.clientX - startX) + 'px';
+        el.style.top = Math.max(0, rect.top + ev.clientY - startY) + 'px';
+      };
+      const up = () => {
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', up);
+      };
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+    });
+  }
+};
+
+/* ---------- Data ---------- */
+const PROFILE = {
+  name: 'Ianis Puichaud',
+  role: 'Administrateur Systèmes & Réseau (alternance) — cap DevOps',
+  location: 'Nantes, France',
+  email: 'ianispuichaud@gmail.com',
+  github: 'https://github.com/AnythingLegalConsidered',
+  school: 'EPSI Nantes — BAC+3 SYSOPS (promo 2026)',
+  company: 'Equans France — équipe Support Poste de Travail (N2)',
+};
+
+/* ---------- Projets (source: dossier RNCP + labs) ---------- */
+const PROJECTS = {
+  hexalith: {
+    icon: '🛡️', name: 'Hexalith', sub: 'Lab GitOps — SI complet d\'une ESN fictive de 150 collaborateurs',
+    html: `
+      <h3>Le concept</h3>
+      <p>Concevoir et déployer de zéro le système d'information d'une ESN fictive (Hexalith, 150 collaborateurs) :
+      audit, analyse de risques EBIOS RM, architecture, budget, POC, plan de déploiement 30/60/90 jours.
+      Le tout versionné et déployé en GitOps.</p>
+      <h3>Architecture (9 briques)</h3>
+      <ul>
+        <li><b>IAM / SSO</b> — Authentik (OIDC, SAML, provisioning SCIM vers Entra ID)</li>
+        <li><b>MDM</b> — Intune (Windows) + Fleet/osquery (Linux)</li>
+        <li><b>ITSM</b> — GLPI</li>
+        <li><b>Supervision</b> — Prometheus + Loki + Grafana</li>
+        <li><b>Onboarding automatisé</b> — n8n : HRIS CSV → Authentik → M365 → GLPI</li>
+        <li><b>Reverse proxy</b> — Traefik + certificats internes</li>
+        <li><b>Segmentation</b> — 4 VLANs (Staff / Mgmt / IoT / BYOD) simulés via ponts Proxmox</li>
+      </ul>
+      <h3>GitOps</h3>
+      <ul>
+        <li>Terraform : tenant Microsoft 365 dev (10 users provisionnés) + infra Proxmox</li>
+        <li>Ansible : configuration des services</li>
+        <li>CI GitHub Actions sur runner self-hosted (LXC dédié)</li>
+      </ul>
+      <div class="stat-row">
+        <div class="stat"><b>1 h 45</b><span>RTO mesuré (POC)</span></div>
+        <div class="stat"><b>18 h</b><span>RPO mesuré (POC)</span></div>
+        <div class="stat"><b>19,1 k€/an</b><span>budget chiffré</span></div>
+        <div class="stat"><b>4</b><span>VLANs isolés</span></div>
+      </div>
+      <div class="tags"><span class="tag">Terraform</span><span class="tag">Ansible</span><span class="tag">GitHub Actions</span><span class="tag">Authentik</span><span class="tag">GLPI</span><span class="tag">n8n</span><span class="tag">Grafana</span><span class="tag">EBIOS RM</span></div>`
+  },
+  homelab: {
+    icon: '🖥️', name: 'Homelab', sub: 'Cluster Proxmox 2 nœuds — ~17 conteneurs LXC en production',
+    html: `
+      <h3>Le socle</h3>
+      <p>Deux nœuds Proxmox VE qui hébergent l'ensemble de mes services personnels en production :
+      le terrain de jeu où tout se teste avant d'être considéré comme acquis.</p>
+      <h3>Services notables</h3>
+      <ul>
+        <li><b>Observabilité</b> — Grafana + Loki : métriques et logs centralisés</li>
+        <li><b>Haute dispo</b> — Keepalived (VIP flottante entre les nœuds)</li>
+        <li><b>Accès distant</b> — Tailscale (mesh VPN, zéro port exposé)</li>
+        <li><b>Reverse proxy</b> — Traefik, DNS interne, certificats automatiques</li>
+      </ul>
+      <h3>Philosophie</h3>
+      <p>Chaque choix de service est documenté : alternatives évaluées, comparatif, décision argumentée.
+      Pas de service « pour cocher une case » — chaque brique a un usage réel.</p>
+      <div class="stat-row">
+        <div class="stat"><b>2</b><span>nœuds Proxmox</span></div>
+        <div class="stat"><b>~17</b><span>LXC en prod</span></div>
+        <div class="stat"><b>HA</b><span>Keepalived VIP</span></div>
+      </div>
+      <div class="tags"><span class="tag">Proxmox VE</span><span class="tag">LXC</span><span class="tag">Grafana</span><span class="tag">Loki</span><span class="tag">Tailscale</span><span class="tag">Keepalived</span><span class="tag">Traefik</span></div>`
+  },
+  datacommune: {
+    icon: '📦', name: 'DataCommune', sub: 'SaaS — API publique de données INSEE',
+    html: `
+      <h3>Le produit</h3>
+      <p>Une API REST qui expose des données publiques INSEE (communes, démographie) de façon propre et
+      consommable : clés API, plans d'usage (Free 500 req/mois), documentation.</p>
+      <h3>Ce que ça démontre</h3>
+      <ul>
+        <li>Conception et exploitation d'un service de bout en bout : data, API, auth, quotas</li>
+        <li>Approche produit : plans, onboarding utilisateur, documentation</li>
+        <li>Hébergement et exploitation autonomes</li>
+      </ul>
+      <div class="tags"><span class="tag">API REST</span><span class="tag">SaaS</span><span class="tag">Open Data</span><span class="tag">INSEE</span></div>`
+  },
+  scriptsad: {
+    icon: '⚙️', name: 'Scripts AD', sub: 'Outillage PowerShell — automatisation Active Directory en environnement contraint',
+    html: `
+      <h3>Le contexte</h3>
+      <p>En environnement entreprise verrouillé (pas de console MMC sur les postes, MFA qui bloque
+      l'authentification interactive, périmètre N2 strict), automatiser les opérations Active Directory
+      répétitives sans contourner la politique de sécurité.</p>
+      <h3>Les trois outils</h3>
+      <ul>
+        <li><b>GestionGroupes</b> — gestion en masse des appartenances aux groupes AD (workflow bulk, mode test à blanc, aucune écriture directe non validée)</li>
+        <li><b>AuditDroits</b> — audit des droits et appartenances, export exploitable</li>
+        <li><b>SortiePersonnel</b> — traitement des sorties de personnel (désactivation normée des comptes)</li>
+      </ul>
+      <h3>Posture défensive</h3>
+      <p>Mode simulation avant toute écriture, copies de sauvegarde systématiques, revue par un développeur —
+      retour critique intégré plutôt que masqué.</p>
+      <div class="tags"><span class="tag">PowerShell</span><span class="tag">Active Directory</span><span class="tag">IAM</span><span class="tag">Automatisation</span></div>`
+  },
+};
+
+/* ---------- Apps ---------- */
+const APPS = {
+
+  /* ---- README ---- */
+  readme: {
+    name: 'README', title: 'README.md — Bienvenue', icon: '📄', w: 560, h: 500,
+    render(body) {
+      body.innerHTML = `<div class="about">
+        <h2>👋 Bienvenue sur ianisOS</h2>
+        <div class="subtitle">Ce portfolio est un OS. Explorez-le comme tel.</div>
+        <p>Je suis <b>Ianis Puichaud</b>, administrateur systèmes &amp; réseau en alternance chez
+        <b>Equans France</b> (équipe Support Poste de Travail, N2) et étudiant en
+        <b>BAC+3 SYSOPS à l'EPSI Nantes</b>. Trois ans d'IT au compteur.
+        Cap : Master Infrastructure &amp; Cloud (09/2026), puis le DevOps.</p>
+        <h3>Comment naviguer</h3>
+        <ul>
+          <li><b>Double-cliquez</b> sur les icônes du bureau pour ouvrir les apps</li>
+          <li>Le menu <kbd>⬢ ianisOS</kbd> en bas à gauche liste tout</li>
+          <li>Les fenêtres se déplacent, se redimensionnent (coin bas-droit), se réduisent</li>
+          <li>Les pressés : <b>📁 Projets</b> et <b>✉️ Contact</b>. Les curieux : <b>📟 Terminal</b>, tapez <kbd>help</kbd></li>
+        </ul>
+        <h3>Pourquoi un OS ?</h3>
+        <p>Parce que mon métier, c'est de faire tourner des systèmes : un cluster Proxmox à la maison,
+        un lab GitOps complet pour le RNCP, un parc d'entreprise au quotidien.
+        Autant vous montrer directement dedans plutôt que de l'écrire sur un PDF.</p>
+      </div>`;
+    }
+  },
+
+  /* ---- TERMINAL ---- */
+  terminal: {
+    name: 'Terminal', title: 'ianis@portfolio: ~', icon: '📟', w: 660, h: 440,
+    render(body) {
+      body.innerHTML = `<div class="term"><div class="out"></div>
+        <div class="prompt-line"><span class="ps1">ianis@portfolio:~$ </span><input spellcheck="false" autocomplete="off"></div>
+      </div>`;
+      const term = body.querySelector('.term');
+      const out = term.querySelector('.out');
+      const input = term.querySelector('input');
+      const history = [];
+      let hIdx = -1;
+
+      const FILES = {
+        'about.md': `# Ianis Puichaud — AdminSys & Réseau → DevOps
+
+3 ans d'IT : Helpline, DCS Easyware, puis Equans France —
+technicien N2 (intérim, janv–août 2025) puis alternant
+Administrateur Systèmes & Réseau (depuis sept 2025),
+équipe Support Poste de Travail.
+
+BAC+3 SYSOPS @ EPSI Nantes (promo 2026).
+Objectif : Master Infrastructure & Cloud (09/2026),
+puis SysAdmin → DevOps/automation.
+
+À côté : homelab Proxmox 2 nœuds (~17 LXC en prod),
+lab GitOps Hexalith (Terraform/Ansible/GHA),
+SaaS DataCommune (API données INSEE).`,
+        'skills.txt': `— Entreprise —
+Postes & MDM ..... Windows 10/11, Intune + SCCM (co-mgmt), M365
+Identité ......... Active Directory, Entra ID, IAM, MFA
+Sécurité poste ... CyberArk EPM, Defender for Endpoint, BitLocker, Zscaler
+ITSM ............. ServiceNow (6e/187 agents, 95,7 % de résolution)
+
+— Labs & perso —
+Virtualisation ... Proxmox VE (cluster 2 nœuds), LXC, VMs
+IaC / Auto ....... Terraform, Ansible, PowerShell, Bash
+CI/CD ............ GitHub Actions (runner self-hosted)
+Conteneurs ....... Docker, docker-compose
+Observabilité .... Prometheus, Grafana, Loki
+Réseau ........... DNS, VLANs, Traefik, Tailscale, Keepalived`,
+        'contact.txt': `email: ${PROFILE.email}
+github: ${PROFILE.github}
+localisation: Nantes, France
+statut: alternant @ Equans — cherche alternance Master Infra & Cloud (09/2026)`,
+        'projects/hexalith.md': `Hexalith — lab GitOps : SI complet d'une ESN fictive (150 collab).
+Authentik (SSO/SCIM), GLPI, Fleet MDM, n8n, Prometheus/Loki/Grafana,
+Traefik, 4 VLANs. Terraform + Ansible + GitHub Actions self-hosted.
+POC : RTO 1h45 / RPO 18h. Budget chiffré : 19 100 EUR/an.
+→ détails : open projets`,
+        'projects/homelab.md': `Homelab — Proxmox VE 2 nœuds, ~17 LXC en production.
+Grafana + Loki, Tailscale, Keepalived (HA/VIP), Traefik.
+→ détails : open projets`,
+        'projects/datacommune.md': `DataCommune — SaaS API publique de données INSEE.
+Clés API, plans d'usage, documentation. Conçu, hébergé et exploité solo.
+→ détails : open projets`,
+        'projects/scripts-ad.md': `Scripts AD — 3 outils PowerShell (GestionGroupes, AuditDroits,
+SortiePersonnel) pour automatiser l'AD en environnement contraint.
+Mode simulation, zéro écriture directe non validée, revue dev intégrée.
+→ détails : open projets`,
+      };
+
+      const print = (html) => { out.innerHTML += html + '\n'; };
+      const CMDS = {
+        help: () => print(
+`<span class="c-accent">Commandes disponibles :</span>
+  whoami        qui je suis (court)
+  ls            lister les fichiers
+  cat &lt;file&gt;    lire un fichier (about.md, skills.txt, projects/…)
+  neofetch      infos système stylées
+  open &lt;app&gt;    ouvrir une app (projets, monitoring, pipeline, network, incident, contact)
+  clear         nettoyer l'écran
+  sudo hire-me  ¯\\_(ツ)_/¯`),
+        whoami: () => print(`<span class="c-green">ianis</span> — AdminSys &amp; Réseau en alternance @ Equans (Support PDT, N2), BAC+3 SYSOPS @ EPSI Nantes.\n3 ans d'IT. Direction : Master Infra &amp; Cloud (09/2026) → DevOps. Tapez <span class="c-yellow">cat about.md</span> pour la version longue.`),
+        ls: () => print(Object.keys(FILES).map(f => `<span class="c-accent">${f}</span>`).join('\n')),
+        cat: (arg) => {
+          if (!arg) return print('<span class="c-red">usage: cat &lt;file&gt;</span>');
+          const f = FILES[arg];
+          f ? print(f.replace(/</g,'&lt;')) : print(`<span class="c-red">cat: ${arg}: No such file</span> <span class="c-dim">— 'ls' pour la liste</span>`);
+        },
+        neofetch: () => print(
+`<span class="c-mauve">       ⬢⬢⬢⬢       </span> <span class="c-accent">ianis</span>@<span class="c-accent">portfolio</span>
+<span class="c-mauve">     ⬢⬢    ⬢⬢     </span> ─────────────────
+<span class="c-mauve">    ⬢⬢      ⬢⬢    </span> <span class="c-yellow">OS</span>: ianisOS 2.0 (prototype)
+<span class="c-mauve">    ⬢⬢      ⬢⬢    </span> <span class="c-yellow">Host</span>: Equans France / EPSI Nantes
+<span class="c-mauve">     ⬢⬢    ⬢⬢     </span> <span class="c-yellow">Kernel</span>: sysops-3.0-alternance
+<span class="c-mauve">       ⬢⬢⬢⬢       </span> <span class="c-yellow">Uptime</span>: 3 ans d'IT — 0 reboot
+                    <span class="c-yellow">Shell</span>: powershell + bash
+                    <span class="c-yellow">Packages</span>: proxmox(17 lxc), terraform, ansible, grafana
+                    <span class="c-yellow">Resolution</span>: 95,7 % (490 incidents, 6e/187)
+                    <span class="c-yellow">Target</span>: master-infra-cloud.target (09/2026)`),
+        open: (arg) => {
+          const map = { projets: 'projets', monitoring: 'monitoring', pipeline: 'pipeline', network: 'network', incident: 'incident', contact: 'contact', readme: 'readme' };
+          if (map[arg]) { WM.open(map[arg]); print(`<span class="c-green">→ ouverture de ${arg}…</span>`); }
+          else print(`<span class="c-red">open: app inconnue. Essayez : ${Object.keys(map).join(', ')}</span>`);
+        },
+        clear: () => { out.innerHTML = ''; },
+        sudo: (arg) => {
+          if (arg === 'hire-me') print(`<span class="c-green">[sudo] Permission accordée. Initialisation du recrutement…</span>\n→ Contact : <span class="c-accent">${PROFILE.email}</span>`);
+          else print(`<span class="c-red">ianis is not in the sudoers file. This incident will be reported.</span>\n<span class="c-dim">(ouvrez l'app 🔥 Incident, justement)</span>`);
+        },
+        exit: () => { WM.close('terminal'); },
+      };
+
+      print(`<span class="c-dim">ianisOS terminal — tapez</span> <span class="c-yellow">help</span> <span class="c-dim">pour commencer</span>`);
+
+      term.addEventListener('click', () => input.focus());
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowUp') { e.preventDefault(); if (hIdx < history.length - 1) input.value = history[++hIdx] || ''; return; }
+        if (e.key === 'ArrowDown') { e.preventDefault(); input.value = hIdx > 0 ? history[--hIdx] : (hIdx = -1, ''); return; }
+        if (e.key !== 'Enter') return;
+        const raw = input.value.trim();
+        print(`<span class="c-green">ianis@portfolio:~$</span> ${raw.replace(/</g,'&lt;')}`);
+        if (raw) {
+          history.unshift(raw); hIdx = -1;
+          const [cmd, ...args] = raw.split(/\s+/);
+          (CMDS[cmd] || (() => print(`<span class="c-red">${cmd}: command not found</span> <span class="c-dim">— essayez 'help'</span>`)))(args.join(' '));
+        }
+        input.value = '';
+        body.scrollTop = body.scrollHeight;
+      });
+    }
+  },
+
+  /* ---- PROJETS ---- */
+  projets: {
+    name: 'Projets', title: 'Projets — explorateur', icon: '📁', w: 700, h: 520,
+    render(body) {
+      const ids = Object.keys(PROJECTS);
+      body.innerHTML = `<div class="proj">
+        <div class="p-side">${ids.map((id, i) => `
+          <div class="p-item ${i === 0 ? 'active' : ''}" data-id="${id}">
+            <span>${PROJECTS[id].icon}</span>${PROJECTS[id].name}
+          </div>`).join('')}
+        </div>
+        <div class="p-detail"></div>
+      </div>`;
+      const detail = body.querySelector('.p-detail');
+      const show = (id) => {
+        const p = PROJECTS[id];
+        detail.innerHTML = `<h2>${p.icon} ${p.name}</h2><div class="p-sub">${p.sub}</div>${p.html}`;
+        body.querySelectorAll('.p-item').forEach(el => el.classList.toggle('active', el.dataset.id === id));
+      };
+      body.querySelectorAll('.p-item').forEach(el => el.addEventListener('click', () => show(el.dataset.id)));
+      show(ids[0]);
+    }
+  },
+
+  /* ---- MONITORING ---- */
+  monitoring: {
+    name: 'Monitoring', title: 'Grafana — dashboard: ianis-overview', icon: '📊', w: 740, h: 540,
+    render(body) {
+      const spark = (color, pts) => {
+        const max = Math.max(...pts), min = Math.min(...pts);
+        const path = pts.map((p, i) =>
+          `${i === 0 ? 'M' : 'L'}${(i / (pts.length - 1) * 100).toFixed(1)},${(56 - (p - min) / (max - min || 1) * 50).toFixed(1)}`
+        ).join(' ');
+        return `<svg class="spark" viewBox="0 0 100 60" preserveAspectRatio="none">
+          <path d="${path} L100,60 L0,60 Z" fill="${color}" opacity=".12"/>
+          <path d="${path}" fill="none" stroke="${color}" stroke-width="1.5"/>
+        </svg>`;
+      };
+      const incidents = [32,45,51,48,62,58,67,71,64,73,69,75,78,72,80,76,84];
+      const skills = [20,24,30,33,38,45,44,52,58,57,65,70,69,76,80,84,89];
+
+      body.innerHTML = `<div class="mon">
+        <div class="panel">
+          <h4>⏱ Uptime IT</h4>
+          <div class="big green">3 <small>ans — 0 reboot</small></div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:4px">Helpline → DCS Easyware → Equans</div>
+        </div>
+        <div class="panel">
+          <h4>🎫 Résolution incidents (ServiceNow)</h4>
+          <div class="big green">95,7 % <small>· 490 incidents</small></div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:4px">6e sur 187 agents actifs — 8,5 mois</div>
+        </div>
+        <div class="panel">
+          <h4>🖥️ Homelab</h4>
+          <div class="big accent">17 <small>LXC · 2 nœuds Proxmox</small></div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:4px">HA Keepalived · Grafana/Loki · Tailscale</div>
+        </div>
+        <div class="panel">
+          <h4>🎯 Disponibilité</h4>
+          <div class="big yellow">09/2026 <small>Master Infra &amp; Cloud</small></div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:4px">alerte active : recherche alternance</div>
+        </div>
+        <div class="panel">
+          <h4>📈 Incidents résolus (cumul)</h4>
+          ${spark('#a6e3a1', incidents)}
+        </div>
+        <div class="panel">
+          <h4>📈 Compétences cumulées</h4>
+          ${spark('#89b4fa', skills)}
+        </div>
+        <div class="panel" style="grid-column: 1 / -1">
+          <h4>🧰 Stack — niveau de charge</h4>
+          ${[
+            ['Windows / poste de travail (Intune, SCCM, M365)', 85],
+            ['Identité (AD, Entra ID, IAM)', 80],
+            ['Proxmox / Virtualisation', 82],
+            ['PowerShell / Scripting', 78],
+            ['IaC (Terraform, Ansible)', 65],
+            ['Observabilité (Prometheus, Grafana, Loki)', 68],
+            ['CI/CD (GitHub Actions)', 60],
+          ].map(([n, v]) => `<div class="skillbar">
+            <div class="sb-label"><span>${n}</span><span>${v}%</span></div>
+            <div class="sb-track"><div class="sb-fill" style="width:${v}%"></div></div>
+          </div>`).join('')}
+        </div>
+        <div class="panel" style="grid-column: 1 / -1">
+          <h4>🚨 Alertes actives</h4>
+          <table>
+            <tr><td><span class="badge warn">WARNING</span></td><td>Recherche alternance Master Infra &amp; Cloud (09/2026)</td><td>firing</td></tr>
+            <tr><td><span class="badge ok">OK</span></td><td>Alternance ASR @ Equans — nominal</td><td>running</td></tr>
+            <tr><td><span class="badge ok">OK</span></td><td>Homelab Proxmox — 2/2 nodes up, VIP active</td><td>running</td></tr>
+            <tr><td><span class="badge warn">PENDING</span></td><td>Lab Hexalith — terraform-apply en attente de backend remote</td><td>in progress</td></tr>
+          </table>
+        </div>
+      </div>`;
+    }
+  },
+
+  /* ---- PIPELINE ---- */
+  pipeline: {
+    name: 'Pipeline', title: 'CI/CD — pipeline: carrière #2026', icon: '🚀', w: 620, h: 560,
+    render(body) {
+      const stages = [
+        { st: 'done', icon: '✅', title: 'build: fondations support', tag: 'passed', detail: 'Helpline puis DCS Easyware — support utilisateur, terrain, premières années d\'IT.',
+          log: ['$ apt install patience curiosity', '<span class="ok">✓</span> bases support & relation utilisateur acquises'] },
+        { st: 'done', icon: '✅', title: 'test: Equans — technicien N2 (intérim)', tag: 'passed', detail: 'Janvier → août 2025, équipe Support Poste de Travail. Diagnostic poussé, environnement corporate réel.',
+          log: ['$ run test-suite n2/', '<span class="ok">✓</span> ServiceNow, Intune, AD, CyberArk : OK', '<span class="ok">✓</span> validé → embauche en alternance'] },
+        { st: 'running', icon: '⚙️', title: 'staging: alternance ASR @ Equans + BAC+3 SYSOPS', tag: 'running', detail: 'Depuis sept. 2025 — Administrateur Systèmes & Réseau. Scripts d\'automatisation AD, IAM, études de cas. En parallèle : EPSI Nantes + dossier RNCP niveau 6.',
+          log: ['$ deploy --env=staging --company=equans', '<span class="ok">✓</span> 490 incidents résolus (95,7 %, 6e/187)', '<span class="ok">✓</span> 3 outils PowerShell AD livrés', '⠿ titre RNCP ASRBD : soutenance été 2026…'] },
+        { st: 'pending', icon: '🎓', title: 'staging+1: Master Infrastructure & Cloud — EPSI', tag: 'sept. 2026', detail: 'Approfondissement cloud, IaC avancé, architecture. Recherche d\'alternance en cours.', log: null },
+        { st: 'pending', icon: '🎯', title: 'deploy: production — DevOps / automation', tag: 'queued', detail: 'Automation, CI/CD, plateformes. La cible. Les labs (Hexalith, homelab) préparent déjà le terrain.', log: null },
+      ];
+      body.innerHTML = `<div class="pipe">` + stages.map(s => `
+        <div class="stage ${s.st}">
+          <div class="s-dot">${s.icon}</div>
+          <div class="s-body">
+            <div class="s-title">${s.title} <span class="s-tag">${s.tag}</span></div>
+            <div class="s-detail">${s.detail}</div>
+            ${s.log ? `<div class="s-log">${s.log.join('<br>')}</div>` : ''}
+          </div>
+        </div>`).join('') + `</div>`;
+    }
+  },
+
+  /* ---- NETWORK MAP ---- */
+  network: {
+    name: 'Réseau', title: 'NetMap — topologie: ianis.lan', icon: '🌐', w: 680, h: 540,
+    render(body) {
+      const nodes = [
+        { id: 'core', x: 340, y: 190, icon: '🧑‍💻', label: 'ianis (router)', core: true,
+          info: '<b>ianis.core</b> — routeur central. AdminSys & Réseau alternant, route les paquets entre l\'entreprise, l\'école et les labs. QoS : apprentissage en priorité haute.' },
+        { id: 'equans', x: 130, y: 80, icon: '🏢', label: 'Equans',
+          info: '<b>equans.work</b> — Alternance ASR, équipe Support Poste de Travail (N2). Stack : M365, Intune/SCCM, AD/Entra ID, CyberArk EPM, Zscaler, ServiceNow. 490 incidents résolus, 95,7 % de résolution.' },
+        { id: 'epsi', x: 550, y: 80, icon: '🎓', label: 'EPSI Nantes',
+          info: '<b>epsi.edu</b> — BAC+3 SYSOPS (promo 2026), titre RNCP niveau 6 ASRBD en cours. Prochain hop : Master Infrastructure & Cloud (09/2026).' },
+        { id: 'homelab', x: 110, y: 310, icon: '🖥️', label: 'Homelab',
+          info: '<b>homelab.lan</b> — Cluster Proxmox 2 nœuds, ~17 LXC en prod : Grafana, Loki, Tailscale, Traefik, Keepalived HA. Le terrain de jeu où tout se teste avant la prod.' },
+        { id: 'hexalith', x: 340, y: 360, icon: '🛡️', label: 'Lab Hexalith',
+          info: '<b>hexalith.lab</b> — SI complet d\'une ESN fictive de 150 collab, déployé en GitOps : Authentik SSO, GLPI, Fleet MDM, n8n, supervision Prometheus/Grafana, 4 VLANs. Terraform + Ansible + GitHub Actions.' },
+        { id: 'datacommune', x: 555, y: 310, icon: '📦', label: 'DataCommune',
+          info: '<b>datacommune.cloud</b> — SaaS perso : API publique de données INSEE avec clés API et plans d\'usage. Conçu, hébergé et exploité en solo.' },
+        { id: 'devops', x: 620, y: 190, icon: '🎯', label: 'DevOps (target)',
+          info: '<b>devops.future</b> — Destination finale : automation, CI/CD, plateformes. Route en cours d\'établissement via Master Infra & Cloud. Les labs servent de tracé BGP.' },
+      ];
+      const links = [['core','equans'],['core','epsi'],['core','homelab'],['core','hexalith'],['core','datacommune'],['core','devops'],['homelab','hexalith']];
+      const byId = Object.fromEntries(nodes.map(n => [n.id, n]));
+
+      body.innerHTML = `
+        <svg class="netmap" viewBox="0 0 700 430">
+          ${links.map(([a,b]) => `<line x1="${byId[a].x}" y1="${byId[a].y}" x2="${byId[b].x}" y2="${byId[b].y}"/>`).join('')}
+          ${nodes.map(n => `
+            <g class="node ${n.core ? 'core' : ''}" data-id="${n.id}">
+              <circle cx="${n.x}" cy="${n.y}" r="${n.core ? 34 : 28}"/>
+              <text class="nico" x="${n.x}" y="${n.y + 6}">${n.icon}</text>
+              <text x="${n.x}" y="${n.y + (n.core ? 52 : 46)}">${n.label}</text>
+            </g>`).join('')}
+        </svg>
+        <div class="net-info">Cliquez sur un nœud pour afficher ses détails. <b>ianis.core</b> route tout le trafic.</div>`;
+
+      const info = body.querySelector('.net-info');
+      body.querySelectorAll('.node').forEach(g => {
+        g.addEventListener('click', () => { info.innerHTML = byId[g.dataset.id].info; });
+      });
+    }
+  },
+
+  /* ---- INCIDENT ---- */
+  incident: {
+    name: 'Incident', title: 'Postmortem — INC-2026-001', icon: '🔥', w: 580, h: 540,
+    render(body) {
+      body.innerHTML = `<div class="incident">
+        <div class="inc-banner">🔥 INC-2026-001 — SEV-2 — Pénurie de profil infra motivé détectée</div>
+        <h3>Résumé</h3>
+        <p>Le <code>${new Date().toLocaleDateString('fr-FR')}</code>, une équipe infra/DevOps a constaté
+        un manque critique de profil junior capable de comprendre à la fois le support utilisateur,
+        l'administration systèmes et l'automatisation.</p>
+        <h3>Impact</h3>
+        <p>Tickets en attente, scripts non écrits, serveurs tristement non monitorés.
+        Charge mentale des seniors en hausse de 34 %.</p>
+        <h3>Root cause</h3>
+        <p>L'équipe n'avait pas encore rencontré <b>Ianis</b> : alternant AdminSys &amp; Réseau chez Equans
+        (95,7 % de résolution, 6e sur 187 agents), homelab Proxmox de 17 conteneurs sous perfusion
+        de Grafana, lab GitOps complet monté en Terraform/Ansible, en route vers un Master
+        Infrastructure &amp; Cloud.</p>
+        <h3>Résolution</h3>
+        <p class="resolved">✓ RESOLVED — un mail a suffi : <a href="mailto:${PROFILE.email}">${PROFILE.email}</a></p>
+        <h3>Actions de suivi</h3>
+        <p>☐ Ouvrir l'app <code>✉️ Contact</code><br>
+           ☐ Planifier un entretien<br>
+           ☑ Ne plus jamais sous-estimer un candidat avec un homelab</p>
+      </div>`;
+    }
+  },
+
+  /* ---- CONTACT ---- */
+  contact: {
+    name: 'Contact', title: 'Contact — établir la connexion', icon: '✉️', w: 480, h: 380,
+    render(body) {
+      body.innerHTML = `<div class="contact">
+        <div class="row">
+          <span class="glyph">📧</span>
+          <div><a href="mailto:${PROFILE.email}">${PROFILE.email}</a>
+          <small>réponse sous 24 h — SLA respecté</small></div>
+        </div>
+        <div class="row">
+          <span class="glyph">🐙</span>
+          <div><a href="${PROFILE.github}" target="_blank" rel="noopener">github.com/AnythingLegalConsidered</a>
+          <small>labs, IaC, projets perso</small></div>
+        </div>
+        <div class="row">
+          <span class="glyph">💼</span>
+          <div><a href="#" onclick="return false">linkedin.com/in/…</a>
+          <small>(placeholder — à brancher)</small></div>
+        </div>
+        <div class="row">
+          <span class="glyph">📍</span>
+          <div>Nantes, France
+          <small>cherche alternance Master Infrastructure &amp; Cloud — dès septembre 2026</small></div>
+        </div>
+      </div>`;
+    }
+  },
+};
+
+/* ---------- Desktop icons & start menu ---------- */
+const ICON_ORDER = ['readme', 'projets', 'terminal', 'monitoring', 'pipeline', 'network', 'incident', 'contact'];
+const iconsEl = document.getElementById('icons');
+const smItems = document.getElementById('sm-items');
+
+for (const id of ICON_ORDER) {
+  const app = APPS[id];
+  const icon = document.createElement('div');
+  icon.className = 'icon';
+  icon.innerHTML = `<div class="glyph">${app.icon}</div><div class="label">${app.name}</div>`;
+  icon.addEventListener('dblclick', () => WM.open(id));
+  iconsEl.appendChild(icon);
+
+  const sm = document.createElement('div');
+  sm.className = 'sm-item';
+  sm.innerHTML = `<span class="glyph">${app.icon}</span>${app.title}`;
+  sm.addEventListener('click', () => { WM.open(id); toggleStart(false); });
+  smItems.appendChild(sm);
+}
+
+/* ---------- Start menu ---------- */
+const startMenu = document.getElementById('start-menu');
+const startBtn = document.getElementById('start-btn');
+function toggleStart(force) {
+  startMenu.classList.toggle('open', force);
+}
+startBtn.addEventListener('click', (e) => { e.stopPropagation(); startMenu.classList.toggle('open'); });
+document.addEventListener('click', (e) => {
+  if (!startMenu.contains(e.target)) toggleStart(false);
+});
+
+/* ---------- Clock ---------- */
+const clock = document.getElementById('clock');
+function tick() {
+  const d = new Date();
+  clock.textContent = d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) + ' ' +
+    d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+tick(); setInterval(tick, 10000);
+
+/* ---------- Boot sequence ---------- */
+const BOOT_LINES = [
+  '[  OK  ] Starting ianisOS v2.0 (prototype)…',
+  '[  OK  ] Mounted /dev/motivation (ext4, rw)',
+  '[  OK  ] Started service: homelab-proxmox.service (2 nodes, 17 LXC)',
+  '[  OK  ] Started service: hexalith-gitops.service (terraform, ansible)',
+  '[  OK  ] Started service: datacommune-api.service',
+  '[  OK  ] Reached target: alternance.target (Equans — ASR N2)',
+  '[ WAIT ] Resolving master-infra-cloud.target… ETA 09/2026',
+  '[  OK  ] Starting desktop environment…',
+];
+const boot = document.getElementById('boot');
+BOOT_LINES.forEach((l, i) => {
+  setTimeout(() => {
+    const div = document.createElement('div');
+    div.className = 'line';
+    div.textContent = l;
+    boot.appendChild(div);
+  }, 120 * i);
+});
+setTimeout(() => {
+  boot.classList.add('done');
+  WM.open('readme');
+}, 120 * BOOT_LINES.length + 500);
+</script>
+</body>
+</html>

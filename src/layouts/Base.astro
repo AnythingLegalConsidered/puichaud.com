@@ -1,0 +1,61 @@
+---
+const {
+  title = 'Ianis Puichaud — Administrateur Systèmes & Réseaux → DevOps',
+  description = 'Administrateur Systèmes & Réseaux en alternance chez Equans, futur DevOps. Homelab Proxmox, gateway VPS, projets data. Recherche alternance Master Infra & Cloud — sept. 2026, Nantes.',
+} = Astro.props;
+
+const canonical = 'https://puichaud.com';
+import '../styles/global.css';
+---
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={canonical} />
+  <meta property="og:locale" content="fr_FR" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Enable scroll-reveal styles only when JS runs (no-JS stays visible) -->
+  <script is:inline>document.documentElement.classList.add('anim');</script>
+</head>
+<body>
+  <slot />
+
+  <script is:inline>
+    (function () {
+      var els = document.querySelectorAll(
+        '.sec-head, .sec-intro, #metrics .grid, .tl-item, .card, .infra-panel, .skill-col, #contact .box'
+      );
+      if (!('IntersectionObserver' in window) ||
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        els.forEach(function (el) { el.classList.add('is-in'); });
+        return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) {
+            e.target.classList.add('is-in');
+            io.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+      els.forEach(function (el) { io.observe(el); });
+    })();
+  </script>
+</body>
+</html>

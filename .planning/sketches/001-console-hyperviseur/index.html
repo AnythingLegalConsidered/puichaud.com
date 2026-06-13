@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sketch 001 — Console Hyperviseur (portfolio)</title>
+<link rel="stylesheet" href="../themes/default.css">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding-top: 48px;
+    background: #141414; color: var(--color-text);
+    font-family: var(--font-sans); font-size: var(--text-base);
+  }
+
+  /* ---------- Variant nav (sketch chrome) ---------- */
+  #variant-nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 9998;
+    background: #0d0d0d; border-bottom: 1px solid #333;
+    padding: 8px 16px; display: flex; gap: 8px; align-items: center;
+    font-family: system-ui; font-size: 13px;
+  }
+  #variant-nav .label { color: #777; margin-right: 8px; }
+  .variant-tab {
+    background: #222; color: #ccc; border: 1px solid #3a3a3a;
+    padding: 5px 14px; border-radius: 5px; cursor: pointer; font-size: 13px;
+    transition: all 0.15s ease;
+  }
+  .variant-tab:hover { background: #333; }
+  .variant-tab.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+
+  #vp-wrap { margin: 0 auto; transition: max-width 0.25s ease; }
+
+  /* ---------- Shared console pieces ---------- */
+  .px-header {
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--color-surface-2); border-bottom: 1px solid var(--color-border);
+    padding: var(--space-2) var(--space-4);
+  }
+  .px-logo { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+  .px-logo .mark { color: var(--color-primary); font-size: 1.2em; }
+  .px-logo .ver { color: var(--color-text-muted); font-size: var(--text-xs); font-family: var(--font-mono); }
+  .px-header .actions { display: flex; gap: 8px; }
+  .px-btn {
+    background: var(--color-surface-3); border: 1px solid var(--color-border); color: var(--color-text);
+    padding: 5px 12px; border-radius: var(--radius-sm); font-size: var(--text-sm);
+    cursor: pointer; text-decoration: none; transition: all 0.15s ease;
+  }
+  .px-btn:hover { background: #3f3f44; border-color: #555; }
+  .px-btn.primary { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+  .px-btn.primary:hover { background: var(--color-primary-hover); }
+
+  .px-body { display: flex; min-height: 580px; align-items: stretch; }
+  .px-tree {
+    width: 270px; flex-shrink: 0; background: var(--color-surface);
+    border-right: 1px solid var(--color-border); padding: var(--space-2) 0;
+    font-size: var(--text-sm); user-select: none; overflow-y: auto;
+  }
+  .tree-group { padding: 8px 12px 2px; color: var(--color-text-muted); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.5px; }
+  .tree-node {
+    display: flex; align-items: center; gap: 8px; padding: 6px 12px; cursor: pointer;
+    font-weight: 600; transition: background 0.15s ease; border-left: 3px solid transparent;
+  }
+  .tree-node:hover { background: var(--color-surface-2); }
+  .tree-node .chev { color: var(--color-text-muted); font-size: 0.7em; width: 10px; }
+  .tree-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 12px 5px 30px; cursor: pointer; transition: background 0.15s ease;
+    border-left: 3px solid transparent;
+  }
+  .tree-item:hover { background: var(--color-surface-2); }
+  .tree-item.selected, .tree-node.selected { background: var(--color-surface-3); border-left-color: var(--color-accent); }
+  .tree-item.root { padding-left: 12px; font-weight: 600; }
+  .tree-item .vmid { font-family: var(--font-mono); color: var(--color-text-muted); font-size: var(--text-xs); min-width: 30px; }
+  .tree-item .iac { margin-left: auto; font-size: 0.85em; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot.running { background: var(--color-success); box-shadow: 0 0 5px rgba(92,184,92,0.7); }
+  .dot.paused  { background: var(--color-warning); }
+  .dot.stopped { background: #6a6a6a; }
+  .dot.template{ background: #777; border-radius: 2px; }
+
+  .px-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .px-tabs { display: flex; gap: 2px; background: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: 0 var(--space-3); }
+  .px-tab { padding: 8px 16px; cursor: pointer; font-size: var(--text-sm); color: var(--color-text-muted); border-bottom: 2px solid transparent; transition: all 0.15s ease; }
+  .px-tab:hover { color: var(--color-text); }
+  .px-tab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+  .px-crumb {
+    padding: var(--space-2) var(--space-4); font-family: var(--font-mono); font-size: var(--text-xs);
+    color: var(--color-text-muted); border-bottom: 1px solid var(--color-border); background: var(--color-surface);
+  }
+  .px-content { padding: var(--space-6); overflow: auto; flex: 1; }
+
+  .px-status {
+    display: flex; gap: var(--space-6); padding: var(--space-2) var(--space-4); flex-wrap: wrap;
+    background: var(--color-surface-2); border-top: 1px solid var(--color-border);
+    font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text-muted);
+  }
+  .px-status b { color: var(--color-success); font-weight: 600; }
+
+  /* Content widgets */
+  .fiche h1 { margin: 0 0 4px; font-size: var(--text-2xl); }
+  .fiche .tagline { color: var(--color-text-muted); margin: 0 0 var(--space-6); }
+  .fiche h2 { font-size: var(--text-sm); text-transform: uppercase; letter-spacing: 1px; color: var(--color-primary); margin: var(--space-6) 0 var(--space-2); }
+  .fiche p { line-height: 1.65; margin: 0; max-width: 72ch; }
+  .flag { display: inline-block; font-size: var(--text-xs); font-family: var(--font-mono); padding: 2px 8px; border-radius: var(--radius-full); margin-left: 8px; vertical-align: middle; }
+  .flag.flagship { background: rgba(229,112,0,0.18); color: var(--color-primary); border: 1px solid var(--color-primary); }
+  .flag.iac { background: rgba(56,146,212,0.15); color: var(--color-accent); border: 1px solid var(--color-accent); }
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; }
+  .badge {
+    background: var(--color-surface-3); border: 1px solid var(--color-border);
+    font-family: var(--font-mono); font-size: var(--text-xs);
+    padding: 4px 10px; border-radius: var(--radius-full);
+  }
+  .gh-link { display: inline-flex; align-items: center; gap: 6px; color: var(--color-accent); text-decoration: none; font-size: var(--text-sm); margin-top: var(--space-4); }
+  .gh-link:hover { text-decoration: underline; }
+
+  .gauges { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--space-4); margin: var(--space-4) 0 var(--space-6); }
+  .gauge { background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-3); }
+  .gauge .glabel { font-size: var(--text-xs); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .gauge .gval { font-family: var(--font-mono); font-size: var(--text-xl); margin: 4px 0 8px; }
+  .bar { height: 6px; background: #1a1a1a; border-radius: var(--radius-full); overflow: hidden; }
+  .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--color-accent), var(--color-primary)); border-radius: var(--radius-full); transition: width 0.8s ease; }
+
+  .archi {
+    background: #161616; border: 1px solid var(--color-border); border-radius: var(--radius-md);
+    font-family: var(--font-mono); font-size: var(--text-xs); line-height: 1.5;
+    padding: var(--space-4); overflow-x: auto; white-space: pre; color: #b8c8b8;
+  }
+
+  /* Task log (décisions / postmortems) */
+  .tasklog { font-size: var(--text-sm); }
+  .task {
+    display: grid; grid-template-columns: 22px 92px 1fr; gap: 10px; align-items: start;
+    padding: 10px 8px; border-bottom: 1px solid var(--color-border); cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .task:hover { background: var(--color-surface-2); }
+  .task .tstatus { color: var(--color-success); font-family: var(--font-mono); }
+  .task.pm .tstatus { color: var(--color-warning); }
+  .task .tdate { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text-muted); padding-top: 2px; }
+  .task .ttitle { font-weight: 600; }
+  .task .tkind { font-size: var(--text-xs); font-family: var(--font-mono); color: var(--color-text-muted); }
+  .task .tbody { margin-top: 6px; line-height: 1.6; color: var(--color-text); display: none; max-width: 74ch; }
+  .task.open .tbody { display: block; }
+  .task .tproj { font-size: var(--text-xs); font-family: var(--font-mono); color: var(--color-accent); }
+
+  /* ---------- Variant A: dense replica ---------- */
+  .va .console { background: var(--color-bg); border: 1px solid var(--color-border); }
+  .va { font-size: var(--text-sm); }
+  /* ---------- Variant B: airy console ---------- */
+  .vb .console { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-lg); margin: var(--space-6); }
+  .vb .px-content { padding: var(--space-8); }
+  /* ---------- Variant C: hybrid landing ---------- */
+  .vc .hero { text-align: center; padding: var(--space-12) var(--space-6) var(--space-8); }
+  .vc .hero .status-line {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text-muted);
+    border: 1px solid var(--color-border); border-radius: var(--radius-full); padding: 5px 14px;
+    margin-bottom: var(--space-6);
+  }
+  .vc .hero h1 { font-size: var(--text-3xl); margin: 0 0 var(--space-2); }
+  .vc .hero h1 .accent { color: var(--color-primary); }
+  .vc .hero p.sub { color: var(--color-text-muted); max-width: 60ch; margin: 0 auto var(--space-6); line-height: 1.6; }
+  .vc .hero .cta { display: flex; gap: 12px; justify-content: center; }
+  .vc .console {
+    background: var(--color-bg); border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-lg);
+    max-width: 1140px; margin: 0 auto var(--space-12);
+  }
+  .vc .section-label { text-align: center; font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text-muted); margin-bottom: var(--space-3); }
+  .vc footer.contact { text-align: center; padding: var(--space-8); border-top: 1px solid var(--color-border); color: var(--color-text-muted); font-size: var(--text-sm); }
+
+  /* ---------- Sketch toolbar ---------- */
+  #sketch-tools {
+    position: fixed; bottom: 12px; right: 12px; z-index: 9999;
+    font-family: system-ui; font-size: 12px; background: rgba(0,0,0,0.75); color: #fff;
+    padding: 8px 12px; border-radius: 8px; opacity: 0.4; transition: opacity 0.2s;
+    display: flex; gap: 8px; align-items: center;
+  }
+  #sketch-tools:hover { opacity: 1; }
+  #sketch-tools button, #sketch-tools select {
+    background: #222; color: #ddd; border: 1px solid #444; border-radius: 4px;
+    font-size: 11px; padding: 3px 8px; cursor: pointer;
+  }
+
+  @media (max-width: 760px) {
+    .px-body { flex-direction: column; }
+    .px-tree { width: 100% !important; border-right: none; border-bottom: 1px solid var(--color-border); max-height: 240px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="variant-nav">
+  <span class="label">Sketch 001 — Console hyperviseur</span>
+  <button class="variant-tab active" onclick="showVariant('c', this)">C : Landing hybride ★</button>
+  <button class="variant-tab" onclick="showVariant('a', this)">A : Réplique fidèle</button>
+  <button class="variant-tab" onclick="showVariant('b', this)">B : Console aérée</button>
+</div>
+
+<div id="vp-wrap">
+  <section id="variant-c" class="variant vc">
+    <div class="hero">
+      <div class="status-line"><span class="dot running"></span> homelab <span id="hero-uptime" style="color:var(--color-success)">99.2%</span> · 2 nodes · 12 LXC sous Terraform · 0 port exposé</div>
+      <h1>Ianis Puichaud <span class="accent">—</span> SysOps</h1>
+      <p class="sub">Alternant AdminSys chez EQUANS · BAC+3 SYSOPS (EPSI Nantes) · cap Master Infra &amp; Cloud 09/2026.
+      Ce portfolio est branché sur ma vraie infra : les métriques et les conteneurs ci-dessous sont live. Explorez la console.</p>
+      <div class="cta">
+        <a class="px-btn primary" href="#" onclick="fakeDownload(event)">Télécharger le CV</a>
+        <a class="px-btn" href="https://github.com/AnythingLegalConsidered" target="_blank">GitHub ↗</a>
+      </div>
+    </div>
+    <div class="section-label">▼ pve-portfolio — cliquez sur un node, un LXC, ou l'onglet Décisions</div>
+    <div class="console" id="console-c"></div>
+    <footer class="contact">ianispuichaud@gmail.com · LinkedIn · puichaud.com — © 2026</footer>
+  </section>
+  <section id="variant-a" class="variant va" style="display:none"><div class="console" id="console-a"></div></section>
+  <section id="variant-b" class="variant vb" style="display:none"><div class="console" id="console-b"></div></section>
+</div>
+
+<div id="sketch-tools">
+  <select onchange="document.querySelector('link[href*=themes]').href='../themes/'+this.value+'.css'">
+    <option value="default">Proxmox dark</option>
+  </select>
+  <button onclick="setVp('375px')">📱</button>
+  <button onclick="setVp('768px')">💻</button>
+  <button onclick="setVp('100%')">🖥️</button>
+</div>
+
+<script>
+/* ============================================================
+   DONNÉES — état réel post-rework (curé). IPs/secrets jamais.
+   ============================================================ */
+const PROFILE = {
+  name: "Ianis Puichaud", title: "SysOps / futur DevOps",
+  lines: [
+    "Alternant Administrateur Systèmes chez EQUANS — Tech Support N2 (AD, Intune, SAP, parc Windows).",
+    "BAC+3 SYSOPS à EPSI Nantes. Objectif : Master Infrastructure & Cloud en alternance dès septembre 2026, puis SysAdmin, et à moyen terme une orientation DevOps / automatisation.",
+    "Mon homelab est un cluster Proxmox 2 nœuds reconstruit de zéro en Infrastructure-as-Code (Terraform + Ansible), monitoré, sauvegardé en 3-2-1 restauré-testé, et accessible partout sans exposer un seul port — il me sert de terrain de jeu pour ce que je n'ai pas le droit de casser au travail."
+  ],
+  skills: ["Proxmox VE", "Terraform", "Ansible", "Docker", "GitHub Actions", "Windows Server / AD", "Linux (Debian)", "Grafana · Loki · Prometheus", "Caddy / reverse proxy", "Tailscale", "SOPS · age", "PostgreSQL / PostGIS", "PowerShell", "Python", "Bash"]
+};
+
+/* Nodes réels + virtuels */
+const NODES = [
+  { id:"pve02", label:"pve02 — hyperviseur principal", kind:"real",
+    summary:"Nœud Proxmox VE qui porte aujourd'hui toute l'infra reconstruite : la plage 350-360 est entièrement gérée par Terraform (badge ⚙). DNS, reverse proxy interne et keepalived assurent la continuité. Conso CPU ~2% en croisière depuis le passage du governor en powersave." },
+  { id:"pve01", label:"pve01 — hyperviseur secondaire", kind:"real",
+    summary:"Second nœud du cluster, dédié à la haute disponibilité (VIP keepalived AdGuard + reverse proxy). Actuellement hors-ligne — réanimation planifiée avec le même fix governor que pve02." },
+  { id:"edge-vps", label:"edge-vps — passerelle publique", kind:"real",
+    summary:"VPS OVH : seul point d'entrée public. Caddy (reverse proxy + TLS), Tailscale (mesh chiffré vers le LAN), fail2ban. Tout le trafic externe transite ici — les ports 80/443 du homelab sont fermés. C'est aussi cette machine qui servira ce portfolio." },
+  { id:"node-portfolio", label:"node-portfolio — projets", kind:"virtual",
+    summary:"Node virtuel : mes projets présentés comme des conteneurs. Cliquez sur un projet pour sa fiche (Problème → Stack → Résultat → Leçons)." },
+  { id:"node-school", label:"node-school — EPSI / RNCP", kind:"virtual",
+    summary:"Projets académiques EPSI Nantes et dossier de validation RNCP ASRBD." }
+];
+
+/* LXC réels curés (statuts au dernier scan) */
+const GUESTS = [
+  { node:"pve02", vmid:355, name:"obs", status:"running", iac:true,
+    note:"Stack d'observabilité unifiée : Grafana, Prometheus, Loki, Alertmanager, Alloy, Uptime Kuma. C'est cette machine qui alimentera les métriques live de ce site." },
+  { node:"pve02", vmid:350, name:"pbs-01", status:"running", iac:true, note:"Proxmox Backup Server — sauvegardes locales, datastore dédié." },
+  { node:"pve02", vmid:351, name:"backrest-01", status:"running", iac:true, note:"restic dual-repo : local NVMe + offsite chiffré vers le VPS. Pilier du 3-2-1." },
+  { node:"pve02", vmid:353, name:"sso", status:"running", iac:true, note:"Pocket ID (OIDC) + Tinyauth (forward-auth) : authentification passkey unique pour tous les services." },
+  { node:"pve02", vmid:352, name:"adguard-iac", status:"running", iac:true, note:"DNS filtrant, géré en IaC." },
+  { node:"pve02", vmid:354, name:"bastion", status:"running", iac:true, note:"Point de rebond SSH durci." },
+  { node:"pve02", vmid:356, name:"homepage", status:"running", iac:true, note:"Tableau de bord des services, derrière SSO passkey." },
+  { node:"pve02", vmid:357, name:"fava", status:"running", iac:true, note:"Finances plain-text (Beancount/Fava). Données privées — non exposées." },
+  { node:"pve02", vmid:358, name:"caldav", status:"running", iac:true, note:"Agenda/contacts (Radicale)." },
+  { node:"pve02", vmid:359, name:"dawarich", status:"running", iac:true, note:"Historique de localisation auto-hébergé (PostGIS). Données privées." },
+  { node:"pve02", vmid:360, name:"immich", status:"running", iac:true, note:"Photos auto-hébergées (ML, PostGIS). Données privées." },
+  { node:"pve02", vmid:252, name:"adguard-02", status:"running", iac:false, note:"DNS HA (VIP keepalived) — héritage, conservé pour la continuité." },
+  { node:"pve02", vmid:290, name:"media-stack", status:"running", iac:false, note:"Stack média auto-hébergée (cf. projet ARRmada)." },
+  { node:"pve02", vmid:200, name:"poliscope-db", status:"running", iac:false, note:"Base PostgreSQL du projet Poliscope (cf. node-portfolio)." },
+  { node:"pve02", vmid:9020, name:"hex-authentik", status:"running", iac:true, note:"Lab Hexalith — IdP Authentik (cf. projet hexalith-lab)." },
+  { node:"pve02", vmid:9024, name:"hex-supervision", status:"running", iac:true, note:"Lab Hexalith — supervision Prometheus/Grafana." },
+  { node:"pve01", vmid:251, name:"keepalived-vip", status:"stopped", iac:false, note:"VIP HA (DNS + reverse proxy) — repart à la réanimation de pve01." }
+];
+
+/* Projets (node-portfolio + node-school) */
+const PROJECTS = [
+  { key:"hexalith", vmid:101, node:"node-portfolio", name:"hexalith-lab", status:"running", flag:"flagship",
+    tagline:"Lab GitOps complet — l'architecture SI d'une ESN fictive, en Infrastructure-as-Code",
+    probleme:"Démontrer une architecture d'entreprise cohérente et reproductible (IdP, ITSM, MDM, supervision, orchestration) dans le cadre du dossier RNCP ASRBD — sans configuration manuelle.",
+    stack:["Terraform","Ansible","GitHub Actions","Proxmox","Azure Entra ID","Authentik","GLPI","SOPS · age"],
+    resultat:"Stack multi-couches provisionnée par le code : Authentik (OIDC/SAML/SCIM), GLPI, Fleet+Intune, observabilité, n8n, tenant Azure M365 avec 10 users provisionnés en Terraform, state remote azurerm durci, runner CI self-hosted. Restore mesuré à ~19 s.",
+    lecons:"Séparer provisioning (Terraform) et configuration (Ansible) dès le départ, et chiffrer les secrets (SOPS+age) avant la première ligne d'IaC — pas après.",
+    github:"github.com/AnythingLegalConsidered/hexalith-lab" },
+  { key:"datacommune", vmid:102, node:"node-portfolio", name:"DataCommune", status:"running", flag:"flagship",
+    tagline:"Plateforme d'agrégation des données publiques françaises — 27 datasets, ~575M lignes",
+    probleme:"Rendre interrogeables des dizaines de jeux de données publics hétérogènes (DVF, cadastre, INSEE, Géorisques…) via une API unique et fiable.",
+    stack:["FastAPI","PostgreSQL 17","PostGIS","SvelteKit","Docker"],
+    resultat:"87 routes REST sur ~575M lignes, 21 pipelines ETL avec swap atomique crash-safe (3 phases dans une seule transaction), et un harnais qualité générique qui audite 27 datasets depuis une config déclarative — ajouter un dataset = 10 lignes.",
+    lecons:"Un ETL haute volumétrie doit isoler la charge data du risque transactionnel : sans swap atomique, un crash en plein chargement laisse la prod incohérente.",
+    github:"github.com/AnythingLegalConsidered/datacommune-mcp" },
+  { key:"poliscope", vmid:103, node:"node-portfolio", name:"Poliscope", status:"running",
+    tagline:"Les débats parlementaires français (AN + Sénat) en threads scrollables",
+    probleme:"Rendre lisibles et suivables des débats parlementaires éparpillés dans des sources officielles hétérogènes (DILA XML, scrutins CSV…).",
+    stack:["Nuxt 4","Vue 3","Drizzle ORM","PostgreSQL 17","Playwright"],
+    resultat:"v2.0 en prod sur le homelab : 500 séances, 300 000 interventions, 1,3M votes ingérés et normalisés dans un schéma unifié. Recherche plein-texte FR, API REST documentée, migration de schéma deputies→actors sans perte de données.",
+    lecons:"Normaliser 3 sources officielles différentes dans un schéma commun : 80% du travail est dans le nettoyage et la migration, pas dans l'ingestion initiale.",
+    github:"github.com/AnythingLegalConsidered/Poliscope" },
+  { key:"arrmada", vmid:104, node:"node-portfolio", name:"ARRmada", status:"running",
+    tagline:"Stack média auto-hébergée déployée et auto-configurée en une commande",
+    probleme:"Déployer 10+ services interconnectés et les câbler entre eux automatiquement, sans configuration manuelle.",
+    stack:["Python","Textual TUI","Jinja2","Docker Compose"],
+    resultat:"Un installeur CLI (TUI interactive) qui génère les compose, attend que les services soient up, extrait les clés API et câble les services entre eux. Routage VPN optionnel.",
+    lecons:"L'auto-wiring inter-services (échange des clés API entre conteneurs) est ce qui distingue un vrai déploiement one-command d'un simple docker-compose up.",
+    github:"github.com/AnythingLegalConsidered/ARRmada" },
+  { key:"argos", vmid:105, node:"node-portfolio", name:"Argos", status:"running",
+    tagline:"Plateforme de veille — agrégation RSS + Reddit + capture web, recherche plein-texte",
+    probleme:"Centraliser plusieurs sources de veille hétérogènes avec isolation des données par utilisateur.",
+    stack:["FastAPI","React 18","Supabase","PostgreSQL (RLS)","Docker"],
+    resultat:"Agrégation multi-sources, isolation par utilisateur via Row-Level Security PostgreSQL, rate limiting, recherche plein-texte. v2.0 en cours (tags auto, analytics).",
+    lecons:"La RLS PostgreSQL pousse la sécurité dans la base elle-même : l'isolation ne dépend plus du code applicatif qui peut oublier un WHERE.",
+    github:"github.com/AnythingLegalConsidered/Argos" },
+  { key:"mspr", vmid:9001, node:"node-school", name:"MSPR — NordTransit (WMS)", status:"template",
+    tagline:"Conception de la base d'un WMS logistique sous contraintes de prod",
+    probleme:"Concevoir la BDD d'un Warehouse Management System pour une PME logistique, avec des objectifs de continuité chiffrés (RTO 1h, RPO 15 min).",
+    stack:["MariaDB 11.4 LTS","Galera","Merise","SQL"],
+    resultat:"12 décisions d'architecture tranchées et argumentées (MariaDB vs PostgreSQL/MySQL, réplication Galera 3 nœuds, modèle séparant le stock courant de l'historique des mouvements, 9 index ciblés). Review externe → 3 points bloquants fermés.",
+    lecons:"Modéliser, c'est arbitrer : séparer STOCK (lecture rapide) et MOUVEMENT_STOCK (audit horodaté) plutôt que dénormaliser, et savoir refuser une hypothèse non justifiée par le sujet.",
+    github:"github.com/AnythingLegalConsidered/MSPR3-NTL-WMS-DB" },
+  { key:"agile", vmid:9002, node:"node-school", name:"Déploiement K8s (Scrum)", status:"template",
+    tagline:"Projet Agile/Scrum — déploiement Kubernetes en équipe",
+    probleme:"Livrer un déploiement Kubernetes en Scrum, en groupe, avec les contraintes d'un vrai projet agile (rôles, sprints, rétrospectives).",
+    stack:["K3s","Symfony","React","Scrum"],
+    resultat:"Déploiement livré en sprints, en tant que Product Owner : backlog, Definition of Ready/Done, planning poker, rétrospectives.",
+    lecons:"La méthode pèse autant que la technique : un sprint mal découpé coûte plus cher qu'un manifest YAML raté.",
+    github:"github.com/AnythingLegalConsidered/EPSI-B3-ASRBD-Agile-G2" }
+];
+
+/* Onglet Décisions — timeline curée (échantillon pour le sketch) */
+const TASKS = [
+  { date:"2026-06-02", kind:"GATE", pm:false, proj:"Refonte Homelab", title:"Un backup n'existe que restauré-testé",
+    body:"Plutôt que de cocher « backups en place », j'ai écrit un gate non falsifiable : un script qui restaure réellement les sauvegardes sur des conteneurs temporaires et vérifie que les services bootent et que les données sont intègres (7 sous-tests). La Phase 1 ne pouvait pas se clore sans result=OK. Trouvaille au passage : un coffre-fort qui tournait à vide depuis des mois." },
+  { date:"2026-05-30", kind:"DÉCISION", pm:false, proj:"Refonte Homelab", title:"Rebuild ≠ wipe : trois « zéros » distincts",
+    body:"En relançant l'infra de zéro, j'ai explicitement séparé trois choses qu'on confond souvent : repartir de zéro côté code (oui), redéployer les conteneurs (oui, mais après backup restauré-testé), et effacer les données (jamais). Sans cette distinction, « rebuild propre » devient « perte de données »." },
+  { date:"2026-06-04", kind:"POSTMORTEM", pm:true, proj:"Refonte Homelab", title:"La clé générée dans le mauvais réseau",
+    body:"Une journée entière de symptômes contradictoires (tag refusé, machine déjà enrôlée, mauvais propriétaire) pour une seule cause racine : la clé d'authentification Tailscale avait été générée dans le mauvais réseau. Leçon : quand plusieurs symptômes n'ont aucun lien apparent, remonter à la source commune avant de traiter chaque symptôme." },
+  { date:"2026-06-11", kind:"POSTMORTEM", pm:true, proj:"Refonte Homelab", title:"Un serveur qui chauffe… à 2% de charge",
+    body:"Ventilateur à fond, machine chaude, mais 2,5% de CPU sur 7 jours. Cause : le governor était en mode performance — les cœurs montaient à 5 GHz même au repos. Passage en powersave : −3,7°C en deux minutes, conso GPU divisée par deux. Diagnostiquer avant de remplacer." },
+  { date:"2026-06-06", kind:"PREUVE", pm:false, proj:"Refonte Homelab", title:"L'observabilité a rattrapé un backup mort en silence",
+    body:"Une métrique custom sur la fraîcheur des snapshots restic a révélé que la sauvegarde offsite était cassée depuis plusieurs jours — un durcissement SSH de la phase précédente avait silencieusement coupé le canal. Détecté et réparé en 48h. C'est exactement à ça que sert l'observabilité : voir ce qui échoue sans bruit." },
+  { date:"2026-06-10", kind:"POSTMORTEM", pm:true, proj:"DataCommune", title:"La CI était morte depuis des semaines",
+    body:"Un audit croisé par plusieurs modèles sur 286 fichiers a révélé que les workflows d'intégration continue étaient rangés dans les mauvais dossiers : GitHub ne les exécutait jamais. Résultat : des dizaines d'erreurs de lint et 8 tests cassés passés inaperçus. Fix : un workflow à la racine avec les bons filtres de chemin." },
+  { date:"2026-06-10", kind:"POSTMORTEM", pm:true, proj:"DataCommune", title:"97% des équipements hors de leur département",
+    body:"Après ingestion, presque tous les points géographiques tombaient hors de leur département. Cause racine : coordonnées en projection Lambert-93 au lieu de WGS84, et axes inversés. Fix : reprojection systématique + un gate géométrique qui rejette tout point hors des limites du département, testé sur une fixture synthétique." },
+  { date:"2026-05-28", kind:"DÉCISION", pm:false, proj:"hexalith-lab", title:"Un secret affiché en clair → rotation immédiate",
+    body:"Pendant le provisioning Azure, un secret de service principal s'est affiché en clair dans la sortie d'un shell. Réflexe appliqué sans attendre : rotation immédiate de la clé, puis bascule de tous les secrets vers SOPS+age chiffré. Un secret vu est un secret compromis." }
+];
+
+/* ============================================================
+   RENDERERS
+   ============================================================ */
+function statusIcon(s){ return '<span class="dot ' + s + '"></span>'; }
+
+function renderTree(prefix){
+  let h = '<div class="tree-item root selected" id="' + prefix + '-sel-dc" data-sel="dc" onclick="selectNode(\'' + prefix + '\', null, this)">' +
+          '<span style="color:var(--color-primary)">▣</span> Datacenter pve-portfolio</div>';
+  for (const n of NODES){
+    h += '<div class="tree-node" data-sel="node:' + n.id + '" onclick="selectNode(\'' + prefix + '\', \'' + n.id + '\', this)">' +
+         '<span class="chev">▸</span>' + (n.kind === 'virtual' ? '▦' : '▣') + ' ' + n.label + '</div>';
+    if (n.id === 'node-portfolio' || n.id === 'node-school'){
+      for (const p of PROJECTS.filter(x => x.node === n.id)){
+        h += '<div class="tree-item" data-sel="proj:' + p.key + '" onclick="selectProject(\'' + prefix + '\', \'' + p.key + '\', this)">' +
+             statusIcon(p.status) + '<span class="vmid">' + p.vmid + '</span> ' + p.name +
+             (p.flag === 'flagship' ? '<span class="iac" title="projet phare">★</span>' : '') + '</div>';
+      }
+    } else {
+      for (const g of GUESTS.filter(x => x.node === n.id)){
+        h += '<div class="tree-item" data-sel="guest:' + g.vmid + '" onclick="selectGuest(\'' + prefix + '\', ' + g.vmid + ', this)">' +
+             statusIcon(g.status) + '<span class="vmid">' + g.vmid + '</span> ' + g.name +
+             (g.iac ? '<span class="iac" title="géré par Terraform">⚙</span>' : '') + '</div>';
+      }
+    }
+  }
+  return h;
+}
+
+function gauges(){
+  return '<div class="gauges">' +
+    '<div class="gauge"><div class="glabel">Uptime 30j</div><div class="gval" style="color:var(--color-success)">99.2%</div><div class="bar"><i style="width:99%"></i></div></div>' +
+    '<div class="gauge"><div class="glabel">CPU cluster</div><div class="gval"><span class="cpu-val">3</span>%</div><div class="bar"><i class="cpu-bar" style="width:3%"></i></div></div>' +
+    '<div class="gauge"><div class="glabel">RAM cluster</div><div class="gval"><span class="ram-val">48</span>%</div><div class="bar"><i class="ram-bar" style="width:48%"></i></div></div>' +
+    '<div class="gauge"><div class="glabel">Sous Terraform</div><div class="gval" style="color:var(--color-accent)">12 <span style="font-size:0.6em;color:var(--color-text-muted)">LXC</span></div><div class="bar"><i style="width:70%"></i></div></div>' +
+  '</div>';
+}
+
+function renderProfile(){
+  return '<div class="fiche"><h1>' + PROFILE.name + '</h1><p class="tagline">' + PROFILE.title + ' — vue d\'ensemble du datacenter</p>' +
+    gauges() +
+    '<h2>Profil</h2>' + PROFILE.lines.map(l => '<p style="margin-bottom:10px">' + l + '</p>').join('') +
+    '<h2>Compétences</h2><div class="badges">' + PROFILE.skills.map(s => '<span class="badge">' + s + '</span>').join('') + '</div>' +
+    '<h2>Contact</h2><p>ianispuichaud@gmail.com · <a class="gh-link" style="margin:0" href="https://github.com/AnythingLegalConsidered" target="_blank">github.com/AnythingLegalConsidered</a></p></div>';
+}
+
+function renderNode(n){
+  let h = '<div class="fiche"><h1>' + n.label.split(' — ')[0] + (n.kind==='virtual'?'<span class="flag iac">virtuel</span>':'') + '</h1>' +
+          '<p class="tagline">' + (n.label.split(' — ')[1] || '') + '</p><p>' + n.summary + '</p>';
+  const kids = (n.id==='node-portfolio'||n.id==='node-school') ? PROJECTS.filter(x=>x.node===n.id) : GUESTS.filter(x=>x.node===n.id);
+  if (kids.length){
+    h += '<h2>Contenu (' + kids.length + ')</h2><div class="badges">' +
+      kids.map(k => '<span class="badge">' + statusIcon(k.status) + ' ' + (k.name) + (k.iac?' ⚙':'') + '</span>').join('') + '</div>';
+  }
+  return h + '</div>';
+}
+
+function renderGuest(g){
+  const n = NODES.find(x => x.id === g.node);
+  return '<div class="fiche"><h1>' + g.name + (g.iac?'<span class="flag iac">⚙ Terraform</span>':'') + '</h1>' +
+    '<p class="tagline">LXC ' + g.vmid + ' · ' + g.node + ' · ' + statusIcon(g.status) +
+    ({running:' running',paused:' paused',stopped:' stopped'}[g.status]||'') + '</p>' +
+    '<p>' + g.note + '</p>' +
+    (g.iac ? '<a class="gh-link" href="https://github.com/AnythingLegalConsidered/01-Homelab" target="_blank">⎇ défini dans 01-Homelab/terraform ↗</a>' : '') +
+    '</div>';
+}
+
+function renderProject(p){
+  let h = '<div class="fiche"><h1>' + p.name + (p.flag==='flagship'?'<span class="flag flagship">★ projet phare</span>':'') + '</h1><p class="tagline">' + p.tagline + '</p>';
+  h += '<h2>Problème</h2><p>' + p.probleme + '</p>';
+  h += '<h2>Stack</h2><div class="badges">' + p.stack.map(s => '<span class="badge">' + s + '</span>').join('') + '</div>';
+  h += '<h2>Résultat</h2><p>' + p.resultat + '</p>';
+  h += '<h2>Leçons</h2><p>' + p.lecons + '</p>';
+  if (p.github) h += '<a class="gh-link" href="https://' + p.github + '" target="_blank">⎇ ' + p.github + ' ↗</a>';
+  return h + '</div>';
+}
+
+function renderTasks(){
+  let h = '<div class="fiche"><h1>Décisions &amp; postmortems</h1>' +
+    '<p class="tagline">Le cheminement, pas juste le résultat — extraits curés de mon journal de bord (cliquez pour déplier).</p><div class="tasklog">';
+  for (let i=0;i<TASKS.length;i++){
+    const t = TASKS[i];
+    h += '<div class="task' + (t.pm?' pm':'') + '" onclick="this.classList.toggle(\'open\')">' +
+      '<div class="tstatus">' + (t.pm?'⚠':'✓') + '</div>' +
+      '<div class="tdate">' + t.date + '</div>' +
+      '<div><div class="ttitle">' + t.title + '</div>' +
+      '<div class="tkind">' + t.kind + ' · <span class="tproj">' + t.proj + '</span></div>' +
+      '<div class="tbody">' + t.body + '</div></div></div>';
+  }
+  return h + '</div></div>';
+}
+
+/* ============================================================
+   CONSOLE assembly + interaction
+   ============================================================ */
+function buildConsole(rootId, prefix){
+  document.getElementById(rootId).innerHTML =
+    '<header class="px-header">' +
+      '<div class="px-logo"><span class="mark">▣</span> pve-portfolio <span class="ver">v2026.06</span></div>' +
+      '<div class="actions"><a class="px-btn" href="https://github.com/AnythingLegalConsidered" target="_blank">GitHub</a>' +
+      '<a class="px-btn primary" href="#" onclick="fakeDownload(event)">CV.pdf</a></div>' +
+    '</header>' +
+    '<div class="px-body">' +
+      '<aside class="px-tree" id="' + prefix + '-tree">' + renderTree(prefix) + '</aside>' +
+      '<main class="px-main">' +
+        '<div class="px-tabs" id="' + prefix + '-tabs">' +
+          '<div class="px-tab active" data-tab="summary" onclick="selectTab(\'' + prefix + '\',\'summary\',this)">Summary</div>' +
+          '<div class="px-tab" data-tab="tasks" onclick="selectTab(\'' + prefix + '\',\'tasks\',this)">Décisions</div>' +
+          '<div class="px-tab" data-tab="console" onclick="selectTab(\'' + prefix + '\',\'console\',this)">&gt;_ Console</div>' +
+        '</div>' +
+        '<div class="px-crumb" id="' + prefix + '-crumb">Datacenter › Summary</div>' +
+        '<div class="px-content" id="' + prefix + '-content">' + renderProfile() + '</div>' +
+      '</main>' +
+    '</div>' +
+    '<footer class="px-status"><span>Status: <b>OK</b></span><span>Nodes: 1/2 online</span>' +
+    '<span>Guests: 17 running</span><span>IaC: 12 LXC</span><span>Dernier scan: aujourd\'hui 06:30</span></footer>';
+}
+
+function clearTreeSel(prefix){ document.querySelectorAll('#'+prefix+'-tree .selected').forEach(e=>e.classList.remove('selected')); }
+function setTab(prefix, tab){
+  document.querySelectorAll('#'+prefix+'-tabs .px-tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===tab));
+}
+function selectTab(prefix, tab, el){
+  setTab(prefix, tab);
+  const content = document.getElementById(prefix+'-content');
+  const crumb = document.getElementById(prefix+'-crumb');
+  if (tab==='summary'){ content.innerHTML = renderProfile(); crumb.textContent='Datacenter › Summary'; clearTreeSel(prefix); document.getElementById(prefix+'-sel-dc').classList.add('selected'); }
+  else if (tab==='tasks'){ content.innerHTML = renderTasks(); crumb.textContent='Datacenter › Décisions & postmortems'; }
+  else if (tab==='console'){ content.innerHTML = '<div class="archi">visitor@pve-portfolio:~$ cat /etc/motd\n\n  Bienvenue sur pve-portfolio.\n  Cette console est un clin d\'œil — le vrai terminal\n  arrivera en v2 (faux shell : cat README, whoami…).\n\nvisitor@pve-portfolio:~$ whoami\nrecruteur curieux — bonne pioche, ce site tourne sur ma vraie infra.\n\nvisitor@pve-portfolio:~$ _</div>'; crumb.textContent='Datacenter › Console'; }
+  content.scrollTop = 0;
+}
+function selectNode(prefix, nodeId, el){
+  setTab(prefix,'summary'); clearTreeSel(prefix); el.classList.add('selected');
+  const content = document.getElementById(prefix+'-content'); const crumb = document.getElementById(prefix+'-crumb');
+  if (!nodeId){ content.innerHTML = renderProfile(); crumb.textContent='Datacenter › Summary'; }
+  else { const n = NODES.find(x=>x.id===nodeId); content.innerHTML = renderNode(n); crumb.textContent='Datacenter › '+n.id; }
+  content.scrollTop = 0;
+}
+function selectGuest(prefix, vmid, el){
+  setTab(prefix,'summary'); clearTreeSel(prefix); el.classList.add('selected');
+  const g = GUESTS.find(x=>x.vmid===vmid);
+  document.getElementById(prefix+'-content').innerHTML = renderGuest(g);
+  document.getElementById(prefix+'-crumb').textContent='Datacenter › '+g.node+' › '+g.vmid+' ('+g.name+')';
+  document.getElementById(prefix+'-content').scrollTop = 0;
+}
+function selectProject(prefix, key, el){
+  setTab(prefix,'summary'); clearTreeSel(prefix); el.classList.add('selected');
+  const p = PROJECTS.find(x=>x.key===key);
+  document.getElementById(prefix+'-content').innerHTML = renderProject(p);
+  document.getElementById(prefix+'-crumb').textContent='Datacenter › '+p.node+' › '+p.vmid+' ('+p.name+')';
+  document.getElementById(prefix+'-content').scrollTop = 0;
+}
+
+/* ---------------- Sketch chrome ---------------- */
+function showVariant(id, btn){
+  document.querySelectorAll('.variant').forEach(v => v.style.display = 'none');
+  document.querySelectorAll('.variant-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('variant-' + id).style.display = 'block';
+  btn.classList.add('active');
+}
+function setVp(w){ document.getElementById('vp-wrap').style.maxWidth = w; }
+function fakeDownload(e){
+  e.preventDefault(); const b = e.target; const old = b.textContent;
+  b.textContent = '⬇ téléchargement…';
+  setTimeout(() => { b.textContent = '✓ CV téléchargé'; setTimeout(() => b.textContent = old, 1200); }, 700);
+}
+setInterval(() => {
+  const cpu = 2 + Math.round(Math.random() * 6);
+  const ram = 45 + Math.round(Math.random() * 8);
+  document.querySelectorAll('.cpu-val').forEach(e => e.textContent = cpu);
+  document.querySelectorAll('.cpu-bar').forEach(e => e.style.width = (cpu*3) + '%');
+  document.querySelectorAll('.ram-val').forEach(e => e.textContent = ram);
+  document.querySelectorAll('.ram-bar').forEach(e => e.style.width = ram + '%');
+}, 2500);
+
+buildConsole('console-c', 'c');
+buildConsole('console-a', 'a');
+buildConsole('console-b', 'b');
+</script>
+</body>
+</html>

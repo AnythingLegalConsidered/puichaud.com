@@ -1,0 +1,116 @@
+---
+// Infra widget — "spec sheet" layout (uniform label/value lines, robust).
+// Narrative: provisioning (GitOps) → access (edge) → services → resilience.
+// Reality (01-Homelab repo): all guests on pve02; resilience = PBS + restic
+// offsite + IaC replayable from git. NetBox dropped (OOS/decommission per planning).
+---
+
+<section id="infra">
+  <div class="wrap">
+    <div class="sec-head"><h2>Infrastructure</h2><div class="rule"></div></div>
+    <p class="sec-intro">
+      Le homelab qui sert de terrain à tout le reste — provisionné en code,
+      exposé sans ouvrir un seul port à la maison, et conçu pour survivre
+      à la perte de son nœud principal.
+    </p>
+
+    <div class="infra-panel">
+      <div class="infra-bar">
+        <span class="ib-title">homelab.topology</span>
+        <span class="ib-iac">voir l'IaC → <em>bientôt</em></span>
+      </div>
+
+      <!-- build -->
+      <div class="grp">
+        <div class="line">
+          <span class="k">provisioning</span>
+          <span class="v">git push <i>→</i> Terraform + Ansible <i>→</i> Proxmox</span>
+        </div>
+        <div class="line">
+          <span class="k">accès</span>
+          <span class="v">internet <i>→</i> VPS Gateway <i>→</i> pve02 <span class="muted">· ~20 LXC en prod</span></span>
+        </div>
+        <div class="line">
+          <span class="k"></span>
+          <span class="v muted">Caddy · Tailscale · Pocket ID · <b>0 port ouvert à la maison</b></span>
+        </div>
+      </div>
+
+      <!-- services -->
+      <div class="grp">
+        <div class="line"><span class="k">edge &amp; sécurité</span><span class="v">Caddy · Tailscale · Pocket ID · AdGuard</span></div>
+        <div class="line"><span class="k">observabilité</span><span class="v">Grafana · Prometheus · Loki · Uptime Kuma</span></div>
+        <div class="line"><span class="k">apps</span><span class="v">Immich · Homepage · Paperless <span class="muted">· +12</span></span></div>
+      </div>
+
+      <!-- resilience -->
+      <div class="grp resil">
+        <div class="line">
+          <span class="k"><span class="dot"></span>résilience</span>
+          <span class="v"><b>PBS</b> local + <b>restic</b> offsite — 3-2-1 <em>restaurée-testée</em></span>
+        </div>
+        <div class="line">
+          <span class="k"></span>
+          <span class="v">infra <b>rejouable depuis Git</b> <span class="muted">— le nœud meurt, l'infra renaît</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  #infra { padding: 64px 0; }
+
+  .infra-panel {
+    border: 2px solid var(--stone); border-radius: 14px;
+    background: var(--parchment);
+    overflow: hidden;
+    max-width: 680px; margin: 0 auto;
+    font-family: var(--mono);
+  }
+
+  /* title bar */
+  .infra-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 18px;
+    background: var(--marble);
+    border-bottom: 1px solid var(--stone);
+    font-size: 12px;
+  }
+  .ib-title { color: var(--ink-muted); }
+  .ib-iac { color: var(--bronze); font-size: 11.5px; }
+  .ib-iac em { font-style: normal; color: var(--ink-muted); opacity: .65; }
+
+  /* groups separated by dividers */
+  .grp { padding: 13px 18px; }
+  .grp + .grp { border-top: 1px solid var(--stone); }
+
+  /* uniform label / value line */
+  .line { display: flex; gap: 16px; align-items: baseline; padding: 4px 0; }
+  .line .k {
+    flex: none; width: 124px;
+    font-size: 10.5px; font-weight: 600; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--bronze-dark);
+    display: flex; align-items: center; gap: 7px;
+  }
+  .line .v { font-size: 13px; color: var(--ink); line-height: 1.55; }
+  .line .v i { font-style: normal; color: var(--bronze); padding: 0 3px; }
+  .line .v b { color: var(--bronze-dark); font-weight: 600; }
+  .line .v em { font-style: italic; color: var(--ink-muted); }
+  .line .v .muted { color: var(--ink-muted); }
+
+  /* resilience band — highlighted */
+  .resil {
+    background: linear-gradient(180deg, rgba(160,116,79,.08), rgba(160,116,79,.03));
+    border-top: 2px solid var(--bronze-light) !important;
+  }
+  .resil .dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--bronze);
+    flex: none;
+  }
+
+  @media (max-width: 600px) {
+    .line { flex-direction: column; gap: 3px; padding: 6px 0; }
+    .line .k { width: auto; }
+  }
+</style>

@@ -1,0 +1,53 @@
+---
+// "Notes" tab — Proxmox has a free-form Notes panel on the datacenter summary;
+// here it hosts the human "about me" page, readable by non-technical visitors.
+import { PROFILE } from '../../data/profile';
+---
+
+<div class="notes">
+  <div class="fiche" style="margin-bottom:0">
+    <h1>Notes</h1>
+    <p class="tagline">À propos de moi — la version humaine, hors jargon.</p>
+  </div>
+
+  <h2>Qui je suis</h2>
+  <p>
+    Je m'appelle Ianis. Le jour, je suis alternant administrateur systèmes chez EQUANS :
+    support technique de niveau 2 sur un parc Windows d'entreprise — comptes, postes,
+    applications métier, et tout ce qui peut se mettre entre un utilisateur et sa journée
+    de travail. Le soir, je casse et je répare mon propre datacenter miniature, pour
+    apprendre ce que je n'ai pas le droit de casser au bureau.
+  </p>
+
+  <h2>Pourquoi ce site ressemble à un hyperviseur</h2>
+  <p>
+    Parce que c'est l'outil que j'ai le plus sous les yeux. Mon homelab est un vrai cluster
+    Proxmox : deux machines, une passerelle publique, et une règle simple — tout est défini
+    dans le code, tout est sauvegardé, et une sauvegarde qui n'a pas été restaurée-testée
+    n'existe pas. Ce site en reprend l'interface : chaque projet est un conteneur, chaque
+    leçon apprise est une ligne dans le journal des tâches.
+  </p>
+
+  <h2>Ce que je cherche</h2>
+  <p>
+    Un Master Infrastructure &amp; Cloud en alternance à partir de septembre 2026. À court
+    terme un poste d'administrateur systèmes ; à moyen terme, une orientation
+    DevOps / automatisation — le fil rouge de tout ce que je construis ici.
+  </p>
+
+  <h2>Comment je travaille</h2>
+  <p>
+    Je documente mes décisions avant de les regretter : l'onglet « Décisions » de cette
+    console est un extrait réel de mon journal de bord — y compris les erreurs. Je crois
+    aux contrôles non contournables plutôt qu'aux cases cochées, aux postmortems sans
+    coupable, et au code plutôt qu'à la mémoire.
+  </p>
+
+  <h2>Me contacter</h2>
+  <p>
+    Le plus simple : <a href={`mailto:${PROFILE.email}`}>{PROFILE.email}</a>.
+    Mon CV est dans le stockage <strong>docs</strong> de cette console (ou via le bouton
+    en haut de page), et mes projets publics sont sur
+    <a href={`https://${PROFILE.github}`} target="_blank" rel="noopener">GitHub</a>.
+  </p>
+</div>

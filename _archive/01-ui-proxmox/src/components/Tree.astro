@@ -1,0 +1,72 @@
+---
+// Left navigation tree: Datacenter → real/virtual nodes → guests/projects + docs storage.
+// Every entry is a real <button> → natively keyboard-focusable and activable.
+import { NODES, GUESTS } from '../data/infrastructure';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  projects: CollectionEntry<'projects'>[];
+}
+const { projects } = Astro.props;
+
+const statusOf = (online: boolean) => (online ? 'running' : 'stopped');
+---
+
+<nav class="px-tree" id="tree" aria-label="Arborescence du datacenter">
+  <button
+    class="tree-item root selected"
+    data-panel="panel-summary"
+    data-crumb="Datacenter › Summary"
+    data-dc="true"
+  >
+    <span style="color:var(--color-primary)" aria-hidden="true">▣</span> Datacenter pve-portfolio
+  </button>
+
+  {NODES.map((n) => (
+    <>
+      <button
+        class="tree-node"
+        data-panel={`panel-node-${n.id}`}
+        data-crumb={`Datacenter › ${n.id}`}
+      >
+        <span class="chev" aria-hidden="true">▸</span>
+        <span aria-hidden="true">{n.kind === 'virtual' ? '▦' : '▣'}</span>
+        {n.label}
+      </button>
+
+      {(n.id === 'node-portfolio' || n.id === 'node-school')
+        ? projects.filter((p) => p.data.node === n.id).map((p) => (
+            <button
+              class="tree-item"
+              data-panel={`panel-project-${p.data.vmid}`}
+              data-crumb={`Datacenter › ${n.id} › ${p.data.vmid} (${p.data.name})`}
+            >
+              <span class={`dot ${p.data.status}`} aria-hidden="true"></span>
+              <span class="vmid">{p.data.vmid}</span>
+              {p.data.name}
+              {p.data.flagship && <span class="iac" title="projet phare" aria-label="projet phare">★</span>}
+            </button>
+          ))
+        : GUESTS.filter((g) => g.node === n.id).map((g) => (
+            <button
+              class="tree-item"
+              data-panel={`panel-guest-${g.vmid}`}
+              data-crumb={`Datacenter › ${g.node} › ${g.vmid} (${g.name})`}
+            >
+              <span class={`dot ${g.status}`} aria-hidden="true"></span>
+              <span class="vmid">{g.vmid}</span>
+              {g.name}
+              {g.iac && <span class="iac" title="géré par Terraform" aria-label="géré par Terraform">⚙</span>}
+            </button>
+          ))}
+    </>
+  ))}
+
+  <button
+    class="tree-item root"
+    data-panel="panel-docs"
+    data-crumb="Datacenter › docs (storage)"
+  >
+    <span style="color:var(--color-text-muted)" aria-hidden="true">▤</span> docs (storage)
+  </button>
+</nav>

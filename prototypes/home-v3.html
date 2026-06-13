@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ianis Puichaud — Administrateur Systèmes & Réseaux → DevOps</title>
+<meta name="description" content="Administrateur Systèmes & Réseaux en alternance chez Equans, futur DevOps. Homelab Proxmox, gateway VPS, projets data. Recherche alternance Master Infra & Cloud — sept. 2026, Nantes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Palette Marbre & Bronze — alignée CV + datacommune.fr */
+    --marble: #FAF6F0;
+    --marble-dark: #EDE5D8;
+    --parchment: #F5EEE3;
+    --bronze: #A0744F;
+    --bronze-dark: #8B6139;
+    --bronze-light: #E8D5C0;
+    --gold: #C9A84C;
+    --terracotta: #B85C3A;
+    --ink: #2A1F14;
+    --ink-muted: #6B5B4D;
+    --stone: #D4C4AD;
+    --sidebar: #3A2F24;      /* brun sidebar du CV */
+    --column: #1E1A15;
+    --green: #4A7A52;
+
+    --serif: 'Cinzel', Georgia, serif;
+    --sans: 'Inter', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', Consolas, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+  body {
+    background: var(--marble);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: rgba(160,116,79,.25); color: var(--ink); }
+
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+  section { padding: 64px 0; }
+
+  a { color: var(--bronze-dark); text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+  /* ============ DIVIDER (losange) ============ */
+  .divider {
+    display: flex; align-items: center; justify-content: center;
+    max-width: 24rem; margin: 0 auto;
+  }
+  .divider::before, .divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--stone);
+  }
+  .divider::before { margin-right: .75rem; }
+  .divider::after { margin-left: .75rem; }
+  .divider .diamond {
+    width: 6px; height: 6px; background: var(--stone);
+    transform: rotate(45deg); flex-shrink: 0;
+  }
+
+  /* ============ HEADER ============ */
+  header {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(250,246,240,.95);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--stone);
+  }
+  header .wrap {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 14px; padding-bottom: 14px;
+  }
+  header .brand {
+    font-family: var(--serif); font-weight: 700; font-size: 18px;
+    color: var(--ink);
+  }
+  header .brand span { color: var(--bronze); }
+  header nav { display: flex; gap: 26px; align-items: center; }
+  header nav a {
+    font-size: 14px; font-weight: 500; color: var(--ink-muted);
+    transition: color .15s;
+  }
+  header nav a:hover { color: var(--bronze); text-decoration: none; }
+
+  /* ============ HERO (sombre, façon sidebar CV) ============ */
+  #hero {
+    background: linear-gradient(170deg, var(--sidebar) 0%, var(--column) 100%);
+    color: var(--marble);
+    text-align: center;
+    padding: 88px 0 76px;
+  }
+  #hero .kicker {
+    font-size: 12.5px; font-weight: 600; letter-spacing: .22em;
+    text-transform: uppercase; color: var(--gold);
+  }
+  #hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(38px, 6.5vw, 58px);
+    font-weight: 700; line-height: 1.12;
+    margin-top: 18px; color: var(--marble);
+  }
+  #hero h1 span { color: var(--gold); }
+  #hero .sub {
+    max-width: 640px; margin: 24px auto 0;
+    font-size: 18px; color: var(--marble-dark); opacity: .92;
+  }
+  #hero .sub b { color: #fff; font-weight: 600; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 10px;
+    margin-top: 30px;
+    font-family: var(--mono); font-size: 13px; font-weight: 500;
+    color: var(--gold);
+    background: rgba(201,168,76,.10);
+    border: 1px solid rgba(201,168,76,.4);
+    border-radius: 100px;
+    padding: 9px 20px;
+  }
+  .badge .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #7FB069;
+    box-shadow: 0 0 0 0 rgba(127,176,105,.5);
+    animation: pulse 2.4s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(127,176,105,.45); }
+    70% { box-shadow: 0 0 0 9px rgba(127,176,105,0); }
+    100% { box-shadow: 0 0 0 0 rgba(127,176,105,0); }
+  }
+  #hero .ctas {
+    display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+    margin-top: 34px;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 15px; font-weight: 500;
+    padding: 12px 26px; border-radius: 10px;
+    transition: background .15s, border-color .15s, color .15s;
+  }
+  .btn:hover { text-decoration: none; }
+  .btn.primary { background: var(--bronze); color: #fff; }
+  .btn.primary:hover { background: var(--bronze-dark); }
+  #hero .btn.ghost { border: 1px solid rgba(250,246,240,.35); color: var(--marble); }
+  #hero .btn.ghost:hover { border-color: var(--gold); color: var(--gold); }
+  .btn.ghost { border: 1px solid var(--stone); color: var(--ink); }
+  .btn.ghost:hover { border-color: var(--bronze); color: var(--bronze-dark); }
+
+  /* ============ METRICS ============ */
+  #metrics { padding: 0; margin-top: -34px; position: relative; z-index: 2; }
+  #metrics .grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    border: 2px solid var(--stone); border-radius: 14px;
+    background: var(--parchment);
+    box-shadow: 0 14px 40px rgba(42,31,20,.10);
+    overflow: hidden;
+  }
+  #metrics .cell {
+    padding: 24px 16px 20px;
+    border-right: 1px solid var(--stone);
+    display: flex; flex-direction: column; align-items: center;
+  }
+  #metrics .cell:last-child { border-right: none; }
+  #metrics .v {
+    height: 40px;
+    display: flex; align-items: flex-end; justify-content: center; gap: 5px;
+    font-family: var(--serif); font-size: 30px; font-weight: 700;
+    color: var(--ink); line-height: 1;
+  }
+  #metrics .v small {
+    font-family: var(--sans); font-size: 13px; font-weight: 500;
+    color: var(--ink-muted); line-height: 1.6;
+  }
+  #metrics .k {
+    margin-top: 10px;
+    font-size: 10.5px; font-weight: 600; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--ink-muted);
+    text-align: center; line-height: 1.5;
+  }
+
+  /* ============ SECTION HEADINGS (style CV) ============ */
+  .sec-head {
+    display: flex; align-items: center; gap: 18px;
+    margin-bottom: 10px;
+  }
+  .sec-head h2 {
+    font-family: var(--serif); font-size: 19px; font-weight: 700;
+    letter-spacing: .28em; text-transform: uppercase;
+    color: var(--ink); white-space: nowrap;
+  }
+  .sec-head .rule {
+    flex: 1; height: 2px;
+    background: linear-gradient(to right, var(--bronze), rgba(160,116,79,.06));
+  }
+  .sec-intro {
+    color: var(--ink-muted); font-size: 15.5px;
+    max-width: 600px; margin-bottom: 40px;
+  }
+
+  /* ============ TIMELINE (dates réelles CV) ============ */
+  .tl { position: relative; max-width: 720px; padding-left: 30px; }
+  .tl::before {
+    content: ''; position: absolute; left: 8px; top: 8px; bottom: 8px;
+    width: 1.5px; background: var(--stone);
+  }
+  .tl-item { position: relative; padding-bottom: 28px; }
+  .tl-item:last-child { padding-bottom: 0; }
+  .tl-item::before {
+    content: ''; position: absolute; left: -28px; top: 7px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--marble); border: 2.5px solid var(--bronze);
+  }
+  .tl-item.running::before { border-color: var(--terracotta); background: rgba(184,92,58,.15); }
+  .tl-item.queued::before { border-color: var(--stone); }
+  .tl-date {
+    font-family: var(--mono); font-size: 12px; color: var(--bronze-dark);
+  }
+  .tl-date .ctx { color: var(--ink-muted); }
+  .tl-item h3 { font-size: 16.5px; font-weight: 600; margin-top: 3px; color: var(--ink); }
+  .tl-item .org { font-size: 13.5px; color: var(--ink-muted); }
+  .tl-item p { font-size: 14px; color: var(--ink-muted); margin-top: 5px; max-width: 600px; }
+
+  /* ============ PROJECTS ============ */
+  #projets { background: var(--parchment); border-top: 1px solid var(--stone); border-bottom: 1px solid var(--stone); }
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .card {
+    position: relative;
+    border: 2px solid var(--stone); border-radius: 14px;
+    background: var(--marble);
+    padding: 26px 28px 20px;
+    display: flex; flex-direction: column;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .card:hover { border-color: var(--bronze); box-shadow: 0 10px 30px rgba(42,31,20,.08); }
+  .card.featured { border-color: var(--bronze); }
+  .card .pill {
+    position: absolute; top: -12px; left: 26px;
+    background: var(--bronze); color: #fff;
+    font-size: 11.5px; font-weight: 600;
+    border-radius: 100px; padding: 3px 14px;
+  }
+  .card .c-head {
+    display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .card h3 { font-family: var(--serif); font-size: 21px; font-weight: 700; }
+  .card .c-status { font-family: var(--mono); font-size: 11.5px; color: var(--ink-muted); }
+  .card .c-status .live { color: var(--green); font-weight: 500; }
+  .card .c-status .proto { color: var(--terracotta); }
+  .card > p { font-size: 14.5px; color: var(--ink); flex: 1; }
+
+  /* ============ PROJECT MODAL ============ */
+  .proj-modal {
+    border: none; border-radius: 16px;
+    background: var(--marble); color: var(--ink);
+    max-width: 620px; width: calc(100vw - 48px);
+    padding: 0; margin: auto;
+    box-shadow: 0 30px 80px rgba(30,26,21,.45);
+  }
+  .proj-modal::backdrop { background: rgba(30,26,21,.55); backdrop-filter: blur(3px); }
+  .proj-modal[open] { animation: modal-in .22s ease-out; }
+  @keyframes modal-in { from { opacity: 0; transform: translateY(14px) scale(.98); } }
+  body:has(dialog[open]) { overflow: hidden; }
+  .m-head {
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
+    padding: 22px 28px 16px;
+    background: var(--parchment);
+    border-bottom: 2px solid var(--bronze-light);
+  }
+  .m-head h3 { font-family: var(--serif); font-size: 22px; font-weight: 700; }
+  .m-head .c-status { font-family: var(--mono); font-size: 11.5px; color: var(--ink-muted); }
+  .m-head .c-status .live { color: var(--green); font-weight: 500; }
+  .m-head .c-status .proto { color: var(--terracotta); }
+  .m-close {
+    background: none; border: 1px solid var(--stone); border-radius: 8px;
+    width: 32px; height: 32px; font-size: 18px; line-height: 1;
+    color: var(--ink-muted); cursor: pointer; flex: none;
+  }
+  .m-close:hover { border-color: var(--bronze); color: var(--bronze-dark); }
+  .m-body { padding: 20px 28px 28px; font-size: 14px; }
+  .m-body > p { color: var(--ink); }
+  .m-body h4 {
+    font-size: 11px; font-weight: 700; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--bronze-dark);
+    margin: 16px 0 6px;
+  }
+  .m-body ul { list-style: none; }
+  .m-body li { padding-left: 16px; position: relative; margin-bottom: 4px; }
+  .m-body li::before { content: '✓'; position: absolute; left: 0; color: var(--bronze); }
+  .m-body .tags { margin-top: 18px; }
+  .m-body .m-link { display: inline-block; margin-top: 14px; font-weight: 500; }
+
+  .card .c-foot {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+    margin-top: 16px; padding-top: 14px;
+    border-top: 1px solid var(--marble-dark);
+  }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    font-family: var(--mono); font-size: 10.5px;
+    color: var(--bronze-dark);
+    background: var(--bronze-light);
+    border-radius: 100px;
+    padding: 2.5px 10px;
+  }
+  .c-actions { display: flex; gap: 16px; align-items: center; }
+  .c-actions a { font-size: 13px; font-weight: 500; white-space: nowrap; }
+  .more-btn {
+    font-size: 13px; font-weight: 600;
+    color: var(--bronze-dark);
+    background: none; border: none; cursor: pointer;
+    font-family: var(--sans);
+  }
+  .more-btn:hover { color: var(--bronze); }
+
+  /* ============ SKILLS ============ */
+  .skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .skill-col {
+    border: 2px solid var(--stone); border-radius: 14px;
+    background: var(--parchment); padding: 24px 26px;
+  }
+  .skill-col h3 { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--bronze-dark); }
+  .skill-col .where { font-size: 12.5px; color: var(--ink-muted); margin-bottom: 14px; }
+  .skill-col ul { list-style: none; }
+  .skill-col li {
+    font-size: 14px; padding: 7px 0; color: var(--ink);
+    border-bottom: 1px solid var(--marble-dark);
+    display: flex; justify-content: space-between; gap: 10px;
+  }
+  .skill-col li:last-child { border-bottom: none; }
+  .skill-col li span {
+    font-family: var(--mono); font-size: 10.5px; color: var(--ink-muted);
+    padding-top: 4px; white-space: nowrap;
+  }
+
+  /* ============ CONTACT ============ */
+  #contact .box {
+    max-width: 660px; margin: 0 auto;
+    border: 2px solid var(--stone); border-radius: 16px;
+    background: var(--parchment);
+    padding: 44px 36px; text-align: center;
+  }
+  #contact h2 { font-family: var(--serif); font-size: 28px; font-weight: 700; }
+  #contact .sub { color: var(--ink-muted); margin-top: 10px; font-size: 15px; }
+  #contact .links {
+    display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
+    margin-top: 28px;
+  }
+
+  /* ============ FOOTER ============ */
+  footer {
+    background: var(--column); color: var(--marble-dark);
+    padding: 26px 0 32px; margin-top: 64px;
+  }
+  footer .wrap {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 10px; font-size: 13px;
+  }
+  footer .left { opacity: .8; }
+  footer .right { font-family: var(--mono); font-size: 11.5px; opacity: .7; }
+  footer .right span { color: var(--gold); }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 720px) {
+    section { padding: 52px 0; }
+    #metrics .grid { grid-template-columns: 1fr 1fr; }
+    #metrics .cell:nth-child(2) { border-right: none; }
+    #metrics .cell:nth-child(-n+2) { border-bottom: 1px solid var(--stone); }
+    .cards { grid-template-columns: 1fr; }
+    .skills-grid { grid-template-columns: 1fr; }
+    header nav a:not(:last-child) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="brand">Ianis <span>Puichaud</span></div>
+    <nav>
+      <a href="#parcours">Parcours</a>
+      <a href="#projets">Projets</a>
+      <a href="#competences">Compétences</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="hero">
+  <div class="wrap">
+    <div class="kicker">Ianis Puichaud — Administrateur Systèmes &amp; Réseaux · Nantes</div>
+    <h1>Des systèmes qui tournent.<br><span>Jour et nuit.</span></h1>
+    <p class="sub">
+      J'administre un parc de 25 000 postes chez <b>Equans</b>.
+      À côté, j'opère ma propre infrastructure : un <b>homelab Proxmox</b>,
+      une <b>gateway VPS</b> et une plateforme data — en production
+      continue depuis 2024.
+    </p>
+    <div class="badge"><span class="dot"></span>disponible — alternance Master Infra &amp; Cloud · sept. 2026</div>
+    <div class="ctas">
+      <a class="btn primary" href="CV_Ianis_Puichaud.pdf" target="_blank" rel="noopener">Voir le CV</a>
+      <a class="btn ghost" href="#contact">Me contacter</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ METRICS ============ -->
+<div id="metrics">
+  <div class="wrap">
+    <div class="grid">
+      <div class="cell">
+        <div class="v">3 <small>ans</small></div>
+        <div class="k">d'expérience IT</div>
+      </div>
+      <div class="cell">
+        <div class="v">25 000</div>
+        <div class="k">postes — parc opéré</div>
+      </div>
+      <div class="cell">
+        <div class="v">20+ <small>services</small></div>
+        <div class="k">auto-hébergés · 2 nœuds</div>
+      </div>
+      <div class="cell">
+        <div class="v">IaC</div>
+        <div class="k">ansible · terraform · n8n</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PARCOURS ============ -->
+<section id="parcours">
+  <div class="wrap">
+    <div class="sec-head"><h2>Parcours</h2><div class="rule"></div></div>
+    <p class="sec-intro">
+      Support → administration → automatisation. Chaque étape valide la suivante.
+    </p>
+
+    <div class="tl">
+      <div class="tl-item">
+        <div class="tl-date">2022 — 2023 <span class="ctx">· premières armes</span></div>
+        <h3>Service Desk &amp; Support N1 — Helpline, puis DCS Easyware</h3>
+        <div class="org">Clients AREAS et Nantes Métropole · Nantes</div>
+        <p>Diagnostic, résolution N1, escalade qualifiée : les fondations terrain,
+           après une réorientation assumée vers l'informatique.</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">01/2024 — 08/2025</div>
+        <h3>Technicien Support N2 — Intérim</h3>
+        <div class="org">Equans – Axima · Nantes</div>
+        <p>Incidents complexes Windows 10/11, O365, Teams, SharePoint. Gestion de parc Intune,
+           scripting PowerShell et Python au quotidien, support applicatif métier et accès SAP.</p>
+      </div>
+      <div class="tl-item running">
+        <div class="tl-date">09/2025 — présent <span class="ctx">· en cours</span></div>
+        <h3>Administrateur Systèmes &amp; Réseaux — Alternance</h3>
+        <div class="org">Equans · Nantes — avec BAC+3 SYSOPS, EPSI Nantes</div>
+        <p>Administration des identités AD / Entra ID, sécurité du SI (Zscaler, CyberArk),
+           onboarding et masterisation, virtualisation Hyper-V/VMware.
+           MCO d'un parc de 25 000 postes. Titre RNCP niv. 6 — soutenance été 2026.</p>
+      </div>
+      <div class="tl-item queued">
+        <div class="tl-date">09/2026 — 2028 <span class="ctx">· à venir</span></div>
+        <h3>Master Infrastructures &amp; Cloud — EPSI Nantes</h3>
+        <p>Recherche d'alternance en cours — c'est peut-être vous.</p>
+      </div>
+      <div class="tl-item queued">
+        <div class="tl-date">cible <span class="ctx">· l'objectif</span></div>
+        <h3>DevOps / automation</h3>
+        <p>CI/CD, plateformes, infrastructure as code. Les projets ci-dessous préparent déjà le terrain.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROJETS ============ -->
+<section id="projets">
+  <div class="wrap">
+    <div class="sec-head"><h2>Projets</h2><div class="rule"></div></div>
+    <p class="sec-intro">
+      Des services que je conçois, opère et documente — chaque choix tracé,
+      avec ses alternatives évaluées. Cliquez sur « détails » pour creuser.
+    </p>
+
+    <div class="cards">
+
+      <div class="card featured">
+        <span class="pill">en production · 24/7</span>
+        <div class="c-head">
+          <h3>Homelab &amp; VPS Gateway</h3>
+          <span class="c-status"><span class="live">production</span> · 2024 →</span>
+        </div>
+        <p>
+          Cluster Proxmox de 2 nœuds, plus de 20 services auto-hébergés en production
+          continue — entièrement reconstruit en Infrastructure as Code, brique par
+          brique, avec gate de vérification à chaque étape.
+        </p>
+        <div class="c-foot">
+          <div class="tags">
+            <span class="tag">proxmox</span><span class="tag">terraform</span><span class="tag">ansible</span>
+            <span class="tag">caddy</span><span class="tag">tailscale</span><span class="tag">sops</span>
+          </div>
+          <div class="c-actions">
+            <button class="more-btn" data-dialog="dlg-homelab">voir les détails →</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card featured">
+        <span class="pill">produit complet</span>
+        <div class="c-head">
+          <h3>DataCommune</h3>
+          <span class="c-status"><span class="proto">prototype fonctionnel</span> · 2025</span>
+        </div>
+        <p>
+          Plateforme SaaS de données publiques françaises : 27 datasets (immobilier,
+          risques, urbanisme, énergie…) croisés sur 35 000+ communes —
+          ~575 millions de lignes derrière 87 routes REST. Conçu, développé et
+          exploité de bout en bout, en solo.
+        </p>
+        <div class="c-foot">
+          <div class="tags">
+            <span class="tag">fastapi</span><span class="tag">postgis</span><span class="tag">sveltekit</span>
+            <span class="tag">stripe</span><span class="tag">etl</span><span class="tag">docker</span>
+          </div>
+          <div class="c-actions">
+            <a href="https://datacommune.fr" target="_blank" rel="noopener">datacommune.fr ↗</a>
+            <button class="more-btn" data-dialog="dlg-datacommune">voir les détails →</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="c-head">
+          <h3>Hexalith</h3>
+          <span class="c-status">lab gitops · 2026</span>
+        </div>
+        <p>
+          Le SI complet d'une ESN fictive de 150 collaborateurs, conçu et déployé seul
+          (lab mené pour ma certification RNCP niv. 6) : de l'audit au POC mesuré,
+          le tout en Infrastructure as Code.
+        </p>
+        <div class="c-foot">
+          <div class="tags">
+            <span class="tag">terraform</span><span class="tag">ansible</span><span class="tag">authentik</span>
+            <span class="tag">ebios-rm</span>
+          </div>
+          <div class="c-actions">
+            <button class="more-btn" data-dialog="dlg-hexalith">voir les détails →</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="c-head">
+          <h3>Scripts AD</h3>
+          <span class="c-status">déployé · entreprise · 2025</span>
+        </div>
+        <p>
+          Trois outils PowerShell pour automatiser la gestion Active Directory d'un parc
+          de 25 000 postes, dans un environnement verrouillé : pas de console d'admin,
+          MFA stricte, périmètre cloisonné.
+        </p>
+        <div class="c-foot">
+          <div class="tags">
+            <span class="tag">powershell</span><span class="tag">active-directory</span><span class="tag">iam</span>
+          </div>
+          <div class="c-actions">
+            <button class="more-btn" data-dialog="dlg-scriptsad">voir les détails →</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMPÉTENCES ============ -->
+<section id="competences">
+  <div class="wrap">
+    <div class="sec-head"><h2>Compétences</h2><div class="rule"></div></div>
+    <p class="sec-intro">
+      Ce que j'utilise vraiment, là où je l'utilise :
+      chaque outil listé est en production.
+    </p>
+
+    <div class="skills-grid">
+      <div class="skill-col">
+        <h3>En production — entreprise</h3>
+        <div class="where">Parc corporate de 25 000 postes, environnement verrouillé</div>
+        <ul>
+          <li>Windows 10/11 · Microsoft 365 <span>support &amp; admin</span></li>
+          <li>Active Directory · Entra ID · Intune <span>identités &amp; parc</span></li>
+          <li>Hyper-V · VMware <span>virtualisation</span></li>
+          <li>CyberArk EPM · Zscaler <span>sécurité</span></li>
+          <li>ServiceNow · Nexthink · Lansweeper <span>itsm &amp; supervision</span></li>
+          <li>PowerShell · Python <span>scripting quotidien</span></li>
+        </ul>
+      </div>
+      <div class="skill-col">
+        <h3>En production — labs</h3>
+        <div class="where">Homelab 24/7, gateway VPS, projets data exploités en solo</div>
+        <ul>
+          <li>Proxmox VE · LXC · Docker <span>cluster 2 nœuds</span></li>
+          <li>Ansible · Terraform · n8n <span>automatisation</span></li>
+          <li>GitHub Actions <span>runner self-hosted</span></li>
+          <li>Grafana · Prometheus · Loki <span>observabilité</span></li>
+          <li>Caddy · Tailscale · Pocket ID <span>edge &amp; sso passkeys</span></li>
+          <li>FastAPI · PostgreSQL / PostGIS <span>backend &amp; data</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"><span class="diamond"></span></div>
+
+<!-- ============ CONTACT ============ -->
+<section id="contact">
+  <div class="wrap">
+    <div class="box">
+      <h2>Établir la connexion</h2>
+      <p class="sub">Réponse sous 24 h — SLA respecté. Basé à Nantes,
+      disponible en alternance dès septembre 2026.</p>
+      <div class="links">
+        <a class="btn primary" href="mailto:ianispuichaud@protonmail.com">ianispuichaud@protonmail.com</a>
+        <a class="btn ghost" href="https://github.com/AnythingLegalConsidered" target="_blank" rel="noopener">GitHub ↗</a>
+        <a class="btn ghost" href="https://www.linkedin.com/in/ianispuichaud" target="_blank" rel="noopener">LinkedIn ↗</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="left">© 2026 Ianis Puichaud — fait main, hébergé avec soin</div>
+    <div class="right">v1.0 · bientôt : métriques <span>live</span> servies par le homelab</div>
+  </div>
+</footer>
+
+<!-- ============ MODALES PROJETS ============ -->
+<dialog class="proj-modal" id="dlg-homelab">
+  <div class="m-head">
+    <div>
+      <h3>Homelab &amp; VPS Gateway</h3>
+      <span class="c-status"><span class="live">production</span> · 24/7 · 2024 →</span>
+    </div>
+    <button class="m-close" aria-label="Fermer">×</button>
+  </div>
+  <div class="m-body">
+    <p>Cluster Proxmox de 2 nœuds, plus de 20 services auto-hébergés en production
+    continue — entièrement reconstruit en Infrastructure as Code, brique par brique,
+    avec gate de vérification à chaque étape.</p>
+    <h4>Fiabilité d'abord</h4>
+    <ul>
+      <li>Sauvegardes 3-2-1 — testées en restauration, pas juste configurées</li>
+      <li>IaC Terraform + Ansible, secrets chiffrés SOPS/age</li>
+      <li>Observabilité : Grafana, Prometheus, Loki, Alertmanager, Uptime Kuma</li>
+    </ul>
+    <h4>Accès &amp; sécurité</h4>
+    <ul>
+      <li>Exposition via gateway VPS (Caddy) plutôt que des ports ouverts à la maison</li>
+      <li>Tailscale en subnet router — le homelab n'est jamais exposé directement</li>
+      <li>SSO passkeys (Pocket ID), SSH durci, DNS filtrant AdGuard</li>
+    </ul>
+    <div class="tags">
+      <span class="tag">proxmox</span><span class="tag">terraform</span><span class="tag">ansible</span>
+      <span class="tag">caddy</span><span class="tag">tailscale</span><span class="tag">sops</span>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="proj-modal" id="dlg-datacommune">
+  <div class="m-head">
+    <div>
+      <h3>DataCommune</h3>
+      <span class="c-status"><span class="proto">prototype fonctionnel</span> · 2025</span>
+    </div>
+    <button class="m-close" aria-label="Fermer">×</button>
+  </div>
+  <div class="m-body">
+    <p>Plateforme SaaS de données publiques françaises : 27 datasets croisés sur
+    35 000+ communes, ~575 millions de lignes derrière 87 routes REST.
+    Conçu, développé et exploité de bout en bout, en solo.</p>
+    <h4>Data &amp; API</h4>
+    <ul>
+      <li>FastAPI + PostgreSQL 17 / PostGIS — 102 partitions par département</li>
+      <li>21 pipelines ETL : DVF, DPE, cadastre, BAN, risques, INSEE…</li>
+      <li>Auth JWT + clés API, quotas, 87 routes documentées</li>
+    </ul>
+    <h4>Produit &amp; exploitation</h4>
+    <ul>
+      <li>4 plans facturés via Stripe (checkout + webhooks)</li>
+      <li>Frontend SvelteKit 5 servi par Cloudflare Workers</li>
+      <li>Docker / Caddy sur VPS, CI GitHub Actions — API publique en cours de ré-hébergement</li>
+    </ul>
+    <a class="m-link" href="https://datacommune.fr" target="_blank" rel="noopener">Visiter datacommune.fr ↗</a>
+    <div class="tags">
+      <span class="tag">fastapi</span><span class="tag">postgis</span><span class="tag">sveltekit</span>
+      <span class="tag">stripe</span><span class="tag">etl</span><span class="tag">docker</span>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="proj-modal" id="dlg-hexalith">
+  <div class="m-head">
+    <div>
+      <h3>Hexalith</h3>
+      <span class="c-status">lab gitops · 2026</span>
+    </div>
+    <button class="m-close" aria-label="Fermer">×</button>
+  </div>
+  <div class="m-body">
+    <p>Le SI complet d'une ESN fictive de 150 collaborateurs, conçu et déployé seul
+    (lab mené pour ma certification RNCP niv. 6) : de l'audit au POC mesuré,
+    le tout en Infrastructure as Code.</p>
+    <h4>Démarche</h4>
+    <ul>
+      <li>Audit, analyse de risques EBIOS RM, priorisation MoSCoW</li>
+      <li>Architecture 9 briques, budget chiffré 19 100 €/an, plan 30/60/90 jours</li>
+    </ul>
+    <h4>Briques déployées</h4>
+    <ul>
+      <li>SSO Authentik (OIDC, SAML, SCIM vers Entra ID), MDM Intune + Fleet</li>
+      <li>ITSM GLPI, supervision Prometheus/Loki/Grafana, onboarding automatisé n8n</li>
+      <li>4 VLANs isolés, reverse proxy Traefik</li>
+    </ul>
+    <h4>Résultats POC</h4>
+    <ul>
+      <li>RTO 1 h 45 · RPO 18 h mesurés</li>
+      <li>Terraform (tenant M365 + Proxmox) + Ansible, CI GitHub Actions self-hosted</li>
+    </ul>
+    <div class="tags">
+      <span class="tag">terraform</span><span class="tag">ansible</span><span class="tag">authentik</span>
+      <span class="tag">ebios-rm</span>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="proj-modal" id="dlg-scriptsad">
+  <div class="m-head">
+    <div>
+      <h3>Scripts AD</h3>
+      <span class="c-status">déployé · entreprise · 2025</span>
+    </div>
+    <button class="m-close" aria-label="Fermer">×</button>
+  </div>
+  <div class="m-body">
+    <p>Trois outils PowerShell pour automatiser la gestion Active Directory d'un parc
+    de 25 000 postes, dans un environnement verrouillé : pas de console d'admin,
+    MFA stricte, périmètre cloisonné.</p>
+    <h4>Les trois outils</h4>
+    <ul>
+      <li>GestionGroupes — appartenances en masse, workflow bulk</li>
+      <li>AuditDroits — audit des droits et appartenances, export exploitable</li>
+      <li>SortiePersonnel — désactivation normée des comptes</li>
+    </ul>
+    <h4>Posture défensive</h4>
+    <ul>
+      <li>Mode simulation avant toute écriture — zéro modification non validée</li>
+      <li>Copies de sauvegarde systématiques, revue par un développeur intégrée</li>
+    </ul>
+    <div class="tags">
+      <span class="tag">powershell</span><span class="tag">active-directory</span><span class="tag">iam</span>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  document.querySelectorAll('.more-btn[data-dialog]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById(btn.dataset.dialog).showModal();
+    });
+  });
+  document.querySelectorAll('.proj-modal').forEach(d => {
+    d.querySelector('.m-close').addEventListener('click', () => d.close());
+    // click on the backdrop (outside the content) closes the dialog
+    d.addEventListener('click', (e) => { if (e.target === d) d.close(); });
+  });
+</script>
+
+</body>
+</html>

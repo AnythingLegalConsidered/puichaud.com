@@ -1,0 +1,50 @@
+/* Theme: Proxmox dark — palette inspired by Proxmox VE dark mode.
+   Source of truth: BRIEF.md §8 / sketch themes/default.css */
+:root {
+  /* Colors */
+  --color-bg: #1e1e1e;
+  --color-bg-page: #141414;
+  --color-surface: #252526;
+  --color-surface-2: #2d2d30;
+  --color-surface-3: #333337;
+  --color-border: #3e3e42;
+  --color-text: #d4d4d4;
+  --color-text-muted: #9d9d9d;
+  --color-primary: #e57000;        /* Proxmox orange */
+  --color-primary-hover: #ff8a1f;
+  --color-accent: #3892d4;         /* Proxmox selection blue */
+  --color-danger: #e05f5f;
+  --color-success: #5cb85c;
+  --color-warning: #e6a23c;
+
+  /* Typography */
+  --font-sans: 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'Cascadia Mono', 'JetBrains Mono', Consolas, monospace;
+  --text-xs: 0.72rem;
+  --text-sm: 0.82rem;
+  --text-base: 0.95rem;
+  --text-lg: 1.1rem;
+  --text-xl: 1.3rem;
+  --text-2xl: 1.6rem;
+  --text-3xl: 2rem;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  /* Shapes */
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 10px rgba(0,0,0,0.45);
+  --shadow-lg: 0 10px 24px rgba(0,0,0,0.5);
+}

@@ -1,0 +1,14 @@
+{
+  "generated_at": "2026-06-12T06:30:00Z",
+  "cluster": { "uptime_30d": 99.2, "cpu_pct": 3, "ram_pct": 48, "iac_lxc": 12 },
+  "nodes": [
+    { "id": "pve02", "online": true },
+    { "id": "pve01", "online": false }
+  ],
+  "services": [
+    { "name": "obs", "uptime_30d": 99.9 },
+    { "name": "sso", "uptime_30d": 99.8 },
+    { "name": "homepage", "uptime_30d": 99.7 },
+    { "name": "adguard-iac", "uptime_30d": 99.9 }
+  ]
+}

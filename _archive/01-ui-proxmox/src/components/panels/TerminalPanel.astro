@@ -1,0 +1,24 @@
+---
+// ">_ Console" easter egg: a tiny fake shell. Commands are handled
+// client-side (see src/scripts/console.ts) against build-time data.
+---
+
+<div class="term" id="term">
+  <div class="term-out" id="term-out">visitor@pve-portfolio:~$ cat /etc/motd
+
+  Bienvenue sur pve-portfolio.
+  Ce terminal est un clin d'œil — mais il répond.
+  Tapez `help` pour la liste des commandes.
+</div>
+  <div class="term-line">
+    <span class="prompt" aria-hidden="true">visitor@pve-portfolio:~$</span>
+    <input
+      class="term-input"
+      id="term-input"
+      type="text"
+      autocomplete="off"
+      spellcheck="false"
+      aria-label="Console interactive — tapez help pour la liste des commandes"
+    />
+  </div>
+</div>

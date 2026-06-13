@@ -1,0 +1,24 @@
+# Explicit allowlist for the public stats export.
+# DENY BY DEFAULT: anything not listed here never leaves the LAN.
+# Names below are the PUBLIC names (already curated) — no internal hostnames.
+
+# Nodes allowed to appear in stats.json (id only, online/offline only).
+nodes:
+  - id: pve02
+  - id: pve01
+
+# Declared count of Terraform-managed LXC (curated, not scanned).
+iac_lxc_count: 12
+
+# Services whose 30-day uptime may be published.
+# kuma_monitor = the monitor name in Uptime Kuma (stays local);
+# name = the public name shown on the site.
+services:
+  - name: obs
+    kuma_monitor: obs
+  - name: sso
+    kuma_monitor: sso
+  - name: homepage
+    kuma_monitor: homepage
+  - name: adguard-iac
+    kuma_monitor: adguard-iac

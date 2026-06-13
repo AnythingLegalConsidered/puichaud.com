@@ -1,0 +1,89 @@
+---
+// Decisions & postmortems timeline, grouped by month, with client-side
+// filters (kind + project). Entries are <button>s → keyboard-friendly.
+// Bodies are plain text (no markdown markup), rendered as-is to keep
+// the button content valid phrasing-level HTML.
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  decisions: CollectionEntry<'decisions'>[];
+}
+const { decisions } = Astro.props;
+
+const KIND_LABEL: Record<string, string> = {
+  decision: 'DÉCISION',
+  postmortem: 'POSTMORTEM',
+  gate: 'GATE',
+  preuve: 'PREUVE',
+};
+
+const sorted = [...decisions].sort((a, b) => b.data.date.localeCompare(a.data.date));
+
+const projects = [...new Set(sorted.map((d) => d.data.project))].sort();
+
+// Group by month for visual rhythm (entries stay individually filterable).
+const MONTHS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+  'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+const monthLabel = (date: string) => {
+  const [y, m] = date.split('-');
+  return `${MONTHS_FR[Number(m) - 1]} ${y}`;
+};
+const monthKey = (date: string) => date.slice(0, 7);
+const months = [...new Set(sorted.map((d) => monthKey(d.data.date)))];
+---
+
+<div class="fiche">
+  <h1>Décisions &amp; postmortems</h1>
+  <p class="tagline">
+    Le cheminement, pas juste le résultat — extraits curés de mon journal de bord
+    (cliquez sur une entrée pour la déplier).
+  </p>
+
+  <div class="task-filters" id="task-filters">
+    <button class="chip active" data-kind="all">tout ({sorted.length})</button>
+    {Object.entries(KIND_LABEL).map(([kind, label]) => (
+      <button class="chip" data-kind={kind}>
+        {label.toLowerCase()} ({sorted.filter((d) => d.data.kind === kind).length})
+      </button>
+    ))}
+    <label>
+      <span class="visually-hidden">Filtrer par projet</span>
+      <select id="proj-filter">
+        <option value="all">tous les projets</option>
+        {projects.map((p) => <option value={p}>{p}</option>)}
+      </select>
+    </label>
+    <button class="expand-all" id="expand-all">tout déplier</button>
+  </div>
+
+  <div class="tasklog" id="tasklog">
+    {months.map((mk) => (
+      <>
+        <div class="month-head" data-month={mk}>{monthLabel(`${mk}-01`)}</div>
+        {sorted
+          .filter((entry) => monthKey(entry.data.date) === mk)
+          .map((entry) => (
+            <button
+              class:list={['task', { pm: entry.data.kind === 'postmortem' }]}
+              data-kind={entry.data.kind}
+              data-proj={entry.data.project}
+              data-month={mk}
+              aria-expanded="false"
+            >
+              <span class="tstatus" aria-hidden="true">
+                {entry.data.kind === 'postmortem' ? '⚠' : '✓'}
+              </span>
+              <span class="tdate">{entry.data.date}</span>
+              <span>
+                <span class="ttitle">{entry.data.title}</span>
+                <span class="tkind" style="display:block">
+                  {KIND_LABEL[entry.data.kind]} · <span class="tproj">{entry.data.project}</span>
+                </span>
+                <span class="tbody">{entry.body?.trim()}</span>
+              </span>
+            </button>
+          ))}
+      </>
+    ))}
+  </div>
+</div>

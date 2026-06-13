@@ -1,0 +1,24 @@
+---
+// Fiche for a real LXC container (curated note from BRIEF §6).
+import type { Guest } from '../../data/infrastructure';
+
+interface Props {
+  guest: Guest;
+}
+const { guest } = Astro.props;
+---
+
+<div class="fiche">
+  <h1>
+    {guest.name}
+    {guest.iac && <span class="flag iac">⚙ Terraform</span>}
+  </h1>
+  <p class="tagline">
+    LXC <span style="font-family:var(--font-mono)">{guest.vmid}</span> · {guest.node} ·{' '}
+    <span class={`dot ${guest.status}`} aria-hidden="true"></span> {guest.status}
+  </p>
+  <p>{guest.note}</p>
+  {guest.iac && (
+    <p class="commit-badge">⎇ défini dans <b>01-Homelab</b> (Terraform) — dépôt privé, visite guidée sur demande.</p>
+  )}
+</div>

@@ -1,0 +1,36 @@
+---
+// "docs (storage)" — Proxmox storage-content view used as a document shelf.
+import { DOCUMENTS } from '../../data/documents';
+---
+
+<div class="fiche">
+  <h1>docs <span class="flag iac">storage</span></h1>
+  <p class="tagline">Contenu du stockage — documents téléchargeables.</p>
+
+  <table class="storage-table">
+    <thead>
+      <tr>
+        <th scope="col">Nom</th>
+        <th scope="col">Description</th>
+        <th scope="col">Maj</th>
+        <th scope="col">Taille</th>
+        <th scope="col"><span class="visually-hidden">Action</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      {DOCUMENTS.map((doc) => (
+        <tr>
+          <td class="fname">{doc.name}</td>
+          <td>{doc.description}</td>
+          <td class="fmeta">{doc.updated ?? '—'}</td>
+          <td class="fmeta">{doc.size ?? '—'}</td>
+          <td>
+            {doc.href
+              ? <a class="px-btn primary" href={doc.href} download>⬇ Télécharger</a>
+              : <span class="flag private">sur demande</span>}
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
