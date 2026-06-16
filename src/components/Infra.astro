@@ -9,9 +9,9 @@
   <div class="wrap">
     <div class="sec-head"><h2>Infrastructure</h2><div class="rule"></div></div>
     <p class="sec-intro">
-      Le homelab qui sert de terrain à tout le reste — provisionné en code,
-      exposé sans ouvrir un seul port à la maison, et conçu pour survivre
-      à la perte de son nœud principal.
+      Mon homelab, le terrain où je teste tout. Il est provisionné entièrement
+      en code, exposé sans ouvrir un seul port à la maison, et conçu pour repartir
+      depuis git après une panne, grâce à des backups que je teste vraiment.
     </p>
 
     <div class="infra-panel">
@@ -28,7 +28,7 @@
         </div>
         <div class="line">
           <span class="k">accès</span>
-          <span class="v">internet <i>→</i> VPS Gateway <i>→</i> pve02 <span class="muted">· ~20 LXC en prod</span></span>
+          <span class="v">internet <i>→</i> VPS Gateway <i>→</i> pve02 <span class="muted">· 13 LXC en IaC</span></span>
         </div>
         <div class="line">
           <span class="k"></span>
@@ -40,7 +40,7 @@
       <div class="grp">
         <div class="line"><span class="k">edge &amp; sécurité</span><span class="v">Caddy · Tailscale · Pocket ID · AdGuard</span></div>
         <div class="line"><span class="k">observabilité</span><span class="v">Grafana · Prometheus · Loki · Uptime Kuma</span></div>
-        <div class="line"><span class="k">apps</span><span class="v">Immich · Homepage · Paperless <span class="muted">· +12</span></span></div>
+        <div class="line"><span class="k">apps</span><span class="v">Immich · Homepage · Paperless <span class="muted">· +3</span></span></div>
       </div>
 
       <!-- resilience -->
@@ -51,7 +51,7 @@
         </div>
         <div class="line">
           <span class="k"></span>
-          <span class="v">infra <b>rejouable depuis Git</b> <span class="muted">— le nœud meurt, l'infra renaît</span></span>
+          <span class="v">infra <b>rejouable depuis Git</b> <span class="muted">— si le nœud tombe, je la rejoue</span></span>
         </div>
       </div>
     </div>
