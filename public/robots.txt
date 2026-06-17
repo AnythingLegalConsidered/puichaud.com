@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://puichaud.com/sitemap-index.xml

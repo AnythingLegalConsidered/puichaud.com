@@ -1,0 +1,27 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="Page introuvable (404) — Ianis Puichaud"
+  description="Cette page n'existe pas. Retour à l'accueil du portfolio d'Ianis Puichaud."
+>
+  <section class="nf">
+    <div class="wrap">
+      <div class="nf-code">404</div>
+      <h1>Cette page n'existe pas.</h1>
+      <p>Le lien est peut-être cassé, ou la page a été déplacée.</p>
+      <a class="btn primary" href="/">Retour à l'accueil</a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .nf { text-align: center; padding: 120px 0; }
+  .nf-code {
+    font-family: var(--serif); font-size: clamp(56px, 12vw, 96px);
+    font-weight: 700; color: var(--bronze);
+  }
+  .nf h1 { font-family: var(--serif); font-size: 24px; margin-top: 8px; color: var(--ink); }
+  .nf p { color: var(--ink-muted); margin: 10px 0 28px; }
+</style>
