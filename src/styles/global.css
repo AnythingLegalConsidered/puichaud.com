@@ -15,6 +15,11 @@
     --column: #1E1A15;
     --green: #4A7A52;
 
+    /* Géométrie — système Marbre (angles nets + chanfrein lapidaire) */
+    --r-pill: 2px;     /* badge, pill "featured", tags */
+    --r-btn: 2px;      /* boutons ghost, close modal */
+    --r-panel: 3px;    /* surfaces : cards, metrics, skills, panel, modal, box */
+
     --serif: 'Cinzel', Georgia, serif;
     --sans: 'Inter', system-ui, sans-serif;
     --mono: 'JetBrains Mono', Consolas, monospace;
@@ -36,6 +41,10 @@
 
   a { color: var(--bronze-dark); text-decoration: none; }
   a:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+  /* focus clavier — anneau bronze (doré sur le hero sombre) */
+  :focus-visible { outline: 2px solid var(--bronze); outline-offset: 2px; }
+  #hero :focus-visible { outline-color: var(--gold); }
 
   /* ============ DIVIDER (losange) ============ */
   .divider {
@@ -74,6 +83,7 @@
     transition: color .15s;
   }
   header nav a:hover { color: var(--bronze); text-decoration: none; }
+  header nav a.active { color: var(--bronze); font-weight: 600; }
 
   /* ============ HERO (sombre, façon sidebar CV) ============ */
   #hero {
@@ -88,11 +98,10 @@
   }
   #hero h1 {
     font-family: var(--serif);
-    font-size: clamp(38px, 6.5vw, 58px);
-    font-weight: 700; line-height: 1.12;
+    font-size: clamp(30px, 5vw, 44px);
+    font-weight: 700; line-height: 1.14;
     margin-top: 18px; color: var(--marble);
   }
-  #hero h1 span { color: var(--gold); }
   #hero .sub {
     max-width: 640px; margin: 24px auto 0;
     font-size: 18px; color: var(--marble-dark); opacity: .92;
@@ -105,7 +114,7 @@
     color: var(--gold);
     background: rgba(201,168,76,.10);
     border: 1px solid rgba(201,168,76,.4);
-    border-radius: 100px;
+    border-radius: var(--r-pill);
     padding: 9px 20px;
   }
   .badge .dot {
@@ -123,25 +132,34 @@
     display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
     margin-top: 34px;
   }
+  /* Boutons — base lapidaire (capitales espacées) */
   .btn {
     display: inline-flex; align-items: center; gap: 8px;
-    font-size: 15px; font-weight: 500;
-    padding: 12px 26px; border-radius: 10px;
+    font-family: var(--sans); font-size: 13px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .1em;
+    padding: 13px 28px;
     transition: background .15s, border-color .15s, color .15s;
   }
   .btn:hover { text-decoration: none; }
-  .btn.primary { background: var(--bronze); color: #fff; }
+  /* CTA majeur — bronze plein, angle net */
+  .btn.primary {
+    background: var(--bronze); color: #fff;
+    border-radius: var(--r-btn);
+  }
   .btn.primary:hover { background: var(--bronze-dark); }
-  #hero .btn.ghost { border: 1px solid rgba(250,246,240,.35); color: var(--marble); }
+  /* exception : email lisible, pas de capitales */
+  .btn.email { text-transform: none; letter-spacing: 0; }
+  /* Boutons mineurs — angle net lapidaire */
+  #hero .btn.ghost { border: 1px solid rgba(250,246,240,.35); color: var(--marble); border-radius: var(--r-btn); }
   #hero .btn.ghost:hover { border-color: var(--gold); color: var(--gold); }
-  .btn.ghost { border: 1px solid var(--stone); color: var(--ink); }
+  .btn.ghost { border: 1px solid var(--stone); color: var(--ink); border-radius: var(--r-btn); }
   .btn.ghost:hover { border-color: var(--bronze); color: var(--bronze-dark); }
 
   /* ============ METRICS ============ */
   #metrics { padding: 0; margin-top: -34px; position: relative; z-index: 2; }
   #metrics .grid {
     display: grid; grid-template-columns: repeat(4, 1fr);
-    border: 2px solid var(--stone); border-radius: 14px;
+    border: 2px solid var(--stone); border-radius: var(--r-panel);
     background: var(--parchment);
     box-shadow: 0 14px 40px rgba(42,31,20,.10);
     overflow: hidden;
@@ -187,12 +205,23 @@
     color: var(--ink-muted); font-size: 15.5px;
     max-width: 600px; margin-bottom: 40px;
   }
+  /* numéros de section gravés — I · PARCOURS, II · PROJETS ... */
+  body { counter-reset: sec; }
+  .sec-head { counter-increment: sec; }
+  .sec-head h2::before {
+    content: counter(sec, upper-roman) "\00a0·\00a0";
+    color: var(--bronze);
+  }
 
   /* ============ TIMELINE (dates réelles CV) ============ */
   .tl { position: relative; max-width: 720px; padding-left: 30px; }
   .tl::before {
     content: ''; position: absolute; left: 8px; top: 8px; bottom: 8px;
-    width: 1.5px; background: var(--stone);
+    width: 1.5px;
+    background: linear-gradient(to bottom,
+      var(--stone) 0,
+      var(--stone) calc(100% - 60px),
+      transparent 100%);
   }
   .tl-item { position: relative; padding-bottom: 28px; }
   .tl-item:last-child { padding-bottom: 0; }
@@ -224,7 +253,7 @@
   .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
   .card {
     position: relative;
-    border: 2px solid var(--stone); border-radius: 14px;
+    border: 2px solid var(--stone); border-radius: var(--r-panel);
     background: var(--marble);
     padding: 26px 28px 20px;
     display: flex; flex-direction: column;
@@ -236,7 +265,7 @@
     position: absolute; top: -12px; left: 26px;
     background: var(--bronze); color: #fff;
     font-size: 11.5px; font-weight: 600;
-    border-radius: 100px; padding: 3px 14px;
+    border-radius: var(--r-pill); padding: 3px 14px;
   }
   .card .c-head {
     display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
@@ -250,7 +279,7 @@
 
   /* ============ PROJECT MODAL ============ */
   .proj-modal {
-    border: none; border-radius: 16px;
+    border: none; border-radius: var(--r-panel);
     background: var(--marble); color: var(--ink);
     max-width: 620px; width: calc(100vw - 48px);
     padding: 0; margin: auto;
@@ -271,7 +300,7 @@
   .m-head .c-status .live { color: var(--green); font-weight: 500; }
   .m-head .c-status .proto { color: var(--terracotta); }
   .m-close {
-    background: none; border: 1px solid var(--stone); border-radius: 8px;
+    background: none; border: 1px solid var(--stone); border-radius: var(--r-btn);
     width: 32px; height: 32px; font-size: 18px; line-height: 1;
     color: var(--ink-muted); cursor: pointer; flex: none;
   }
@@ -300,7 +329,7 @@
     font-family: var(--mono); font-size: 10.5px;
     color: var(--bronze-dark);
     background: var(--bronze-light);
-    border-radius: 100px;
+    border-radius: var(--r-pill);
     padding: 2.5px 10px;
   }
   .c-actions { display: flex; gap: 16px; align-items: center; }
@@ -316,7 +345,7 @@
   /* ============ SKILLS ============ */
   .skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
   .skill-col {
-    border: 2px solid var(--stone); border-radius: 14px;
+    border: 2px solid var(--stone); border-radius: var(--r-panel);
     background: var(--parchment); padding: 24px 26px;
   }
   .skill-col h3 { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--bronze-dark); }
@@ -336,7 +365,7 @@
   /* ============ CONTACT ============ */
   #contact .box {
     max-width: 660px; margin: 0 auto;
-    border: 2px solid var(--stone); border-radius: 16px;
+    border: 2px solid var(--stone); border-radius: var(--r-panel);
     background: var(--parchment);
     padding: 44px 36px; text-align: center;
   }

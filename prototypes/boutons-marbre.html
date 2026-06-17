@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Démo boutons — Marbre &amp; Bronze (A / B / C)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --marble: #FAF6F0;
+    --marble-dark: #EDE5D8;
+    --parchment: #F5EEE3;
+    --bronze: #A0744F;
+    --bronze-dark: #8B6139;
+    --bronze-light: #E8D5C0;
+    --gold: #C9A84C;
+    --terracotta: #B85C3A;
+    --ink: #2A1F14;
+    --ink-muted: #6B5B4D;
+    --stone: #D4C4AD;
+    --sidebar: #3A2F24;
+    --column: #1E1A15;
+    --serif: 'Cinzel', Georgia, serif;
+    --sans: 'Inter', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', Consolas, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--marble); color: var(--ink); font-family: var(--sans); line-height: 1.6; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+
+  .page-head { padding: 56px 0 8px; text-align: center; }
+  .page-head .kicker {
+    font-size: 12.5px; font-weight: 600; letter-spacing: .22em;
+    text-transform: uppercase; color: var(--bronze);
+  }
+  .page-head h1 { font-family: var(--serif); font-size: 38px; margin-top: 12px; }
+  .page-head p { color: var(--ink-muted); max-width: 620px; margin: 14px auto 0; font-size: 15px; }
+
+  .variant { margin: 44px 0; }
+  .variant > .label {
+    display: flex; align-items: baseline; gap: 14px; margin-bottom: 18px;
+  }
+  .variant > .label h2 {
+    font-family: var(--serif); font-size: 22px; letter-spacing: .04em;
+  }
+  .variant > .label .reco {
+    font-family: var(--mono); font-size: 10.5px; font-weight: 500;
+    color: var(--bronze-dark); background: var(--bronze-light);
+    padding: 3px 10px; letter-spacing: .06em;
+  }
+  .variant > .label .note { font-size: 13px; color: var(--ink-muted); margin-left: auto; max-width: 420px; text-align: right; }
+
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .duo { grid-template-columns: 1fr; } }
+  .panel {
+    padding: 34px 28px; display: flex; gap: 16px; align-items: center;
+    flex-wrap: wrap; justify-content: center;
+    border: 1px solid var(--stone);
+  }
+  .panel.light { background: var(--parchment); }
+  .panel.dark  { background: linear-gradient(170deg, var(--sidebar), var(--column)); border-color: var(--column); }
+  .panel .ctx { position: absolute; }
+  .panel-tag {
+    width: 100%; text-align: center; font-family: var(--mono);
+    font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase;
+    margin-bottom: 4px; opacity: .6;
+  }
+  .panel.light .panel-tag { color: var(--ink-muted); }
+  .panel.dark  .panel-tag { color: var(--marble-dark); }
+
+  /* ---- base bouton commune ---- */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--sans); font-size: 13px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .1em;
+    padding: 13px 28px; cursor: pointer; position: relative;
+    transition: background .15s, border-color .15s, color .15s, box-shadow .15s;
+    text-decoration: none;
+  }
+
+  /* ============================================================
+     A — LAPIDAIRE : angle 2px, capitales espacées, filet simple
+     ============================================================ */
+  .A .btn { border-radius: 2px; border: 1px solid transparent; }
+  .A .primary { background: var(--bronze); color: #fff; }
+  .A .primary:hover { background: var(--bronze-dark); }
+  .A .ghost.on-light { border-color: var(--stone); color: var(--ink); background: transparent; }
+  .A .ghost.on-light:hover { border-color: var(--bronze); color: var(--bronze-dark); }
+  .A .ghost.on-dark { border-color: rgba(250,246,240,.35); color: var(--marble); background: transparent; }
+  .A .ghost.on-dark:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ============================================================
+     B — STÈLE À FILET : A + liseré interne (cartouche)
+     ============================================================ */
+  .B .btn { border-radius: 2px; border: 1px solid transparent; }
+  .B .btn::before {
+    content: ''; position: absolute; inset: 4px; border: 1px solid currentColor;
+    opacity: .35; border-radius: 1px; pointer-events: none;
+  }
+  .B .primary { background: var(--bronze); color: #fff; }
+  .B .primary::before { border-color: var(--gold); opacity: .55; }
+  .B .primary:hover { background: var(--bronze-dark); }
+  .B .ghost.on-light { border-color: var(--stone); color: var(--ink); background: transparent; }
+  .B .ghost.on-light::before { opacity: .25; }
+  .B .ghost.on-light:hover { border-color: var(--bronze); color: var(--bronze-dark); }
+  .B .ghost.on-dark { border-color: rgba(250,246,240,.35); color: var(--marble); background: transparent; }
+  .B .ghost.on-dark:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ============================================================
+     C — CHANFREIN : coins coupés 45° (bloc taillé)
+     ============================================================ */
+  .cut-shape {
+    clip-path: polygon(
+      9px 0, calc(100% - 9px) 0, 100% 9px, 100% calc(100% - 9px),
+      calc(100% - 9px) 100%, 9px 100%, 0 calc(100% - 9px), 0 9px
+    );
+  }
+  .C .primary { background: var(--bronze); color: #fff; border: none; }
+  .C .primary:hover { background: var(--bronze-dark); }
+  /* ghost chanfreiné = wrapper teinté (le trait) + intérieur découpé */
+  .C .ghost { padding: 1.5px; cursor: pointer; display: inline-block; }
+  .C .ghost.on-light { background: var(--stone); }
+  .C .ghost.on-light:hover { background: var(--bronze); }
+  .C .ghost.on-dark { background: rgba(250,246,240,.45); }
+  .C .ghost.on-dark:hover { background: var(--gold); }
+  .C .ghost > span {
+    display: inline-flex; align-items: center; padding: 12px 27px;
+    font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .1em;
+  }
+  .C .ghost.on-light > span { background: var(--parchment); color: var(--ink); }
+  .C .ghost.on-dark  > span { background: var(--column); color: var(--marble); }
+
+  /* ============================================================
+     SYSTÈME : pills 100px -> rectangles + radius des surfaces
+     ============================================================ */
+  .system { margin: 64px 0 80px; border-top: 1px solid var(--stone); padding-top: 40px; }
+  .system h2 { font-family: var(--serif); font-size: 22px; margin-bottom: 6px; }
+  .system .sub { color: var(--ink-muted); font-size: 14px; margin-bottom: 26px; }
+  .ba { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  @media (max-width: 720px) { .ba { grid-template-columns: 1fr; } }
+  .ba .col h3 { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-muted); margin-bottom: 14px; }
+  .ba .col.after h3 { color: var(--bronze-dark); }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--bronze-dark);
+    background: rgba(201,168,76,.12); border: 1px solid rgba(201,168,76,.4);
+    padding: 8px 16px;
+  }
+  .badge .dot { width: 8px; height: 8px; border-radius: 50%; background: #7FB069; }
+  .badge.before { border-radius: 100px; }
+  .badge.after  { border-radius: 2px; }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+  .tag {
+    font-family: var(--mono); font-size: 10.5px; color: var(--bronze-dark);
+    background: var(--bronze-light); padding: 3px 10px;
+  }
+  .tag.before { border-radius: 100px; }
+  .tag.after  { border-radius: 2px; }
+
+  .mini-card {
+    margin-top: 18px; border: 2px solid var(--stone); background: var(--marble);
+    padding: 18px 20px; max-width: 280px;
+  }
+  .mini-card.before { border-radius: 14px; }
+  .mini-card.after  { border-radius: 3px; }
+  .mini-card h4 { font-family: var(--serif); font-size: 17px; }
+  .mini-card p { font-size: 13px; color: var(--ink-muted); margin-top: 4px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="page-head">
+      <div class="kicker">Démo — direction des boutons</div>
+      <h1>Marbre &amp; Bronze · A / B / C</h1>
+      <p>Chaque direction est montrée sur fond clair (section contact) et sur fond sombre
+      (hero). Boutons primaire + ghost dans les deux contextes. En bas : la
+      rectangularisation des pills et l'harmonisation des rayons de surface.</p>
+    </div>
+
+    <!-- ===================== A ===================== -->
+    <section class="variant A">
+      <div class="label">
+        <h2>A — Lapidaire</h2>
+        <span class="reco">recommandé</span>
+        <span class="note">Angle 2px, capitales espacées, filet simple. Le plus sobre : la cohérence vient de la retenue.</span>
+      </div>
+      <div class="duo">
+        <div class="panel light">
+          <div class="panel-tag">sur fond clair · contact</div>
+          <a class="btn primary">Voir le CV</a>
+          <a class="btn ghost on-light">Me contacter</a>
+        </div>
+        <div class="panel dark">
+          <div class="panel-tag">sur fond sombre · hero</div>
+          <a class="btn primary">Voir le CV</a>
+          <a class="btn ghost on-dark">Me contacter</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== B ===================== -->
+    <section class="variant B">
+      <div class="label">
+        <h2>B — Stèle à filet</h2>
+        <span class="note">A + liseré interne (cartouche), comme l'encadrement d'une plaque de marbre. Plus ornementé.</span>
+      </div>
+      <div class="duo">
+        <div class="panel light">
+          <div class="panel-tag">sur fond clair · contact</div>
+          <a class="btn primary">Voir le CV</a>
+          <a class="btn ghost on-light">Me contacter</a>
+        </div>
+        <div class="panel dark">
+          <div class="panel-tag">sur fond sombre · hero</div>
+          <a class="btn primary">Voir le CV</a>
+          <a class="btn ghost on-dark">Me contacter</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== C ===================== -->
+    <section class="variant C">
+      <div class="label">
+        <h2>C — Chanfrein (taillé)</h2>
+        <span class="note">Coins coupés à 45°, façon bloc de pierre. Le plus signature — idéalement réservé au CTA primaire.</span>
+      </div>
+      <div class="duo">
+        <div class="panel light">
+          <div class="panel-tag">sur fond clair · contact</div>
+          <a class="btn primary cut-shape">Voir le CV</a>
+          <a class="ghost on-light cut-shape"><span class="cut-shape">Me contacter</span></a>
+        </div>
+        <div class="panel dark">
+          <div class="panel-tag">sur fond sombre · hero</div>
+          <a class="btn primary cut-shape">Voir le CV</a>
+          <a class="ghost on-dark cut-shape"><span class="cut-shape">Me contacter</span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== SYSTÈME ===================== -->
+    <section class="system">
+      <h2>Le reste du système (portée : tout)</h2>
+      <p class="sub">Les pills 100px deviennent des rectangles nets, et les surfaces passent de 14/16px à 3px.</p>
+      <div class="ba">
+        <div class="col before">
+          <h3>Avant</h3>
+          <span class="badge before"><span class="dot"></span>Disponible · sept. 2026</span>
+          <div class="tags">
+            <span class="tag before">Proxmox</span>
+            <span class="tag before">Docker</span>
+            <span class="tag before">FastAPI</span>
+            <span class="tag before">Cloudflare</span>
+          </div>
+          <div class="mini-card before">
+            <h4>DataCommune</h4>
+            <p>Plateforme data — radius 14px (arrondi mou).</p>
+          </div>
+        </div>
+        <div class="col after">
+          <h3>Après</h3>
+          <span class="badge after"><span class="dot"></span>Disponible · sept. 2026</span>
+          <div class="tags">
+            <span class="tag after">Proxmox</span>
+            <span class="tag after">Docker</span>
+            <span class="tag after">FastAPI</span>
+            <span class="tag after">Cloudflare</span>
+          </div>
+          <div class="mini-card after">
+            <h4>DataCommune</h4>
+            <p>Plateforme data — radius 3px (dalle nette).</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

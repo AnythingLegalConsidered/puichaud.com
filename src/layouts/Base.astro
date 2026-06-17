@@ -57,5 +57,25 @@ import '../styles/global.css';
       els.forEach(function (el) { io.observe(el); });
     })();
   </script>
+
+  <script is:inline>
+    (function () {
+      var links = document.querySelectorAll('header nav a[href^="#"]');
+      if (!links.length || !('IntersectionObserver' in window)) return;
+      var map = {};
+      links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+      var sections = Object.keys(map)
+        .map(function (id) { return document.getElementById(id); })
+        .filter(Boolean);
+      var spy = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (!e.isIntersecting) return;
+          links.forEach(function (a) { a.classList.remove('active'); });
+          if (map[e.target.id]) map[e.target.id].classList.add('active');
+        });
+      }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+      sections.forEach(function (s) { spy.observe(s); });
+    })();
+  </script>
 </body>
 </html>

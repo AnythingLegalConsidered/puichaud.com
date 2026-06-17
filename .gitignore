@@ -10,3 +10,8 @@ node_modules/
 # OS
 Thumbs.db
 .DS_Store
+# review tooling artifacts
+reviews/
+# python cache (scripts/stats-export)
+__pycache__/
+*.pyc
