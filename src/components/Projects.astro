@@ -39,10 +39,10 @@ import { projects } from '../data/projects.js';
 
 <!-- ============ MODALES PROJETS ============ -->
 {projects.map((p) => (
-  <dialog class="proj-modal" id={`dlg-${p.id}`}>
+  <dialog class="proj-modal" id={`dlg-${p.id}`} aria-labelledby={`dlg-${p.id}-title`}>
     <div class="m-head">
       <div>
-        <h3 set:html={p.name} />
+        <h3 id={`dlg-${p.id}-title`} set:html={p.name} />
         <span class="c-status" set:html={p.modalStatus} />
       </div>
       <button class="m-close" aria-label="Fermer">×</button>
