@@ -387,6 +387,9 @@
     padding-top: 4px; white-space: nowrap;
   }
 
+  /* fond parchemin pour rythmer le scroll (alternance avec marbre) */
+  #competences { background: var(--parchment); border-top: 1px solid var(--stone); border-bottom: 1px solid var(--stone); }
+
   /* ============ CONTACT ============ */
   #contact .box {
     max-width: 660px; margin: 0 auto;
