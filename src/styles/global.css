@@ -85,6 +85,21 @@
   header nav a:hover { color: var(--bronze); text-decoration: none; }
   header nav a.active { color: var(--bronze); font-weight: 600; }
 
+  /* burger — masqué en desktop, affiché en mobile */
+  .nav-toggle {
+    display: none;
+    flex-direction: column; justify-content: center; gap: 4px;
+    width: 40px; height: 40px; padding: 0;
+    background: none; border: 1px solid var(--stone); border-radius: var(--r-btn);
+    cursor: pointer;
+  }
+  .nav-toggle-bar {
+    display: block; width: 18px; height: 2px; margin: 0 auto;
+    background: var(--ink); transition: background .15s;
+  }
+  .nav-toggle:hover { border-color: var(--bronze); }
+  .nav-toggle:hover .nav-toggle-bar { background: var(--bronze-dark); }
+
   /* ============ HERO (sombre, façon sidebar CV) ============ */
   #hero {
     background: linear-gradient(170deg, var(--sidebar) 0%, var(--column) 100%);
@@ -397,7 +412,20 @@
     #metrics .cell:nth-child(-n+2) { border-bottom: 1px solid var(--stone); }
     .cards { grid-template-columns: 1fr; }
     .skills-grid { grid-template-columns: 1fr; }
-    header nav a:not(:last-child) { display: none; }
+
+    /* nav mobile : burger + menu déroulant sous le header */
+    .nav-toggle { display: inline-flex; }
+    header nav {
+      display: none;
+      position: absolute; top: 100%; left: 0; right: 0;
+      flex-direction: column; gap: 0; align-items: stretch;
+      background: rgba(250,246,240,.98); backdrop-filter: blur(6px);
+      border-bottom: 1px solid var(--stone);
+      padding: 6px 24px 14px;
+    }
+    header nav.open { display: flex; }
+    header nav a { padding: 11px 0; border-bottom: 1px solid var(--marble-dark); }
+    header nav a:last-child { border-bottom: none; }
   }
 
   /* ============ SCROLL REVEAL ============ */

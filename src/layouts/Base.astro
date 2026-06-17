@@ -77,5 +77,28 @@ import '../styles/global.css';
       sections.forEach(function (s) { spy.observe(s); });
     })();
   </script>
+
+  <script is:inline>
+    (function () {
+      var btn = document.querySelector('.nav-toggle');
+      var nav = document.getElementById('primary-nav');
+      if (!btn || !nav) return;
+      function close() {
+        nav.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+        btn.setAttribute('aria-label', 'Ouvrir le menu');
+      }
+      function open() {
+        nav.classList.add('open');
+        btn.setAttribute('aria-expanded', 'true');
+        btn.setAttribute('aria-label', 'Fermer le menu');
+      }
+      btn.addEventListener('click', function () {
+        nav.classList.contains('open') ? close() : open();
+      });
+      nav.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', close); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+    })();
+  </script>
 </body>
 </html>
