@@ -35,7 +35,7 @@ import '../styles/global.css';
   <meta name="twitter:image" content={ogImage} />
 
   <!-- JSON-LD Person -->
-  <script type="application/ld+json" set:html={JSON.stringify({
+  <script is:inline type="application/ld+json" set:html={JSON.stringify({
     '@context': 'https://schema.org',
     '@type': 'Person',
     name: 'Ianis Puichaud',
