@@ -14,12 +14,12 @@ import { projects } from '../data/projects.js';
     <div class="cards">
       {projects.map((p) => (
         <div class={p.featured ? 'card featured' : 'card'}>
-          {p.pill && <span class="pill" set:html={p.pill} />}
+          {p.pill && <span class="pill">{p.pill}</span>}
           <div class="c-head">
-            <h3 set:html={p.name} />
-            <span class="c-status" set:html={p.cardStatus} />
+            <h3>{p.name}</h3>
+            <span class="c-status">{p.cardStatus.label && <span class={p.cardStatus.tone}>{p.cardStatus.label}</span>}{p.cardStatus.label ? ' · ' : ''}{p.cardStatus.meta}</span>
           </div>
-          <p set:html={p.cardText} />
+          <p>{p.cardText}</p>
           <div class="c-foot">
             <div class="tags">
               {p.tags.map((t) => <span class="tag">{t}</span>)}
@@ -42,18 +42,18 @@ import { projects } from '../data/projects.js';
   <dialog class="proj-modal" id={`dlg-${p.id}`} aria-labelledby={`dlg-${p.id}-title`}>
     <div class="m-head">
       <div>
-        <h3 id={`dlg-${p.id}-title`} set:html={p.name} />
-        <span class="c-status" set:html={p.modalStatus} />
+        <h3 id={`dlg-${p.id}-title`}>{p.name}</h3>
+        <span class="c-status">{p.modalStatus.label && <span class={p.modalStatus.tone}>{p.modalStatus.label}</span>}{p.modalStatus.label ? ' · ' : ''}{p.modalStatus.meta}</span>
       </div>
       <button class="m-close" aria-label="Fermer">×</button>
     </div>
     <div class="m-body">
-      <p set:html={p.modalIntro} />
+      <p>{p.modalIntro}</p>
       {p.sections.map((s) => (
         <>
-          <h4 set:html={s.title} />
+          <h4>{s.title}</h4>
           <ul>
-            {s.items.map((item) => <li set:html={item} />)}
+            {s.items.map((item) => <li>{item}</li>)}
           </ul>
         </>
       ))}
