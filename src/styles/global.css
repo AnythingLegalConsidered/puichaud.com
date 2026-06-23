@@ -3,6 +3,7 @@
     --marble: #FAF6F0;
     --marble-dark: #EDE5D8;
     --parchment: #F5EEE3;
+    --surface: #EFE6D7;   /* fond des cartes — un cran plus foncé pour les faire ressortir */
     --bronze: #A0744F;
     --bronze-dark: #8B6139;
     --bronze-light: #E8D5C0;
@@ -185,7 +186,7 @@
   #metrics .grid {
     display: grid; grid-template-columns: repeat(4, 1fr);
     border: 2px solid var(--stone); border-radius: var(--r-panel);
-    background: var(--parchment);
+    background: var(--surface);
     box-shadow: 0 14px 40px rgba(42,31,20,.10);
     overflow: hidden;
   }
@@ -279,9 +280,10 @@
   .card {
     position: relative;
     border: 2px solid var(--stone); border-radius: var(--r-panel);
-    background: var(--marble);
+    background: var(--surface);
     padding: 26px 28px 20px;
     display: flex; flex-direction: column;
+    box-shadow: 0 4px 16px rgba(42,31,20,.05);
     transition: border-color .2s, box-shadow .2s;
   }
   .card:hover { border-color: var(--bronze); box-shadow: 0 10px 30px rgba(42,31,20,.08); }
@@ -371,7 +373,8 @@
   .skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
   .skill-col {
     border: 2px solid var(--stone); border-radius: var(--r-panel);
-    background: var(--parchment); padding: 24px 26px;
+    background: var(--surface); padding: 24px 26px;
+    box-shadow: 0 4px 16px rgba(42,31,20,.05);
   }
   .skill-col h3 { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--bronze-dark); }
   .skill-col .where { font-size: 12.5px; color: var(--ink-muted); margin-bottom: 14px; }
@@ -394,7 +397,7 @@
   #contact .box {
     max-width: 660px; margin: 0 auto;
     border: 2px solid var(--stone); border-radius: var(--r-panel);
-    background: var(--parchment);
+    background: var(--surface);
     padding: 44px 36px; text-align: center;
   }
   #contact h2 { font-family: var(--serif); font-size: 28px; font-weight: 700; }
