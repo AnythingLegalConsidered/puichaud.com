@@ -76,7 +76,7 @@ il lit seulement un fichier JSON public déjà filtré.
   accessible partout sans exposer un seul port public. Il sert de terrain d'expérimentation
   pour ce qu'il ne peut pas se permettre de casser au travail.
 
-**Contact** : ianispuichaud@gmail.com · GitHub : github.com/AnythingLegalConsidered · puichaud.com
+**Contact** : ianis@puichaud.com · GitHub : github.com/AnythingLegalConsidered · puichaud.com
 
 **Compétences (badges)** : Proxmox VE · Terraform · Ansible · Docker · GitHub Actions ·
 Windows Server / Active Directory · Linux (Debian) · Grafana · Loki · Prometheus ·

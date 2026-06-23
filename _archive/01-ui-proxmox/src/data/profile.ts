@@ -4,7 +4,7 @@
 export const PROFILE = {
   name: 'Ianis Puichaud',
   title: 'SysOps / futur DevOps',
-  email: 'ianispuichaud@gmail.com',
+  email: 'ianis@puichaud.com',
   github: 'github.com/AnythingLegalConsidered',
   site: 'puichaud.com',
   cvHref: '/docs/CV-Ianis-Puichaud.pdf',
