@@ -9,7 +9,7 @@
 export const projects = [
   {
     id: 'homelab',
-    name: 'Homelab & VPS Gateway',
+    name: 'Homelab',
     featured: true,
     pill: 'en production · 24/7',
     cardStatus: { tone: 'live', label: 'production', meta: '2024 →' },
@@ -32,9 +32,9 @@ export const projects = [
       {
         title: 'Accès & sécurité',
         items: [
-          'J\'expose les services via une gateway VPS (Caddy), plutôt que d\'ouvrir des ports chez moi',
-          'Tailscale en subnet router : le homelab n\'est jamais exposé directement',
-          'SSO par passkey (Pocket ID), SSH durci et DNS filtrant avec AdGuard',
+          'Je bascule l\'accès en LAN + Tailscale : l\'edge public (gateway VPS) est en cours de retrait',
+          'Tailscale en subnet router pour l\'accès distant, depuis n\'importe où',
+          'SSO par passkey (Pocket ID + Tinyauth), SSH durci et DNS filtrant avec AdGuard',
         ],
       },
     ],
@@ -45,12 +45,12 @@ export const projects = [
     name: 'DataCommune',
     featured: true,
     pill: 'produit complet',
-    cardStatus: { tone: 'proto', label: 'API en ré-hébergement', meta: '2025' },
-    modalStatus: { tone: 'proto', label: 'API en ré-hébergement', meta: '2025' },
+    cardStatus: { tone: 'live', label: 'en ligne', meta: '2 départements · 2025 →' },
+    modalStatus: { tone: 'live', label: 'en ligne', meta: 'couverture 44 & 85 · 2025 →' },
     cardText:
-      'Une plateforme SaaS de données publiques françaises : 27 jeux de données (immobilier, risques, urbanisme, énergie...) croisés sur plus de 35 000 communes. Les pipelines ont traité environ 575 millions de lignes, accessibles via 85 routes REST. J\'ai tout fait seul, du code à la production.',
+      'Une plateforme SaaS de données publiques françaises : 27 jeux de données (immobilier, risques, urbanisme, énergie...) servis par 85 routes REST. Les pipelines ont traité environ 575 millions de lignes sur la France entière ; l\'instance publique actuelle couvre la Loire-Atlantique et la Vendée. J\'ai tout fait seul, du code à la production.',
     modalIntro:
-      'Une plateforme SaaS de données publiques françaises : 27 jeux de données croisés sur plus de 35 000 communes, environ 575 millions de lignes traitées derrière 85 routes REST. Un projet que j\'ai mené seul, du premier commit à la mise en production.',
+      'Une plateforme SaaS de données publiques françaises : 27 jeux de données servis par 85 routes REST. Les pipelines ont traité environ 575 millions de lignes sur plus de 35 000 communes (France entière) ; l\'instance publique actuelle, ré-hébergée sur mon homelab, couvre la Loire-Atlantique et la Vendée. Un projet que j\'ai mené seul, du premier commit à la mise en production.',
     link: { href: 'https://datacommune.fr', label: 'datacommune.fr ↗' },
     tags: ['fastapi', 'postgis', 'sveltekit', 'stripe', 'etl', 'docker'],
     sections: [
@@ -67,7 +67,7 @@ export const projects = [
         items: [
           'Quatre formules facturées via Stripe (checkout et webhooks)',
           'Frontend en SvelteKit 5, servi par Cloudflare Workers',
-          'Déploiement Docker et Caddy, intégration continue avec GitHub Actions. L\'API publique est en cours de ré-hébergement',
+          'Déploiement Docker et Caddy derrière un tunnel Cloudflare, intégration continue avec GitHub Actions',
         ],
       },
     ],

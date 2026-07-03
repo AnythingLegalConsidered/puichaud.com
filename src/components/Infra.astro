@@ -10,8 +10,9 @@
     <div class="sec-head"><h2>Infrastructure</h2><div class="rule"></div></div>
     <p class="sec-intro">
       Mon homelab, le terrain où je teste tout. Il est provisionné entièrement
-      en code, exposé via une gateway VPS sans ouvrir un seul port à la maison, et conçu pour repartir
-      depuis git après une panne, grâce à des backups que je teste vraiment.
+      en code, accessible à distance via Tailscale — je retire l'edge public
+      au profit d'un accès privé — et conçu pour repartir depuis git après
+      une panne, grâce à des backups que je teste vraiment.
     </p>
 
     <div class="infra-panel">
@@ -24,15 +25,15 @@
       <div class="grp">
         <div class="line">
           <span class="k">provisioning</span>
-          <span class="v">git push <i>→</i> Terraform + Ansible <i>→</i> Proxmox</span>
+          <span class="v">git <i>→</i> Terraform + Ansible <i>→</i> Proxmox</span>
         </div>
         <div class="line">
           <span class="k">accès</span>
-          <span class="v">internet <i>→</i> VPS Gateway <i>→</i> pve02 <span class="muted">· 13 LXC en IaC</span></span>
+          <span class="v">Tailscale <i>→</i> LAN <i>→</i> pve02 <span class="muted">· 13 LXC en IaC</span></span>
         </div>
         <div class="line">
           <span class="k"></span>
-          <span class="v muted">Caddy · Tailscale · Pocket ID · <b>0 port ouvert à la maison</b></span>
+          <span class="v muted">caddy-lan · Pocket ID · <b>edge public en cours de retrait</b></span>
         </div>
       </div>
 
