@@ -7,9 +7,10 @@ homelab, Timeline, Projets, Infra, Compétences et Contact.
 
 - **Astro** (statique, zéro framework côté client)
 - **CSS** global dans `src/styles/global.css` — variables thème dans `:root`
+- **Polices** auto-hébergées via `@fontsource/*` (importées dans `Base.astro`)
 - **Données projets** : `src/data/projects.js` (JS plain exporté, branché dans `Projects.astro`)
-- **Stats live** : le composant `Metrics.astro` consomme `public/stats.json` (mock) ; voir
-  `scripts/stats-export/` pour brancher les vraies données depuis le homelab
+- **Métriques** : statiques dans `Metrics.astro` ; `scripts/stats-export/` reste dispo
+  si un jour on branche des stats live depuis le homelab
 
 ## Commandes
 
@@ -46,7 +47,8 @@ public/
   og-image.png
   robots.txt
   cv.pdf
-  stats.json                  # mock — remplacer par l'URL publique quand branché
+  _headers                    # en-têtes sécurité Cloudflare Pages
+  _redirects                  # anciens chemins (ex-/docs/CV-*.pdf) → /cv.pdf
 scripts/stats-export/         # script Python à faire tourner côté infra (voir son README)
 ```
 
@@ -60,7 +62,7 @@ scripts/stats-export/         # script Python à faire tourner côté infra (voi
 | Compétences | `src/components/Skills.astro` |
 | Expérience / formation | `src/components/Timeline.astro` |
 | Contact | `src/components/Contact.astro` |
-| Métriques (données mock) | `public/stats.json` |
+| Métriques | `src/components/Metrics.astro` |
 
 ## Règles de confidentialité (bloquantes)
 
@@ -83,7 +85,7 @@ Secrets requis dans le repo GitHub :
 
 Domaine : `puichaud.com` (DNS Cloudflare, apex).
 
-## Branchement stats live (à faire côté infra)
+## Branchement stats live (optionnel, à faire côté infra)
 
-Voir `scripts/stats-export/README.md`. Une fois le `stats.json` réel publié sur la passerelle,
-remplacer `public/stats.json` par un fetch vers l'URL publique dans `Metrics.astro`.
+Voir `scripts/stats-export/README.md`. Une fois un `stats.json` réel publié sur la passerelle,
+brancher `Metrics.astro` dessus (fetch au build ou côté client).

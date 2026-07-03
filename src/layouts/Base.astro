@@ -6,6 +6,13 @@ const {
 
 const canonical = 'https://puichaud.com';
 const ogImage = `${canonical}/og-image.png`;
+// Polices auto-hébergées (perf + pas d'appel tiers vers Google — conformité CNIL)
+import '@fontsource/cinzel/700.css';
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/500.css';
+import '@fontsource/inter/600.css';
+import '@fontsource/jetbrains-mono/400.css';
+import '@fontsource/jetbrains-mono/500.css';
 import '../styles/global.css';
 ---
 
@@ -16,6 +23,7 @@ import '../styles/global.css';
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{title}</title>
   <meta name="description" content={description} />
+  <meta name="theme-color" content="#3A2F24" />
   <link rel="canonical" href={canonical} />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
@@ -51,10 +59,6 @@ import '../styles/global.css';
     ],
     knowsAbout: ['Active Directory', 'Proxmox', 'Terraform', 'Ansible', 'Infrastructure as Code', 'DevOps'],
   })} />
-
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
   <!-- Enable scroll-reveal styles only when JS runs (no-JS stays visible) -->
   <script is:inline>document.documentElement.classList.add('anim');</script>
@@ -97,7 +101,7 @@ import '../styles/global.css';
         entries.forEach(function (e) {
           if (!e.isIntersecting) return;
           links.forEach(function (a) { a.classList.remove('active'); a.removeAttribute('aria-current'); });
-          if (map[e.target.id]) { map[e.target.id].classList.add('active'); map[e.target.id].setAttribute('aria-current', 'true'); }
+          if (map[e.target.id]) { map[e.target.id].classList.add('active'); map[e.target.id].setAttribute('aria-current', 'location'); }
         });
       }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
       sections.forEach(function (s) { spy.observe(s); });

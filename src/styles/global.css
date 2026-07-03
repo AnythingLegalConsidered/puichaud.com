@@ -354,7 +354,7 @@
   .tags { display: flex; flex-wrap: wrap; gap: 6px; }
   .tag {
     font-family: var(--mono); font-size: 10.5px;
-    color: var(--bronze-dark);
+    color: #6E4A2B; /* bronze assombri — contraste AA (≥4.5:1) sur bronze-light */
     background: var(--bronze-light);
     border-radius: var(--r-pill);
     padding: 2.5px 10px;
@@ -435,7 +435,7 @@
       display: none;
       position: absolute; top: 100%; left: 0; right: 0;
       flex-direction: column; gap: 0; align-items: stretch;
-      background: rgba(250,246,240,.98); backdrop-filter: blur(6px);
+      background: var(--marble); /* opaque : lisibilité garantie sur tout moteur de rendu */
       border-bottom: 1px solid var(--stone);
       padding: 6px 24px 14px;
     }
@@ -477,5 +477,20 @@
     .badge .dot,
     .tl-item.running::before {
       animation: none;
+    }
+  }
+
+  /* Impression : l'IntersectionObserver n'a pas tourné pour les sections
+     hors viewport — sans ceci elles s'imprimeraient invisibles (opacity 0) */
+  @media print {
+    html.anim .sec-head,
+    html.anim .sec-intro,
+    html.anim :where(#metrics) .grid,
+    html.anim .tl-item,
+    html.anim .card,
+    html.anim .infra-panel,
+    html.anim .skill-col,
+    html.anim :where(#contact) .box {
+      opacity: 1 !important; transform: none !important; transition: none;
     }
   }
