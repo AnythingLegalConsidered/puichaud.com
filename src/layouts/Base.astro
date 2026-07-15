@@ -1,11 +1,15 @@
 ---
 const {
-  title = 'Ianis Puichaud — Administrateur Systèmes & Réseaux → DevOps & LLMOps',
+  title = 'Ianis Puichaud — Administrateur Systèmes & Réseaux · IaC',
   description = 'Support N2 et admin systèmes chez Equans (Active Directory, sécurité du poste), homelab Proxmox en IaC. Recherche alternance Master Infra & Cloud — Nantes, 2026.',
+  canonicalPath = '/',
+  image = '/og-image.png',
+  schema = null,
 } = Astro.props;
 
-const canonical = 'https://puichaud.com';
-const ogImage = `${canonical}/og-image.png`;
+const origin = 'https://puichaud.com';
+const canonical = new URL(canonicalPath, origin).toString();
+const ogImage = new URL(image, origin).toString();
 // Polices auto-hébergées (perf + pas d'appel tiers vers Google — conformité CNIL)
 import '@fontsource/cinzel/700.css';
 import '@fontsource/inter/400.css';
@@ -13,6 +17,9 @@ import '@fontsource/inter/500.css';
 import '@fontsource/inter/600.css';
 import '@fontsource/jetbrains-mono/400.css';
 import '@fontsource/jetbrains-mono/500.css';
+import inter400 from '@fontsource/inter/files/inter-latin-400-normal.woff2?url';
+import inter600 from '@fontsource/inter/files/inter-latin-600-normal.woff2?url';
+import cinzel700 from '@fontsource/cinzel/files/cinzel-latin-700-normal.woff2?url';
 import '../styles/global.css';
 ---
 
@@ -26,9 +33,13 @@ import '../styles/global.css';
   <meta name="theme-color" content="#3A2F24" />
   <link rel="canonical" href={canonical} />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preload" href={inter400} as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href={inter600} as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href={cinzel700} as="font" type="font/woff2" crossorigin />
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Ianis Puichaud" />
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
   <meta property="og:url" content={canonical} />
@@ -36,12 +47,14 @@ import '../styles/global.css';
   <meta property="og:image" content={ogImage} />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content={`Aperçu — ${title}`} />
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content={title} />
   <meta name="twitter:description" content={description} />
   <meta name="twitter:image" content={ogImage} />
+  <meta name="twitter:image:alt" content={`Aperçu — ${title}`} />
 
   <!-- JSON-LD Person -->
   <script is:inline type="application/ld+json" set:html={JSON.stringify({
@@ -52,48 +65,25 @@ import '../styles/global.css';
     worksFor: { '@type': 'Organization', name: 'Equans' },
     alumniOf: { '@type': 'CollegeOrUniversity', name: 'EPSI Nantes' },
     address: { '@type': 'PostalAddress', addressLocality: 'Nantes', addressCountry: 'FR' },
-    url: canonical,
+    url: origin,
     sameAs: [
       'https://github.com/AnythingLegalConsidered',
       'https://www.linkedin.com/in/ianispuichaud',
     ],
     knowsAbout: ['Active Directory', 'Proxmox', 'Terraform', 'Ansible', 'Infrastructure as Code', 'DevOps'],
   })} />
+  {schema && <script is:inline type="application/ld+json" set:html={JSON.stringify(schema)} />}
 
-  <!-- Enable scroll-reveal styles only when JS runs (no-JS stays visible) -->
-  <script is:inline>document.documentElement.classList.add('anim');</script>
 </head>
 <body>
   <slot />
 
   <script is:inline>
     (function () {
-      var els = document.querySelectorAll(
-        '.sec-head, .sec-intro, #metrics .grid, .tl-item, .card, .infra-panel, .skill-col, #contact .box'
-      );
-      if (!('IntersectionObserver' in window) ||
-          window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        els.forEach(function (el) { el.classList.add('is-in'); });
-        return;
-      }
-      var io = new IntersectionObserver(function (entries) {
-        entries.forEach(function (e) {
-          if (e.isIntersecting) {
-            e.target.classList.add('is-in');
-            io.unobserve(e.target);
-          }
-        });
-      }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-      els.forEach(function (el) { io.observe(el); });
-    })();
-  </script>
-
-  <script is:inline>
-    (function () {
-      var links = document.querySelectorAll('header nav a[href^="#"]');
+      var links = document.querySelectorAll('.site-header nav a[href*="#"]');
       if (!links.length || !('IntersectionObserver' in window)) return;
       var map = {};
-      links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+      links.forEach(function (a) { map[new URL(a.href).hash.slice(1)] = a; });
       var sections = Object.keys(map)
         .map(function (id) { return document.getElementById(id); })
         .filter(Boolean);
