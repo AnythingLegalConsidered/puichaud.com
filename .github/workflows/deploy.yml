@@ -24,8 +24,8 @@ jobs:
       - name: Type & content check
         run: npm run check
 
-      - name: Audit dependencies (non-blocking)
-        run: npm audit --omit=dev --audit-level=high || true
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Build
         run: npm run build
