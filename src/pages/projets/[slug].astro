@@ -220,10 +220,15 @@ const projectSchema = {
   }
 
   @media (max-width: 440px) {
+    .case-hero { padding: 42px 0 48px; }
+    .case-title-row h1 {
+      font-size: clamp(30px, 10vw, 38px);
+      overflow-wrap: anywhere;
+    }
     .case-lede { font-size: 16px; }
-    .case-facts dd { font-size: 7.5px; }
-    .case-content section { padding-left: 30px; }
-    .case-gallery { margin-left: 30px; }
+    .case-facts dd { font-size: 9.5px; line-height: 1.35; }
+    .case-content section { padding-left: 24px; }
+    .case-gallery { margin-left: 24px; }
     .limits-section { padding: 24px 20px 16px 58px !important; }
     .limits-section .case-section-no { left: 20px; top: 29px; }
   }

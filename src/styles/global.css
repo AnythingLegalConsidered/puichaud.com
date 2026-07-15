@@ -334,16 +334,40 @@
 
   /* ============ RESPONSIVE ============ */
   @media (max-width: 720px) {
-    section { padding: 52px 0; }
-    #hero { padding: 62px 0 64px; }
-    #hero .kicker { font-size: 10.5px; line-height: 1.7; letter-spacing: .16em; }
-    #hero .sub { margin-top: 20px; font-size: 16px; line-height: 1.65; }
-    .badge { margin-top: 24px; padding: 9px 12px; font-size: 10.5px; }
-    #hero .ctas { margin-top: 26px; gap: 10px; }
+    .wrap { padding-inline: 20px; }
+    section { padding: 44px 0; }
+    #hero { padding: 44px 0 50px; }
+    #hero h1 { font-size: clamp(28px, 8.5vw, 34px); }
+    #hero .kicker { font-size: 11px; line-height: 1.6; letter-spacing: .13em; }
+    #hero .sub { margin-top: 18px; font-size: 15.5px; line-height: 1.55; }
+    .badge { margin-top: 20px; padding: 8px 11px; font-size: 11px; line-height: 1.45; }
+    #hero .ctas {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+      max-width: 340px; margin: 22px auto 0; gap: 8px;
+    }
+    #hero .btn {
+      justify-content: center; min-height: 44px;
+      padding: 10px; font-size: 11.5px; letter-spacing: .07em;
+    }
+    #metrics { margin-top: -28px; }
     #metrics .grid { grid-template-columns: 1fr 1fr; }
+    #metrics .cell { padding: 19px 10px 16px; }
+    #metrics .v { height: 36px; font-size: 27px; }
     #metrics .cell:nth-child(2) { border-right: none; }
     #metrics .cell:nth-child(-n+2) { border-bottom: 1px solid var(--stone); }
+    .sec-head { gap: 12px; }
+    .sec-head h2 {
+      min-width: 0; white-space: normal;
+      font-size: 18px; line-height: 1.35; letter-spacing: .16em;
+      text-wrap: balance;
+    }
+    .sec-head .rule { min-width: 28px; }
+    .sec-intro { margin-bottom: 30px; }
     .skills-grid { grid-template-columns: 1fr; }
+    .skill-col { padding: 22px 20px; }
+    .skill-col li span { font-size: 11px; }
+    #contact .box { padding: 34px 22px; }
+    footer { margin-top: 36px; }
 
     /* nav mobile : burger + menu déroulant sous le header */
     .site-header .brand { display: inline-flex; align-items: center; min-height: 44px; }
@@ -359,6 +383,17 @@
     .site-header nav.open { display: flex; }
     .site-header nav a { padding: 11px 0; border-bottom: 1px solid var(--marble-dark); }
     .site-header nav a:last-child { border-bottom: none; }
+  }
+
+  @media (max-width: 400px) {
+    .wrap { padding-inline: 18px; }
+    #hero { padding-top: 38px; }
+    #hero .sub { font-size: 15px; }
+    .sec-head { gap: 10px; }
+    .sec-head h2 { font-size: 17px; letter-spacing: .11em; }
+    .sec-head .rule { min-width: 20px; }
+    .skill-col li { align-items: flex-start; flex-direction: column; gap: 1px; }
+    .skill-col li span { padding-top: 0; white-space: normal; }
   }
 
   @media (prefers-reduced-motion: reduce) {
