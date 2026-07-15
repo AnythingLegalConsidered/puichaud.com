@@ -236,17 +236,25 @@ const [dataCommune, hexalith, homelab, automation] = projects;
 
   @media (max-width: 760px) {
     .project-lead { grid-template-columns: 1fr; }
-    .project-copy { padding: 27px 24px; }
-    .project-visual { min-height: 240px; border-left: 0; border-top: 1px solid var(--bronze-dark); }
+    .project-copy { padding: 25px 22px; }
+    .project-index { font-size: 11px; }
+    .project-visual { min-height: 190px; border-left: 0; border-top: 1px solid var(--bronze-dark); }
     .project-pair { grid-template-columns: 1fr; }
+    .project-brief,
+    .project-note { padding: 24px 22px; }
     .project-note { grid-template-columns: 1fr; gap: 8px; }
     .project-note .proof-grid { margin: 14px 0 0; }
   }
 
   @media (max-width: 440px) {
     .project-title-row { align-items: flex-start; flex-direction: column; gap: 7px; }
-    .proof-grid dt { font-size: 17px; }
-    .proof-grid dd { font-size: 8px; }
-    .project-actions { align-items: flex-start; flex-direction: column; gap: 0; }
+    .project-copy,
+    .project-brief,
+    .project-note { padding-inline: 18px; }
+    .proof-grid div { padding-inline: 6px; }
+    .proof-grid div:first-child { padding-left: 0; }
+    .proof-grid dt { font-size: 18px; }
+    .proof-grid dd { font-size: 10.5px; line-height: 1.35; }
+    .project-actions { align-items: flex-start; flex-direction: column; gap: 2px; }
   }
 </style>
