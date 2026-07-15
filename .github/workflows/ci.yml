@@ -1,0 +1,62 @@
+# Pull request quality gate. This workflow never deploys and uses no secrets.
+name: Pull Request CI
+
+on:
+  pull_request:
+    branches: [master]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate portfolio
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout pull request
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.22.0
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
+      - name: Run Astro checks
+        run: npm run check
+
+      - name: Test CSP generation
+        run: npm test
+
+      - name: Build site
+        run: npm run build
+
+      - name: Verify generated CSP
+        run: npm run validate:csp
+
+      - name: Validate HTML
+        run: npm run validate:html
+
+      - name: Check internal links and sitemap
+        run: npm run validate:site
+
+      - name: Scan for sensitive data
+        run: npm run scan:sensitive
