@@ -55,7 +55,7 @@ const projectSchema = {
     {project.image && (
       <div class="wrap case-cover-wrap">
         <figure class="case-cover">
-          <img src={project.image} alt={project.imageAlt} width="1280" height="576" />
+          <img src={project.image} alt={project.imageAlt} width="1280" height="577" decoding="async" />
           <figcaption>Capture réelle du projet — les informations sensibles ne sont pas publiées.</figcaption>
         </figure>
       </div>
@@ -98,7 +98,7 @@ const projectSchema = {
           <div class="case-gallery">
             {gallery.map((image) => (
               <figure>
-                <img src={image.src} alt={image.alt} decoding="async" />
+                <img src={image.src} alt={image.alt} width="1280" height="577" loading="lazy" decoding="async" />
                 <figcaption>{image.alt}</figcaption>
               </figure>
             ))}
@@ -182,7 +182,7 @@ const projectSchema = {
   .case-content { min-width: 0; }
   .case-content section { position: relative; padding: 0 0 58px 52px; }
   .case-content section + section { padding-top: 58px; border-top: 1px solid var(--stone); }
-  .case-section-no { position: absolute; left: 0; top: 3px; color: var(--bronze); font: 700 13px/1 var(--mono); }
+  .case-section-no { position: absolute; left: 0; top: 3px; color: var(--bronze-dark); font: 700 13px/1 var(--mono); }
   .case-content h2 { font: 700 25px/1.25 var(--serif); }
   .case-content p { margin-top: 18px; color: var(--ink-muted); }
   .case-content blockquote { margin-top: 26px; padding: 20px 24px; border-left: 3px solid var(--bronze); background: var(--parchment); color: var(--ink); font-size: 15px; }

@@ -42,6 +42,10 @@
 
   a { color: var(--bronze-dark); text-decoration: none; }
   a:hover { text-decoration: underline; text-underline-offset: 4px; }
+  a, button {
+    -webkit-tap-highlight-color: rgba(160, 116, 79, .2);
+    touch-action: manipulation;
+  }
 
   /* focus clavier — anneau bronze (doré sur le hero sombre) */
   :focus-visible { outline: 2px solid var(--bronze); outline-offset: 2px; }
@@ -50,6 +54,7 @@
   /* skip link — caché jusqu'au focus clavier */
   .skip-link {
     position: absolute; left: 12px; top: -48px; z-index: 100;
+    display: flex; align-items: center; min-height: 44px;
     background: var(--bronze); color: #fff;
     padding: 9px 16px; border-radius: var(--r-btn);
     font-size: 14px; font-weight: 600;
@@ -341,6 +346,7 @@
     .skills-grid { grid-template-columns: 1fr; }
 
     /* nav mobile : burger + menu déroulant sous le header */
+    .site-header .brand { display: inline-flex; align-items: center; min-height: 44px; }
     .nav-toggle { display: inline-flex; }
     .site-header nav {
       display: none;
@@ -356,6 +362,13 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: .01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: .01ms !important;
+    }
     .badge .dot,
     .tl-item.running::before {
       animation: none;

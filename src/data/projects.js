@@ -19,7 +19,7 @@ export const projects = [
       'Réunir des sources publiques hétérogènes sans masquer leurs limites : millésimes, couverture, schémas et volumes varient fortement selon les producteurs.',
     work: [
       '21 pipelines ETL avec contrôles de volume, de schéma et de couverture avant mise en production.',
-      'API FastAPI sur PostgreSQL 17 et PostGIS, authentification hybride, quotas et réponses d’erreur normalisées.',
+      'API FastAPI sur PostgreSQL et PostGIS, authentification hybride, quotas et réponses d’erreur normalisées.',
       'Frontend SvelteKit 5 déployé sur Cloudflare Workers ; API conteneurisée sur mon homelab et publiée par tunnel sortant.',
       'CI/CD GitHub Actions avec runner auto-hébergé, migrations contrôlées, images immuables et procédure de retour arrière testée.',
     ],
@@ -49,7 +49,7 @@ export const projects = [
     summary:
       'Un laboratoire complémentaire à mon expérience professionnelle, construit pour pratiquer l’IaC, l’IAM, l’observabilité et la reprise après sinistre de bout en bout.',
     outcome:
-      'Six LXC et quatre segments logiques réellement provisionnés. Les scénarios SSO, cycle de vie des comptes, alerte et restauration ont été exécutés et documentés.',
+      'Six LXC réellement provisionnés. Les scénarios SSO, cycle de vie des comptes, alerte et restauration ont été exécutés et documentés.',
     tags: ['Terraform', 'Ansible', 'Authentik', 'Grafana', 'GitHub Actions'],
     facts: [
       { value: '27', label: 'PR fusionnées' },

@@ -5,15 +5,20 @@ import Base from '../layouts/Base.astro';
 <Base
   title="Page introuvable (404) — Ianis Puichaud"
   description="Cette page n'existe pas. Retour à l'accueil du portfolio d'Ianis Puichaud."
+  canonicalPath="/404.html"
+  robots="noindex, nofollow"
 >
-  <section class="nf">
-    <div class="wrap">
-      <div class="nf-code">404</div>
-      <h1>Cette page n'existe pas.</h1>
-      <p>Le lien est peut-être cassé, ou la page a été déplacée.</p>
-      <a class="btn primary" href="/">Retour à l'accueil</a>
-    </div>
-  </section>
+  <a class="skip-link" href="#main">Aller au contenu</a>
+  <main id="main">
+    <section class="nf">
+      <div class="wrap">
+        <div class="nf-code">404</div>
+        <h1>Cette page n'existe pas.</h1>
+        <p>Le lien est peut-être cassé, ou la page a été déplacée.</p>
+        <a class="btn primary" href="/">Retour à l'accueil</a>
+      </div>
+    </section>
+  </main>
 </Base>
 
 <style>

@@ -5,6 +5,7 @@ const {
   canonicalPath = '/',
   image = '/og-image.png',
   schema = null,
+  robots = null,
 } = Astro.props;
 
 const origin = 'https://puichaud.com';
@@ -30,8 +31,10 @@ import '../styles/global.css';
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{title}</title>
   <meta name="description" content={description} />
+  {robots && <meta name="robots" content={robots} />}
   <meta name="theme-color" content="#3A2F24" />
   <link rel="canonical" href={canonical} />
+  <link rel="sitemap" href="/sitemap-index.xml" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="preload" href={inter400} as="font" type="font/woff2" crossorigin />
   <link rel="preload" href={inter600} as="font" type="font/woff2" crossorigin />
@@ -77,48 +80,6 @@ import '../styles/global.css';
 </head>
 <body>
   <slot />
-
-  <script is:inline>
-    (function () {
-      var links = document.querySelectorAll('.site-header nav a[href*="#"]');
-      if (!links.length || !('IntersectionObserver' in window)) return;
-      var map = {};
-      links.forEach(function (a) { map[new URL(a.href).hash.slice(1)] = a; });
-      var sections = Object.keys(map)
-        .map(function (id) { return document.getElementById(id); })
-        .filter(Boolean);
-      var spy = new IntersectionObserver(function (entries) {
-        entries.forEach(function (e) {
-          if (!e.isIntersecting) return;
-          links.forEach(function (a) { a.classList.remove('active'); a.removeAttribute('aria-current'); });
-          if (map[e.target.id]) { map[e.target.id].classList.add('active'); map[e.target.id].setAttribute('aria-current', 'location'); }
-        });
-      }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
-      sections.forEach(function (s) { spy.observe(s); });
-    })();
-  </script>
-
-  <script is:inline>
-    (function () {
-      var btn = document.querySelector('.nav-toggle');
-      var nav = document.getElementById('primary-nav');
-      if (!btn || !nav) return;
-      function close() {
-        nav.classList.remove('open');
-        btn.setAttribute('aria-expanded', 'false');
-        btn.setAttribute('aria-label', 'Ouvrir le menu');
-      }
-      function open() {
-        nav.classList.add('open');
-        btn.setAttribute('aria-expanded', 'true');
-        btn.setAttribute('aria-label', 'Fermer le menu');
-      }
-      btn.addEventListener('click', function () {
-        nav.classList.contains('open') ? close() : open();
-      });
-      nav.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', close); });
-      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
-    })();
-  </script>
+  <script is:inline src="/scripts/site.js" defer></script>
 </body>
 </html>

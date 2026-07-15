@@ -17,7 +17,7 @@ const [dataCommune, hexalith, homelab, automation] = projects;
         <div class="project-index">{dataCommune.number} · produit exploité</div>
         <div class="project-title-row">
           <h3>{dataCommune.name}</h3>
-          <span class="project-status"><i></i>{dataCommune.status}</span>
+          <span class="project-status"><i aria-hidden="true"></i>{dataCommune.status}</span>
         </div>
         <p class="project-summary">{dataCommune.summary}</p>
         <dl class="proof-grid">
@@ -27,12 +27,12 @@ const [dataCommune, hexalith, homelab, automation] = projects;
         </dl>
         <p class="project-outcome">{dataCommune.outcome}</p>
         <div class="project-actions">
-          <a class="case-link" href={`/projets/${dataCommune.slug}/`}>Lire l’étude de cas <span>→</span></a>
+          <a class="case-link" href={`/projets/${dataCommune.slug}/`}>Lire l’étude de cas <span aria-hidden="true">→</span></a>
           {dataCommune.external && <a class="external-link" href={dataCommune.external.href} target="_blank" rel="noopener">Voir le produit ↗</a>}
         </div>
       </div>
       <a class="project-visual" href={`/projets/${dataCommune.slug}/`} aria-label={`Interface publique · capture réelle — découvrir l’étude de cas ${dataCommune.name}`}>
-        <img src={dataCommune.image} alt={dataCommune.imageAlt} width="1280" height="576" loading="lazy" decoding="async" />
+        <img src={dataCommune.image} alt={dataCommune.imageAlt} width="1280" height="577" loading="lazy" decoding="async" />
         <span>Interface publique · capture réelle</span>
       </a>
     </article>
@@ -49,7 +49,7 @@ const [dataCommune, hexalith, homelab, automation] = projects;
             ))}
           </dl>
           <p class="project-limit">{project.limits[0]}</p>
-          <a class="case-link" href={`/projets/${project.slug}/`}>Voir les preuves <span>→</span></a>
+          <a class="case-link" href={`/projets/${project.slug}/`}>Voir les preuves <span aria-hidden="true">→</span></a>
         </article>
       ))}
     </div>
@@ -65,7 +65,7 @@ const [dataCommune, hexalith, homelab, automation] = projects;
           <div><dt>{fact.value}</dt><dd>{fact.label}</dd></div>
         ))}
       </dl>
-      <a class="case-link" href={`/projets/${automation.slug}/`}>Lire le périmètre public <span>→</span></a>
+      <a class="case-link" href={`/projets/${automation.slug}/`}>Lire le périmètre public <span aria-hidden="true">→</span></a>
     </article>
   </div>
 </section>
