@@ -1,7 +1,8 @@
 ---
 // Infra widget — "spec sheet" layout (uniform label/value lines, robust).
 // Narrative: provisioning (GitOps) → access (edge) → services → resilience.
-// Reality (01-Homelab repo): all guests on pve02; resilience = PBS + restic
+// Reality (01-Homelab repo): one active node, 13 LXC described by Terraform;
+// resilience = PBS + restic
 // offsite + IaC replayable from git. NetBox dropped (OOS/decommission per planning).
 ---
 
@@ -9,10 +10,9 @@
   <div class="wrap">
     <div class="sec-head"><h2>Infrastructure</h2><div class="rule"></div></div>
     <p class="sec-intro">
-      Mon homelab, le terrain où je teste tout. Il est provisionné entièrement
-      en code, accessible à distance via Tailscale — je retire l'edge public
-      au profit d'un accès privé — et conçu pour repartir depuis git après
-      une panne, grâce à des backups que je teste vraiment.
+      Mon homelab est un environnement exploité, pas une vitrine de logos. Je
+      migre chaque service vers l’IaC avec un contrôle fonctionnel et un retour
+      arrière, puis je vérifie que les sauvegardes peuvent réellement restaurer les données.
     </p>
 
     <div class="infra-panel">
@@ -29,11 +29,11 @@
         </div>
         <div class="line">
           <span class="k">accès</span>
-          <span class="v">Tailscale <i>→</i> LAN <i>→</i> pve02 <span class="muted">· 13 LXC en IaC</span></span>
+          <span class="v">Tailscale <i>→</i> LAN privé <span class="muted">· 13 LXC en IaC</span></span>
         </div>
         <div class="line">
           <span class="k"></span>
-          <span class="v muted">caddy-lan · Pocket ID · <b>edge public en cours de retrait</b></span>
+          <span class="v muted">Caddy · Pocket ID · <b>bascule LAN-only contrôlée</b></span>
         </div>
       </div>
 

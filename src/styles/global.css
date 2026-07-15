@@ -5,7 +5,7 @@
     --parchment: #F5EEE3;
     --surface: #EFE6D7;   /* fond des cartes — un cran plus foncé pour les faire ressortir */
     --bronze: #A0744F;
-    --bronze-dark: #8B6139;
+    --bronze-dark: #80552F;
     --bronze-light: #E8D5C0;
     --gold: #C9A84C;
     --terracotta: #B85C3A;
@@ -14,7 +14,7 @@
     --stone: #D4C4AD;
     --sidebar: #3A2F24;      /* brun sidebar du CV */
     --column: #1E1A15;
-    --green: #4A7A52;
+    --green: #376741;
 
     /* Géométrie — système Marbre (angles nets + chanfrein lapidaire) */
     --r-pill: 2px;     /* badge, pill "featured", tags */
@@ -42,6 +42,10 @@
 
   a { color: var(--bronze-dark); text-decoration: none; }
   a:hover { text-decoration: underline; text-underline-offset: 4px; }
+  a, button {
+    -webkit-tap-highlight-color: rgba(160, 116, 79, .2);
+    touch-action: manipulation;
+  }
 
   /* focus clavier — anneau bronze (doré sur le hero sombre) */
   :focus-visible { outline: 2px solid var(--bronze); outline-offset: 2px; }
@@ -50,6 +54,7 @@
   /* skip link — caché jusqu'au focus clavier */
   .skip-link {
     position: absolute; left: 12px; top: -48px; z-index: 100;
+    display: flex; align-items: center; min-height: 44px;
     background: var(--bronze); color: #fff;
     padding: 9px 16px; border-radius: var(--r-btn);
     font-size: 14px; font-weight: 600;
@@ -73,34 +78,35 @@
   }
 
   /* ============ HEADER ============ */
-  header {
+  .site-header {
     position: sticky; top: 0; z-index: 50;
     background: rgba(250,246,240,.95);
     backdrop-filter: blur(6px);
     border-bottom: 1px solid var(--stone);
   }
-  header .wrap {
+  .site-header .wrap {
     display: flex; align-items: center; justify-content: space-between;
     padding-top: 14px; padding-bottom: 14px;
   }
-  header .brand {
+  .site-header .brand {
     font-family: var(--serif); font-weight: 700; font-size: 18px;
-    color: var(--ink);
+    color: var(--ink); text-decoration: none;
   }
-  header .brand span { color: var(--bronze); }
-  header nav { display: flex; gap: 26px; align-items: center; }
-  header nav a {
+  .site-header .brand span { color: var(--bronze-dark); }
+  .site-header .brand:hover { text-decoration: none; }
+  .site-header nav { display: flex; gap: 26px; align-items: center; }
+  .site-header nav a {
     font-size: 14px; font-weight: 500; color: var(--ink-muted);
     transition: color .15s;
   }
-  header nav a:hover { color: var(--bronze); text-decoration: none; }
-  header nav a.active { color: var(--bronze); font-weight: 600; }
+  .site-header nav a:hover { color: var(--bronze); text-decoration: none; }
+  .site-header nav a.active { color: var(--bronze); font-weight: 600; }
 
   /* burger — masqué en desktop, affiché en mobile */
   .nav-toggle {
     display: none;
     flex-direction: column; justify-content: center; gap: 4px;
-    width: 40px; height: 40px; padding: 0;
+    width: 44px; height: 44px; padding: 0;
     background: none; border: 1px solid var(--stone); border-radius: var(--r-btn);
     cursor: pointer;
   }
@@ -128,6 +134,7 @@
     font-weight: 700; line-height: 1.14;
     margin-top: 18px; color: var(--marble);
   }
+  #hero h1 span { color: var(--gold); }
   #hero .sub {
     max-width: 640px; margin: 24px auto 0;
     font-size: 18px; color: var(--marble-dark); opacity: .92;
@@ -169,7 +176,7 @@
   .btn:hover { text-decoration: none; }
   /* CTA majeur — bronze plein, angle net */
   .btn.primary {
-    background: var(--bronze); color: #fff;
+    background: var(--bronze-dark); color: #fff;
     border-radius: var(--r-btn);
   }
   .btn.primary:hover { background: var(--bronze-dark); }
@@ -274,101 +281,6 @@
   .tl-item .org { font-size: 13.5px; color: var(--ink-muted); }
   .tl-item p { font-size: 14px; color: var(--ink-muted); margin-top: 5px; max-width: 600px; }
 
-  /* ============ PROJECTS ============ */
-  #projets { background: var(--parchment); border-top: 1px solid var(--stone); border-bottom: 1px solid var(--stone); }
-  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-  .card {
-    position: relative;
-    border: 2px solid var(--stone); border-radius: var(--r-panel);
-    background: var(--surface);
-    padding: 26px 28px 20px;
-    display: flex; flex-direction: column;
-    box-shadow: 0 4px 16px rgba(42,31,20,.05);
-    transition: border-color .2s, box-shadow .2s;
-  }
-  .card:hover { border-color: var(--bronze); box-shadow: 0 10px 30px rgba(42,31,20,.08); }
-  .card.featured { border-color: var(--bronze); }
-  .card .pill {
-    position: absolute; top: -12px; left: 26px;
-    background: var(--bronze); color: #fff;
-    font-size: 11.5px; font-weight: 600;
-    border-radius: var(--r-pill); padding: 3px 14px;
-  }
-  .card .c-head {
-    display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
-    margin-bottom: 10px;
-  }
-  .card h3 { font-family: var(--serif); font-size: 21px; font-weight: 700; }
-  .card .c-status { font-family: var(--mono); font-size: 11.5px; color: var(--ink-muted); }
-  .card .c-status .live { color: var(--green); font-weight: 500; }
-  .card .c-status .proto { color: var(--terracotta); }
-  .card > p { font-size: 14.5px; color: var(--ink); flex: 1; }
-
-  /* ============ PROJECT MODAL ============ */
-  .proj-modal {
-    border: none; border-radius: var(--r-panel);
-    background: var(--marble); color: var(--ink);
-    max-width: 620px; width: calc(100vw - 48px);
-    padding: 0; margin: auto;
-    box-shadow: 0 30px 80px rgba(30,26,21,.45);
-  }
-  .proj-modal::backdrop { background: rgba(30,26,21,.55); backdrop-filter: blur(3px); }
-  .proj-modal[open] { animation: modal-in .22s ease-out; }
-  @keyframes modal-in { from { opacity: 0; transform: translateY(14px) scale(.98); } }
-  body:has(dialog[open]) { overflow: hidden; }
-  .m-head {
-    display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
-    padding: 22px 28px 16px;
-    background: var(--parchment);
-    border-bottom: 2px solid var(--bronze-light);
-  }
-  .m-head h3 { font-family: var(--serif); font-size: 22px; font-weight: 700; }
-  .m-head .c-status { font-family: var(--mono); font-size: 11.5px; color: var(--ink-muted); }
-  .m-head .c-status .live { color: var(--green); font-weight: 500; }
-  .m-head .c-status .proto { color: var(--terracotta); }
-  .m-close {
-    background: none; border: 1px solid var(--stone); border-radius: var(--r-btn);
-    width: 32px; height: 32px; font-size: 18px; line-height: 1;
-    color: var(--ink-muted); cursor: pointer; flex: none;
-  }
-  .m-close:hover { border-color: var(--bronze); color: var(--bronze-dark); }
-  .m-body { padding: 20px 28px 28px; font-size: 14px; }
-  .m-body > p { color: var(--ink); }
-  .m-body h4 {
-    font-size: 11px; font-weight: 700; letter-spacing: .14em;
-    text-transform: uppercase; color: var(--bronze-dark);
-    margin: 16px 0 6px;
-  }
-  .m-body ul { list-style: none; }
-  .m-body li { padding-left: 16px; position: relative; margin-bottom: 4px; }
-  .m-body li::before { content: '✓'; position: absolute; left: 0; color: var(--bronze); }
-  .m-body .tags { margin-top: 18px; }
-  .m-body .m-link { display: inline-block; margin-top: 14px; font-weight: 500; }
-
-  .card .c-foot {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 12px; flex-wrap: wrap;
-    margin-top: 16px; padding-top: 14px;
-    border-top: 1px solid var(--marble-dark);
-  }
-  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
-  .tag {
-    font-family: var(--mono); font-size: 10.5px;
-    color: #6E4A2B; /* bronze assombri — contraste AA (≥4.5:1) sur bronze-light */
-    background: var(--bronze-light);
-    border-radius: var(--r-pill);
-    padding: 2.5px 10px;
-  }
-  .c-actions { display: flex; gap: 16px; align-items: center; }
-  .c-actions a { font-size: 13px; font-weight: 500; white-space: nowrap; }
-  .more-btn {
-    font-size: 13px; font-weight: 600;
-    color: var(--bronze-dark);
-    background: none; border: none; cursor: pointer;
-    font-family: var(--sans);
-  }
-  .more-btn:hover { color: var(--bronze); }
-
   /* ============ SKILLS ============ */
   .skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
   .skill-col {
@@ -423,15 +335,20 @@
   /* ============ RESPONSIVE ============ */
   @media (max-width: 720px) {
     section { padding: 52px 0; }
+    #hero { padding: 62px 0 64px; }
+    #hero .kicker { font-size: 10.5px; line-height: 1.7; letter-spacing: .16em; }
+    #hero .sub { margin-top: 20px; font-size: 16px; line-height: 1.65; }
+    .badge { margin-top: 24px; padding: 9px 12px; font-size: 10.5px; }
+    #hero .ctas { margin-top: 26px; gap: 10px; }
     #metrics .grid { grid-template-columns: 1fr 1fr; }
     #metrics .cell:nth-child(2) { border-right: none; }
     #metrics .cell:nth-child(-n+2) { border-bottom: 1px solid var(--stone); }
-    .cards { grid-template-columns: 1fr; }
     .skills-grid { grid-template-columns: 1fr; }
 
     /* nav mobile : burger + menu déroulant sous le header */
+    .site-header .brand { display: inline-flex; align-items: center; min-height: 44px; }
     .nav-toggle { display: inline-flex; }
-    header nav {
+    .site-header nav {
       display: none;
       position: absolute; top: 100%; left: 0; right: 0;
       flex-direction: column; gap: 0; align-items: stretch;
@@ -439,58 +356,21 @@
       border-bottom: 1px solid var(--stone);
       padding: 6px 24px 14px;
     }
-    header nav.open { display: flex; }
-    header nav a { padding: 11px 0; border-bottom: 1px solid var(--marble-dark); }
-    header nav a:last-child { border-bottom: none; }
+    .site-header nav.open { display: flex; }
+    .site-header nav a { padding: 11px 0; border-bottom: 1px solid var(--marble-dark); }
+    .site-header nav a:last-child { border-bottom: none; }
   }
-
-  /* ============ SCROLL REVEAL ============ */
-  /* Gated on html.anim (added early by inline JS) so content stays visible
-     without JS. :where() neutralises id specificity so .is-in always wins. */
-  html.anim .sec-head,
-  html.anim .sec-intro,
-  html.anim :where(#metrics) .grid,
-  html.anim .tl-item,
-  html.anim .card,
-  html.anim .infra-panel,
-  html.anim .skill-col,
-  html.anim :where(#contact) .box {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity .6s cubic-bezier(.22,.61,.36,1),
-                transform .6s cubic-bezier(.22,.61,.36,1);
-  }
-  html.anim .is-in { opacity: 1; transform: none; }
 
   @media (prefers-reduced-motion: reduce) {
-    html.anim .sec-head,
-    html.anim .sec-intro,
-    html.anim :where(#metrics) .grid,
-    html.anim .tl-item,
-    html.anim .card,
-    html.anim .infra-panel,
-    html.anim .skill-col,
-    html.anim :where(#contact) .box {
-      opacity: 1; transform: none; transition: none;
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: .01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: .01ms !important;
     }
-    /* couper les animations pulsantes (badge dispo + point timeline en cours) */
     .badge .dot,
     .tl-item.running::before {
       animation: none;
-    }
-  }
-
-  /* Impression : l'IntersectionObserver n'a pas tourné pour les sections
-     hors viewport — sans ceci elles s'imprimeraient invisibles (opacity 0) */
-  @media print {
-    html.anim .sec-head,
-    html.anim .sec-intro,
-    html.anim :where(#metrics) .grid,
-    html.anim .tl-item,
-    html.anim .card,
-    html.anim .infra-panel,
-    html.anim .skill-col,
-    html.anim :where(#contact) .box {
-      opacity: 1 !important; transform: none !important; transition: none;
     }
   }
