@@ -222,8 +222,10 @@ const projectSchema = {
   @media (max-width: 440px) {
     .case-hero { padding: 42px 0 48px; }
     .case-title-row h1 {
-      font-size: clamp(30px, 10vw, 38px);
-      overflow-wrap: anywhere;
+      /* 9vw garde « Automatisation » sur une ligne jusqu'à 320px ; hyphens en dernier recours */
+      font-size: clamp(26px, 9vw, 38px);
+      overflow-wrap: break-word;
+      hyphens: auto;
     }
     .case-lede { font-size: 16px; }
     .case-facts dd { font-size: 9.5px; line-height: 1.35; }
