@@ -1,14 +1,22 @@
 <!-- ==========================================================================
-     PROTO 5 / 5 — WINDOWS XP (habillage Luna sur scroll classique)
-     Standalone prototype: all CSS + JS inline, no external resources.
-     System font stacks only (Trebuchet MS / Tahoma / Verdana). Real FR content.
-     Concept: a normal scrolling page dressed as an XP Luna desktop — every
-     section is a window; all information is reachable by scroll, interaction
-     is a bonus. Same structure/content as proto-win9x.html, XP skin.
+     PROTO 5 / 5 — WINDOWS XP (thème Luna bleu, pixel-accurate)
+     Chrome authentique via XP.css (botoxparty, MIT) vendorisé en local.
+     Ce que XP.css fournit : .window (bordure Luna), .title-bar (dégradé Luna
+     + Trebuchet), .title-bar-controls (boutons base64 min/max/close), button
+     Luna, menu[role=tablist] (onglets), checkboxes natives (coche verte Luna).
+     Recréé à la main (valeurs Luna authentiques) : taskbar 30px, bouton
+     démarrer vert, menu démarrer 2 colonnes, fond Bliss SVG, icônes SVG XP.
+     UI en Tahoma 11px (police système XP) ; barres de titre en Trebuchet MS.
+     Contenu FR, chiffres, ancres et JS strictement identiques au fichier
+     précédent — seul l'habillage change. Fonctionne en file://.
      ========================================================================== -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PROTO 5 — Windows XP · Ianis Puichaud</title>
+
+<!-- Chrome Luna authentique (vendorisé, assets base64 embarqués) -->
+<link rel="stylesheet" href="assets/xp.css">
+
 <style>
   /* ---- Design tokens (Luna, blue theme) --------------------------------- */
   :root{
@@ -24,13 +32,10 @@
     --link:#0033aa;
     --green:#3faf2a;          /* Start button green                */
     --dos-green:#00c000;
-    --font-ui:"Trebuchet MS",Tahoma,Verdana,Geneva,system-ui,sans-serif;
-    --font-body:Tahoma,Verdana,"Trebuchet MS",system-ui,sans-serif;
+    /* Tahoma = the real XP system font; Trebuchet is left to xp.css titlebars */
+    --font-ui:Tahoma,"Segoe UI",Verdana,Geneva,system-ui,sans-serif;
+    --font-body:Tahoma,"Segoe UI",Verdana,Geneva,system-ui,sans-serif;
     --font-mono:"Consolas","Lucida Console","Courier New",monospace;
-    /* Reusable glossy Luna title-bar fill */
-    --luna:linear-gradient(180deg,
-      #3f95ff 0%, #0f6cff 8%, #0257e8 40%,
-      #0a63ef 88%, #0257e8 93%, #1f7bff 95%, #0054e3 100%);
   }
 
   *{box-sizing:border-box}
@@ -40,40 +45,30 @@
   body{
     margin:0;
     font-family:var(--font-body);
-    font-size:15px;
+    font-size:13px;
     line-height:1.55;
     color:var(--ink);
-    background:#4f92ea;              /* fallback under the Bliss layer */
+    background:#3b78d8;              /* fallback under the Bliss layer */
     padding-top:34px;               /* room for proto banner          */
-    padding-bottom:56px;            /* room for the taskbar           */
+    padding-bottom:40px;            /* room for the 30px taskbar       */
     cursor:default;
+    -webkit-font-smoothing:antialiased;
   }
   a{color:var(--link)}
   img{max-width:100%}
   h1,h2,h3,h4,p,ul{margin:0}
   ul{padding:0;list-style:none}
 
-  /* ---- "Bliss" wallpaper, pure CSS (evocation, not a copy) -------------- */
-  .bliss{
-    position:fixed;inset:0;z-index:-2;pointer-events:none;
-    background:
-      /* rolling green hill with a soft curved horizon */
-      radial-gradient(ellipse 155% 64% at 50% 120%,
-        #a9d15c 0%, #8bc247 24%, #66992e 50%, #4a7c1f 72%, transparent 73%),
-      /* blue sky, warming toward the horizon */
-      linear-gradient(180deg,
-        #2b6bd4 0%, #4f92ea 26%, #86bcf1 48%,
-        #bcdcf4 59%, #dcecc8 60%, #cfe4bd 100%);
-  }
-  /* two discreet drifting clouds */
-  .bliss::before{
-    content:"";position:absolute;inset:0;
-    background:
-      radial-gradient(38% 22% at 22% 20%, rgba(255,255,255,.55), transparent 62%),
-      radial-gradient(30% 16% at 30% 26%, rgba(255,255,255,.45), transparent 60%),
-      radial-gradient(34% 18% at 74% 16%, rgba(255,255,255,.42), transparent 62%),
-      radial-gradient(24% 14% at 82% 22%, rgba(255,255,255,.35), transparent 60%);
-  }
+  /* ---- "Bliss" wallpaper (SVG evocation — not the copyrighted photo) ---- */
+  .bliss{position:fixed;inset:0;z-index:-2;pointer-events:none}
+  .bliss svg{width:100%;height:100%;display:block}
+
+  /* ---- SVG icon helpers ------------------------------------------------- */
+  .icons-sprite{position:absolute;width:0;height:0;overflow:hidden}
+  .tbico{width:16px;height:16px;flex:none}
+  .bico{width:15px;height:15px;flex:none}
+  .glyph-svg{width:42px;height:42px}
+  .mi-svg{width:18px;height:18px;flex:none}
 
   /* ---- Proto switch banner (same pattern as sibling protos) ------------- */
   .proto-bar{
@@ -92,100 +87,61 @@
   .proto-bar a.here{background:#0a63c9;color:#fff;border-color:#79b4ff}
   .proto-bar a:hover{background:#0a63c9;color:#fff}
 
-  /* ---- Window shell (Luna) --------------------------------------------- */
+  /* ---- Window shell — .window/.title-bar come from xp.css --------------- */
   .desktop{width:min(940px,94vw);margin-inline:auto;padding:26px 0 40px}
-  .win{
-    background:var(--beige);
-    border:3px solid var(--xp-blue);
-    border-top:none;                       /* title bar supplies the top   */
-    border-radius:8px 8px 3px 3px;
-    box-shadow:0 6px 20px rgba(0,20,70,.35);
-    margin-bottom:30px;
-  }
-  .titlebar{
-    display:flex;align-items:center;gap:8px;
-    padding:5px 5px 5px 9px;
-    background:var(--luna);
-    border-radius:7px 7px 0 0;
-    color:#fff;font-family:var(--font-ui);font-weight:700;font-size:15px;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.45);
-    user-select:none;
-  }
-  .titlebar .tico{font-size:15px;line-height:1}
-  .titlebar .ttl{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-    text-shadow:1px 1px 1px rgba(0,10,60,.6)}
-  /* Decorative window controls — minimize / restore / close (glossy) */
-  .tbtns{display:flex;gap:3px}
-  .tbtn{
-    width:22px;height:21px;padding:0;
-    display:inline-flex;align-items:center;justify-content:center;
-    font:700 12px/1 var(--font-ui);color:#fff;
-    border:1px solid rgba(255,255,255,.85);border-radius:4px;cursor:default;
-    background:
-      linear-gradient(180deg,rgba(255,255,255,.6),rgba(255,255,255,0) 45%),
-      linear-gradient(180deg,#5aa0ff,#0a55d8);
-    box-shadow:inset 0 0 2px rgba(255,255,255,.7);
-    text-shadow:0 1px 1px rgba(0,10,60,.5);
-  }
-  .tbtn.close{
-    background:
-      linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0) 45%),
-      linear-gradient(180deg,#f79079,#d33417);
-  }
-  .tbtn:active{box-shadow:inset 0 1px 3px rgba(0,0,0,.4)}
-  .tbtn:focus-visible{outline:2px solid #fff;outline-offset:1px}
-  .winbody{padding:18px 20px}
+  .win{margin-bottom:26px}
+  .win.window{padding:0 0 3px}           /* keep xp.css Luna frame          */
+  .title-bar-text{display:inline-flex;align-items:center;gap:6px}
+  /* Control buttons are inert (decorative) except the dialog close */
+  .title-bar-controls button{cursor:default}
+  .win .window-body{margin:0;padding:16px 18px;font-size:13px}
 
   /* ---- Menu strip (decorative, under some title bars) ------------------- */
   .menustrip{
-    display:flex;gap:2px;padding:3px 6px;font-size:14px;
+    display:flex;gap:2px;padding:3px 6px;font-size:12px;
     background:var(--beige);border-bottom:1px solid var(--beige-lo);
   }
   .menustrip span{padding:2px 8px;border-radius:3px}
   .menustrip u{text-decoration:underline}
 
-  /* ---- Buttons (Luna) --------------------------------------------------- */
+  /* ---- Buttons (links styled as Luna push-buttons) ---------------------- */
   .btn{
-    display:inline-flex;align-items:center;gap:7px;
-    font-family:var(--font-ui);font-size:15px;font-weight:700;
-    padding:8px 16px;color:var(--ink);text-decoration:none;
-    cursor:pointer;border:1px solid var(--xp-border);border-radius:4px;
-    background:
-      linear-gradient(180deg,#ffffff,#f3f3ec 45%,#e4e3d4 46%,#eef0ea);
-    box-shadow:inset 0 1px 0 #fff, inset 0 -1px 0 rgba(0,0,0,.06);
+    display:inline-flex;align-items:center;gap:6px;
+    font-family:var(--font-ui);font-size:13px;
+    padding:5px 14px;min-height:24px;color:var(--ink);text-decoration:none;
+    cursor:pointer;border:1px solid var(--xp-border);border-radius:3px;
+    background:linear-gradient(180deg,#fff,#ecebe5 86%,#d8d0c4);
   }
   .btn:hover{
     border-color:#e08e00;
     box-shadow:inset 0 0 0 1px rgba(248,179,52,.55),
-               0 0 5px 1px rgba(248,179,52,.75);
+               0 0 5px 1px rgba(248,179,52,.6);
   }
-  .btn:active{
-    background:linear-gradient(180deg,#e4e3d4,#f1f0e8);
-    box-shadow:inset 0 1px 3px rgba(0,0,0,.25);
-    padding:9px 15px 7px 17px;
-  }
+  .btn:active{background:linear-gradient(180deg,#cdcac3,#e5e5de 90%,#f2f2f1)}
   .btn:focus-visible{outline:none;border-color:#e08e00;
     box-shadow:inset 0 0 0 1px rgba(248,179,52,.7),
                0 0 6px 2px rgba(248,179,52,.85)}
-  .btn.default{box-shadow:inset 0 0 0 1px #7fb0ff, inset 0 1px 0 #fff}
+  .btn.default{
+    box-shadow:inset -1px 1px #cee7ff,inset 1px 2px #98b8ea,
+               inset -2px 2px #bcd4f6,inset 1px -1px #89ade4,inset 2px -2px #89ade4}
 
   /* ---- Typography helpers ---------------------------------------------- */
-  .lede{font-size:16px;line-height:1.65;max-width:62ch}
+  .lede{font-size:14px;line-height:1.65;max-width:64ch}
   .lede b{background:var(--xp-blue);color:#fff;padding:0 3px;border-radius:2px}
   .muted{color:#4a4a3d}
 
   /* ---- Hero ------------------------------------------------------------- */
   .hero .kicker{
     display:inline-block;background:#fff;border:1px solid var(--beige-lo);
-    border-radius:3px;padding:4px 9px;font-size:13px;margin-bottom:14px;
+    border-radius:3px;padding:4px 9px;font-size:12px;margin-bottom:14px;
   }
-  .hero h1{font-family:var(--font-ui);font-size:clamp(26px,5.4vw,42px);
-    line-height:1.12;margin:0 0 6px}
+  .hero h1{font-family:var(--font-ui);font-size:clamp(24px,5vw,38px);
+    font-weight:700;line-height:1.12;margin:0 0 6px}
   .hero h1 span{color:var(--xp-blue)}
-  .hero .role{font-size:17px;font-weight:700;margin-bottom:14px}
+  .hero .role{font-size:15px;font-weight:700;margin-bottom:14px}
   .badge{
     display:inline-flex;align-items:center;gap:8px;margin:16px 0 22px;
-    padding:6px 12px;font-size:14px;background:#ffffdc;
+    padding:6px 12px;font-size:13px;background:#ffffdc;
     border:1px solid #c9c39a;border-radius:4px;
   }
   .badge .dot{width:10px;height:10px;border-radius:50%;background:#2f9e1f;
@@ -199,10 +155,10 @@
   .metric{background:#fff;padding:14px 12px;text-align:center;
     border:1px solid #b9c6de;border-radius:4px;
     box-shadow:inset 0 1px 3px rgba(0,40,120,.14)}
-  .metric .v{font-family:var(--font-ui);font-size:26px;font-weight:700;
+  .metric .v{font-family:var(--font-ui);font-size:24px;font-weight:700;
     color:var(--xp-blue);line-height:1}
-  .metric .v small{font-size:14px;color:#000}
-  .metric .k{font-size:13px;margin-top:6px;color:#333}
+  .metric .v small{font-size:13px;color:#000}
+  .metric .k{font-size:12px;margin-top:6px;color:#333}
 
   /* ---- Explorer (projects) --------------------------------------------- */
   .explorer-icons{
@@ -214,11 +170,10 @@
     display:flex;flex-direction:column;align-items:center;gap:6px;
     padding:10px 6px;text-align:center;text-decoration:none;color:var(--ink);
     background:transparent;border:1px solid transparent;border-radius:4px;
-    cursor:pointer;font-size:13px;}
+    cursor:pointer;font-size:12px;}
   .icon-tile:hover{background:#dce9fb;border-color:#bcd6f5}
   .icon-tile:focus-visible,.icon-tile.sel{
     background:#316ac5;color:#fff;border:1px dotted #fff;outline:none}
-  .icon-tile .glyph{font-size:34px;line-height:1}
   .icon-tile .cap{font-weight:700}
 
   .project{
@@ -230,32 +185,32 @@
     padding:10px 14px;border-bottom:1px solid #e2ddc7;border-radius:3px 3px 0 0;
     background:linear-gradient(180deg,#fbfaf4,#ece7d3)}
   .proj-head .num{font-family:var(--font-mono);color:var(--xp-blue);font-weight:700}
-  .proj-head h3{font-family:var(--font-ui);font-size:18px}
+  .proj-head h3{font-family:var(--font-ui);font-size:16px;font-weight:700}
   .proj-head .status{
-    margin-left:auto;font-size:12px;padding:2px 9px;border-radius:10px;
+    margin-left:auto;font-size:11px;padding:2px 9px;border-radius:10px;
     background:var(--xp-blue);color:#fff}
-  .proj-head .meta{width:100%;font-size:13px;color:#555}
+  .proj-head .meta{width:100%;font-size:12px;color:#555}
   .proj-body{padding:14px}
   .proj-body p{margin-bottom:10px}
   .facts{display:flex;flex-wrap:wrap;gap:16px;margin:10px 0 12px}
   .fact{border-left:3px solid var(--xp-blue);padding-left:8px}
-  .fact .fv{font-family:var(--font-ui);font-weight:700;font-size:17px;color:var(--xp-blue)}
-  .fact .fk{font-size:12px;color:#555}
+  .fact .fv{font-family:var(--font-ui);font-weight:700;font-size:16px;color:var(--xp-blue)}
+  .fact .fk{font-size:11px;color:#555}
   .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-  .tag{font-size:12px;background:#e8f0fb;padding:2px 8px;border:1px solid #bcd0ec;
+  .tag{font-size:11px;background:#e8f0fb;padding:2px 8px;border:1px solid #bcd0ec;
     border-radius:10px;color:#1c3f77}
   .proj-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}
-  .proj-cols h4{font-size:13px;text-transform:uppercase;letter-spacing:.04em;
+  .proj-cols h4{font-size:12px;text-transform:uppercase;letter-spacing:.04em;
     color:var(--xp-blue);margin-bottom:5px}
-  .proj-cols li{font-size:14px;padding-left:16px;position:relative;margin-bottom:5px}
+  .proj-cols li{font-size:13px;padding-left:16px;position:relative;margin-bottom:5px}
   .proj-cols li::before{content:"▸";position:absolute;left:0;color:var(--xp-blue)}
   .limits li::before{content:"!";color:#a00000;font-weight:700}
 
   /* ---- MS-DOS window (kept as-is: the technical wink) ------------------- */
-  .dos .winbody{padding:0}
+  .dos .window-body{padding:0}
   .dos-screen{
     background:#000;color:#c8c8c8;font-family:var(--font-mono);
-    font-size:14px;line-height:1.45;padding:14px 16px;overflow-x:auto;
+    font-size:13px;line-height:1.45;padding:14px 16px;overflow-x:auto;
     border:2px solid #1a1a1a;border-radius:0 0 2px 2px;
   }
   .dos-screen pre{margin:0;white-space:pre}
@@ -264,26 +219,14 @@
   .dos-screen .path{color:#7ad0ff}
   .dos-screen .cur{background:#c8c8c8;color:#000}
 
-  /* ---- Skills (System properties) -------------------------------------- */
-  .sys-tabs{display:flex;gap:3px;margin-bottom:-1px;padding-left:8px}
-  .sys-tab{
-    font-size:14px;padding:5px 14px;background:#e4e0cd;
-    border:1px solid #c8c4ae;border-bottom:none;border-radius:5px 5px 0 0;
-    position:relative;top:1px}
-  .sys-tab.on{background:#fff;top:0;padding-bottom:6px}
-  .sys-panel{background:#fff;padding:16px;border:1px solid #c8c4ae;border-radius:0 4px 4px 4px}
+  /* ---- Skills (System properties, xp.css tabs + checkboxes) ------------- */
+  .sys-panel{background:#fff;padding:16px;border:1px solid #919b9c;border-radius:0 4px 4px 4px}
   .skills-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
-  .skill-col h3{font-family:var(--font-ui);font-size:15px;margin-bottom:2px}
-  .skill-col .where{font-size:13px;color:#555;margin-bottom:10px}
-  .chk{display:flex;gap:9px;align-items:flex-start;margin-bottom:9px;font-size:14px}
-  .chk .box{
-    flex:none;width:16px;height:16px;margin-top:2px;background:#fff;position:relative;
-    border:1px solid #7f9db9;border-radius:2px;
-    box-shadow:inset 0 1px 2px rgba(0,40,120,.18)}
-  .chk .box::after{content:"";position:absolute;left:5px;top:1px;width:4px;height:9px;
-    border:solid #2f8f1f;border-width:0 2px 2px 0;transform:rotate(45deg)}
-  .chk .lbl{flex:1}
-  .chk .proof{display:block;font-size:12px;color:#2f7d1f}
+  .skill-col h3{font-family:var(--font-ui);font-size:13px;font-weight:700;margin-bottom:2px}
+  .skill-col .where{font-size:12px;color:#555;margin-bottom:12px}
+  .chk{margin-bottom:11px;font-size:13px}
+  .chk label{cursor:default;line-height:1.4}
+  .chk .proof{display:block;font-size:11px;color:#2f7d1f;margin-left:-1px;margin-top:1px}
 
   /* ---- Contact ---------------------------------------------------------- */
   .contact-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
@@ -292,62 +235,81 @@
   /* ---- Easter-egg error dialog ------------------------------------------ */
   .dlg{
     position:fixed;z-index:1500;left:50%;top:38%;transform:translate(-50%,-50%);
-    width:min(360px,88vw);background:var(--beige);
-    border:3px solid var(--xp-blue);border-top:none;border-radius:8px 8px 3px 3px;
-    box-shadow:0 12px 34px rgba(0,20,70,.5);
+    width:min(360px,88vw);
   }
   .dlg[hidden]{display:none}
-  .dlg .titlebar{cursor:default}
-  .dlg-body{display:flex;gap:14px;padding:18px 16px 8px;align-items:flex-start}
-  .dlg-body .warn{font-size:32px;line-height:1}
-  .dlg-body p{font-size:14px}
-  .dlg-foot{display:flex;justify-content:center;gap:10px;padding:8px 16px 16px}
+  .dlg-body{display:flex;gap:14px;padding:16px 14px 6px;align-items:flex-start}
+  .dlg-body .warn{width:32px;height:32px;flex:none}
+  .dlg-body p{font-size:13px}
+  .dlg-foot{display:flex;justify-content:center;gap:10px;padding:6px 14px 14px}
 
-  /* ---- Taskbar (Luna) --------------------------------------------------- */
+  /* ---- Taskbar (Luna, authentic 30px) ----------------------------------- */
   .taskbar{
-    position:fixed;left:0;right:0;bottom:0;z-index:1800;height:42px;
-    display:flex;align-items:stretch;gap:8px;padding-right:4px;
-    background:linear-gradient(180deg,
-      #3f8cf3 0%, #2a6ee0 8%, #245edc 44%, #1e51c8 92%, #245edc 100%);
-    box-shadow:inset 0 2px 0 rgba(255,255,255,.35);
+    position:fixed;left:0;right:0;bottom:0;z-index:1800;height:30px;
+    display:flex;align-items:stretch;
+    /* base #245edc with a bright top highlight + deep bottom liseré */
+    background:
+      linear-gradient(180deg,
+        #3f8feb 0%, #2b74e6 3%, #2062df 6%, #245edc 10%,
+        #245edc 84%, #1e51c8 94%, #123a9e 100%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.5),
+               inset 0 2px 0 rgba(120,180,255,.35);
   }
+  .taskbar::before{               /* the thin bright cyan line at the very top */
+    content:"";position:absolute;left:0;right:0;top:0;height:1px;
+    background:#5aa0f5}
   .start-btn{
-    display:inline-flex;align-items:center;gap:8px;
-    font-family:var(--font-ui);font-style:italic;font-weight:700;font-size:17px;
-    padding:2px 24px 4px 12px;color:#fff;cursor:pointer;
-    border:none;border-radius:0 14px 14px 0 / 0 20px 18px 0;
+    position:relative;
+    display:inline-flex;align-items:center;gap:7px;
+    font-family:"Trebuchet MS",var(--font-ui);
+    font-style:italic;font-weight:700;font-size:15px;
+    height:30px;padding:0 22px 2px 10px;color:#fff;cursor:pointer;
+    border:none;border-radius:0 12px 12px 0 / 0 16px 16px 0;
+    /* authentic Luna green: bright top gloss, mid body, dark inner bottom */
     background:linear-gradient(180deg,
-      #55c02a 0%, #3ba417 12%, #379e14 46%, #2f8410 92%, #379e14 100%);
-    box-shadow:inset 0 2px 1px rgba(255,255,255,.55),
-               inset 0 -6px 8px rgba(0,0,0,.18),
-               2px 0 4px rgba(0,0,0,.25);
-    text-shadow:1px 1px 1px rgba(0,40,0,.55);
+      #5cb036 0%, #4aa32b 6%, #43a027 45%, #368520 86%, #2f7a1c 100%);
+    box-shadow:inset 0 1px 1px rgba(255,255,255,.6),
+               inset 0 -7px 9px rgba(0,60,0,.30),
+               inset -2px 0 6px rgba(0,50,0,.25),
+               2px 0 4px rgba(0,0,0,.28);
+    text-shadow:1px 1px 1px rgba(0,45,0,.6);
   }
-  .start-btn[aria-expanded="true"]{filter:brightness(1.08)}
-  .start-btn:focus-visible{outline:2px solid #fff;outline-offset:-4px}
-  .start-btn .flag{font-size:17px;font-style:normal}
+  .start-btn::after{              /* rounded gloss highlight over the pill */
+    content:"";position:absolute;left:4px;right:14px;top:2px;height:11px;
+    border-radius:0 10px 10px 0/0 8px 8px 0;
+    background:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,0));
+    pointer-events:none}
+  .start-btn[aria-expanded="true"]{filter:brightness(1.07)}
+  .start-btn:focus-visible{outline:1px dotted #fff;outline-offset:-4px}
+  .start-btn .flag{width:19px;height:19px;flex:none;font-style:normal}
   .task-open{
-    flex:1;min-width:0;align-self:center;
-    display:flex;align-items:center;gap:6px;height:26px;
-    font-size:13px;padding:5px 10px;color:#fff;overflow:hidden;white-space:nowrap;
-    border:1px solid rgba(255,255,255,.25);border-radius:3px;
-    background:linear-gradient(180deg,#3f83ea,#2a63cf);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
+    flex:1;min-width:0;align-self:center;margin-left:8px;
+    display:flex;align-items:center;gap:6px;height:23px;
+    font-size:12px;padding:4px 10px;color:#fff;overflow:hidden;white-space:nowrap;
+    border:1px solid rgba(255,255,255,.28);border-radius:2px;
+    background:linear-gradient(180deg,#4a90ef,#2a63cf);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.35),
+               inset 0 -2px 3px rgba(0,20,80,.3)}
+  .task-open svg{width:15px;height:15px;flex:none}
   .tray{
-    flex:none;align-self:stretch;display:flex;align-items:center;gap:10px;
-    padding:0 12px;color:#fff;
-    background:linear-gradient(180deg,#178ee0 0%,#1683d6 50%,#1477c8 100%);
-    border-left:1px solid rgba(255,255,255,.4);
-    box-shadow:inset 1px 0 0 rgba(0,0,0,.15)}
-  .tray .ico{font-size:14px;line-height:1}
-  .clock{flex:none;font-size:14px;min-width:56px;text-align:center;
-    text-shadow:1px 1px 1px rgba(0,20,60,.5)}
+    flex:none;align-self:stretch;display:flex;align-items:center;gap:9px;
+    padding:0 11px 0 12px;color:#fff;margin-left:6px;
+    /* systray light-blue well (#0f9ff1 family) with an inset left separator */
+    background:linear-gradient(180deg,
+      #16a5f5 0%, #12a0f1 6%, #0f9ff1 12%, #128bd8 84%, #0f74c0 100%);
+    box-shadow:inset 2px 0 2px rgba(0,20,60,.35),
+               inset 3px 0 0 rgba(120,200,255,.35),
+               inset 0 1px 0 rgba(255,255,255,.35)}
+  .tray .ico{width:15px;height:15px;flex:none;display:inline-flex}
+  .tray .ico svg{width:15px;height:15px}
+  .clock{flex:none;font-size:12px;min-width:52px;text-align:center;color:#fff;
+    text-shadow:1px 1px 1px rgba(0,20,60,.55)}
 
   /* ---- Notification balloon (systray, XP touch) ------------------------- */
   .balloon{
-    position:fixed;right:8px;bottom:52px;z-index:1850;width:min(260px,80vw);
+    position:fixed;right:8px;bottom:40px;z-index:1850;width:min(260px,80vw);
     background:#ffffe1;border:1px solid #b0aa78;border-radius:6px;
-    padding:10px 12px 12px;font-size:13px;color:#333;
+    padding:10px 12px 12px;font-size:12px;color:#333;
     box-shadow:0 6px 16px rgba(0,20,70,.35);
   }
   .balloon[hidden]{display:none}
@@ -356,6 +318,7 @@
     border-right:1px solid #b0aa78;border-bottom:1px solid #b0aa78;
     transform:rotate(45deg)}
   .balloon b{display:flex;align-items:center;gap:6px;margin-bottom:4px;color:#1c3f77}
+  .balloon b svg{width:15px;height:15px}
   .balloon .x{position:absolute;top:5px;right:6px;width:18px;height:18px;padding:0;
     border:1px solid #b0aa78;border-radius:3px;background:#fff;cursor:pointer;
     font:700 11px/1 var(--font-ui);color:#555}
@@ -363,47 +326,55 @@
 
   /* ---- Start menu (Luna, two zones) ------------------------------------- */
   .start-menu{
-    position:fixed;left:0;bottom:42px;z-index:1900;width:290px;
-    background:#fff;border:1px solid var(--xp-blue-lo);
+    position:fixed;left:0;bottom:30px;z-index:1900;width:352px;max-width:96vw;
+    background:#fff;border:1px solid var(--xp-blue-lo);border-bottom:none;
     border-radius:8px 8px 0 0;overflow:hidden;
-    box-shadow:0 -2px 18px rgba(0,20,70,.4);
+    box-shadow:0 -2px 18px rgba(0,20,70,.45);
   }
   .start-menu[hidden]{display:none}
   .start-menu .sm-head{
-    display:flex;align-items:center;gap:12px;padding:10px 14px;color:#fff;
-    background:linear-gradient(180deg,#2f7bea 0%,#1a5fd6 55%,#0e51c8 100%);
-    border-bottom:2px solid #ff9d2e}
+    display:flex;align-items:center;gap:11px;padding:9px 14px;color:#fff;
+    background:linear-gradient(180deg,#3f8aee 0%,#1a5fd6 48%,#0d4fc6 100%);
+    border-bottom:3px solid #f7961e}
   .start-menu .avatar{
-    width:40px;height:40px;flex:none;border-radius:6px;
-    display:flex;align-items:center;justify-content:center;font-size:22px;
+    width:38px;height:38px;flex:none;border-radius:5px;padding:2px;
+    display:flex;align-items:center;justify-content:center;
     background:linear-gradient(180deg,#d9e6ff,#9dbef2);
-    border:1px solid #fff;box-shadow:0 1px 2px rgba(0,0,0,.3)}
-  .start-menu .who{font-family:var(--font-ui);font-weight:700;font-size:16px;
+    border:2px solid #fff;box-shadow:0 1px 2px rgba(0,0,0,.35)}
+  .start-menu .avatar svg{width:30px;height:30px}
+  .start-menu .who{font-family:"Trebuchet MS",var(--font-ui);font-weight:700;font-size:15px;
     text-shadow:1px 1px 1px rgba(0,20,60,.5)}
-  .start-menu .who small{display:block;font-weight:400;font-size:12px;color:#dbe7ff}
-  .start-menu ul{padding:6px}
+  .start-menu .who small{display:block;font-weight:400;font-size:11px;color:#dbe7ff}
+  .sm-cols{display:flex}
+  .sm-cols ul{padding:6px 5px;flex:1}
+  .sm-left{background:#fff}
+  /* right column: XP pale-blue links panel */
+  .sm-right{background:#d3e5fa;box-shadow:inset 1px 0 0 #aac6ee}
   .start-menu a{
-    display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:4px;
-    font-size:15px;color:var(--ink);text-decoration:none}
-  .start-menu a .mi{font-size:18px;width:24px;text-align:center}
+    display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:3px;
+    font-size:13px;color:var(--ink);text-decoration:none}
+  .sm-right a{color:#0a3a8a;font-weight:700}
   .start-menu a:hover,.start-menu a:focus-visible{
-    background:#316ac5;color:#fff;outline:none}
-  .start-menu hr{border:none;border-top:1px solid #c9c7bd;margin:5px 8px}
+    background:#2f71d4;color:#fff;outline:none}
+  .start-menu hr{border:none;border-top:1px solid #c9c7bd;margin:5px 6px}
+  .sm-right .col-title{font-size:11px;font-weight:700;color:#4a6ea8;
+    padding:4px 8px 2px;text-transform:uppercase;letter-spacing:.03em}
   .start-menu .sm-foot{
-    padding:8px 12px;
-    background:linear-gradient(180deg,#2f7bea 0%,#1a5fd6 55%,#0e51c8 100%);
+    display:flex;justify-content:flex-end;gap:14px;padding:6px 14px;
+    background:linear-gradient(180deg,#3f8aee 0%,#1a5fd6 52%,#0d4fc6 100%);
     border-top:1px solid #7fb0ff}
-  .start-menu .sm-foot a{color:#fff;font-weight:700;font-size:14px;padding:4px 8px}
+  .start-menu .sm-foot a{color:#fff;font-weight:700;font-size:12px;padding:4px 6px;gap:7px}
+  .start-menu .sm-foot a:hover{background:rgba(255,255,255,.18)}
 
   /* ---- Boot screen (XP-style, blue marquee) ----------------------------- */
   .boot{
     position:fixed;inset:0;z-index:3000;background:#000;color:#fff;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
-    gap:30px;font-family:var(--font-ui);cursor:pointer}
+    gap:30px;font-family:"Trebuchet MS",var(--font-ui);cursor:pointer}
   .boot[hidden]{display:none}
-  .boot .brand{font-size:34px;font-weight:700;letter-spacing:.01em;text-align:center}
+  .boot .brand{font-size:32px;font-weight:700;letter-spacing:.01em;text-align:center}
   .boot .brand span{color:#ff8f1f}
-  .boot .brand small{display:block;font-size:14px;font-weight:400;color:#9fb7e0;
+  .boot .brand small{display:block;font-size:13px;font-weight:400;color:#9fb7e0;
     letter-spacing:.28em;margin-top:4px}
   .boot .track{width:180px;height:16px;padding:2px;overflow:hidden;
     background:#0a0a0a;border:1px solid #333;border-radius:3px}
@@ -412,7 +383,7 @@
   .boot .marquee i{flex:1;border-radius:2px;
     background:linear-gradient(180deg,#7ab6ff,#1f6fe6 55%,#0c4fc4)}
   @keyframes xpslide{from{transform:translateX(-70px)}to{transform:translateX(200px)}}
-  .boot .hint{font-size:12px;color:#888}
+  .boot .hint{font-size:11px;color:#888}
 
   /* ---- Responsive ------------------------------------------------------- */
   @media (max-width:720px){
@@ -423,15 +394,192 @@
     .task-open{display:none}          /* hide window pill, keep Start + tray */
   }
   @media (max-width:420px){
-    body{font-size:15px}
+    body{font-size:13px}
     .explorer-icons{grid-template-columns:repeat(2,1fr)}
-    .winbody{padding:14px}
+    .win .window-body{padding:13px}
+    .sm-cols{flex-direction:column}
     .tray .ico{display:none}
   }
 </style>
 
-<!-- ===== Bliss wallpaper layer ===== -->
-<div class="bliss" aria-hidden="true"></div>
+<!-- ===== Reusable XP-style SVG icon sprite (Luna palette) ===== -->
+<svg class="icons-sprite" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="g-scr" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7fb0f0"/><stop offset="1" stop-color="#2a6bd4"/>
+    </linearGradient>
+    <linearGradient id="g-globe" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3f8be6"/><stop offset="1" stop-color="#1c56ac"/>
+    </linearGradient>
+  </defs>
+
+  <!-- welcome / globe (hero) -->
+  <symbol id="ic-app" viewBox="0 0 32 32">
+    <circle cx="16" cy="16" r="13" fill="url(#g-globe)" stroke="#123f7c"/>
+    <ellipse cx="16" cy="16" rx="6.5" ry="13" fill="none" stroke="#bcd8f7" stroke-width="1"/>
+    <line x1="3" y1="16" x2="29" y2="16" stroke="#bcd8f7"/>
+    <path d="M6 10.5h20M6 21.5h20" fill="none" stroke="#bcd8f7"/>
+  </symbol>
+
+  <!-- computer / monitor (metrics, system properties, start) -->
+  <symbol id="ic-computer" viewBox="0 0 32 32">
+    <rect x="3" y="4" width="26" height="19" rx="2" fill="#e7e3d1" stroke="#7a7663"/>
+    <rect x="5.5" y="6" width="21" height="12.5" rx="1" fill="url(#g-scr)" stroke="#33507e"/>
+    <rect x="12" y="23" width="8" height="4" fill="#d6d2c0"/>
+    <rect x="8" y="27" width="16" height="3.2" rx="1.4" fill="#c3bfad" stroke="#8a866f"/>
+  </symbol>
+
+  <!-- command prompt (MS-DOS) -->
+  <symbol id="ic-cmd" viewBox="0 0 32 32">
+    <rect x="3" y="5" width="26" height="22" rx="2" fill="#0a0a0a" stroke="#3a3a3a"/>
+    <rect x="3" y="5" width="26" height="4.5" rx="2" fill="#274a86"/>
+    <path d="M7 15l4.5 3.4L7 21.8" fill="none" stroke="#31d431" stroke-width="2.2" stroke-linejoin="round"/>
+    <rect x="13.5" y="20" width="8" height="2.2" fill="#31d431"/>
+  </symbol>
+
+  <!-- mail / envelope (contact) -->
+  <symbol id="ic-mail" viewBox="0 0 32 32">
+    <rect x="3" y="7" width="26" height="18" rx="2" fill="#fff" stroke="#4d77b3"/>
+    <path d="M3.6 8.2L16 18 28.4 8.2" fill="#dcebff" stroke="#4d77b3" stroke-width="1.4"/>
+    <path d="M3.6 8.2h24.8v.4L16 18 3.6 8.6z" fill="#eaf3ff"/>
+  </symbol>
+
+  <!-- document / CV (cv links) -->
+  <symbol id="ic-doc" viewBox="0 0 32 32">
+    <path d="M7 3h11l7 7v19H7z" fill="#fff" stroke="#8a95a5"/>
+    <path d="M18 3l7 7h-7z" fill="#dbe3ee" stroke="#8a95a5"/>
+    <path d="M11 15h10M11 19h10M11 23h7" stroke="#7f93b0" stroke-width="1.4"/>
+  </symbol>
+
+  <!-- tools / gear (skills, AD automation) -->
+  <symbol id="ic-tools" viewBox="0 0 32 32">
+    <g stroke="#254f8f" stroke-width="1" stroke-linejoin="round">
+      <rect x="9" y="9" width="14" height="14" rx="2" fill="#6ea0e0"/>
+      <rect x="9" y="9" width="14" height="14" rx="2" fill="#6ea0e0" transform="rotate(45 16 16)"/>
+      <circle cx="16" cy="16" r="7" fill="#3f74c4"/>
+      <circle cx="16" cy="16" r="3" fill="#e2ecfb"/>
+    </g>
+  </symbol>
+
+  <!-- user (start menu avatar) -->
+  <symbol id="ic-user" viewBox="0 0 32 32">
+    <circle cx="16" cy="12" r="6.2" fill="#f4cda4" stroke="#b98a5e"/>
+    <path d="M5 30c0-6.6 4.9-10.5 11-10.5S27 23.4 27 30z" fill="#7ea8e6" stroke="#4a78c0"/>
+  </symbol>
+
+  <!-- folder (projects) -->
+  <symbol id="ic-folder" viewBox="0 0 32 32">
+    <path d="M2 7h9l3 3h16v17H2z" fill="#e6a919" stroke="#c98a10"/>
+    <path d="M2 11h28v16H2z" fill="#ffd97e"/>
+    <path d="M2 11h28v5H2z" fill="#ffe8a8"/>
+    <path d="M2 7h9l3 3H2z" fill="#f0b429"/>
+  </symbol>
+
+  <!-- plug / contact (start foot) -->
+  <symbol id="ic-plug" viewBox="0 0 32 32">
+    <rect x="12" y="3" width="3" height="7" fill="#c9cfd8"/>
+    <rect x="17" y="3" width="3" height="7" fill="#c9cfd8"/>
+    <rect x="9" y="10" width="14" height="8" rx="2" fill="#e2e6ec" stroke="#7a8494"/>
+    <path d="M16 18v6a4 4 0 004 4h4" fill="none" stroke="#7a8494" stroke-width="2.2"/>
+  </symbol>
+
+  <!-- info bubble (balloon) -->
+  <symbol id="ic-info" viewBox="0 0 32 32">
+    <circle cx="16" cy="16" r="12" fill="url(#g-globe)" stroke="#123f7c"/>
+    <circle cx="16" cy="10.5" r="2.1" fill="#fff"/>
+    <rect x="14.2" y="14" width="3.6" height="9.5" rx="1" fill="#fff"/>
+  </symbol>
+
+  <!-- warning triangle (easter egg) -->
+  <symbol id="ic-warn" viewBox="0 0 32 32">
+    <path d="M16 3l14.5 26H1.5z" fill="#ffd23c" stroke="#c99a12" stroke-linejoin="round"/>
+    <rect x="14.4" y="12" width="3.2" height="9" rx="1" fill="#3a2e00"/>
+    <rect x="14.4" y="23" width="3.2" height="3.2" rx="1" fill="#3a2e00"/>
+  </symbol>
+
+  <!-- volume speaker (tray) -->
+  <symbol id="ic-vol" viewBox="0 0 32 32">
+    <path d="M4 12h6l8-6v20l-8-6H4z" fill="#fff" stroke="#d4e6fa"/>
+    <path d="M22 10.5a8 8 0 010 11M25.5 7.5a12.5 12.5 0 010 17" fill="none" stroke="#fff" stroke-width="2"/>
+  </symbol>
+
+  <!-- security shield (tray) -->
+  <symbol id="ic-shield" viewBox="0 0 32 32">
+    <path d="M16 3l11 4v9c0 8-5.2 12-11 14C10.2 28 5 24 5 16V7z" fill="#3aa34a" stroke="#fff"/>
+    <path d="M10.5 16l4 4 7.5-8.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+
+  <!-- start flag (4 waving quadrants) -->
+  <symbol id="ic-flag" viewBox="0 0 32 32">
+    <g stroke="#fff" stroke-width="1" stroke-linejoin="round">
+      <path d="M4 6L15 4.2V15.2L4 17.2Z" fill="#e8433a"/>
+      <path d="M15 4.2L27 6V15.8L15 15.2Z" fill="#57b944"/>
+      <path d="M4 17.2L15 15.2V26.2L4 24.4Z" fill="#4aa0e0"/>
+      <path d="M15 15.2L27 15.8V25.8L15 26.2Z" fill="#f5c518"/>
+    </g>
+  </symbol>
+
+  <!-- database cylinder (DataCommune) -->
+  <symbol id="ic-db" viewBox="0 0 32 32">
+    <path d="M5 7v18c0 2.4 4.9 4.2 11 4.2s11-1.8 11-4.2V7" fill="#4a86d6" stroke="#2f5aa0"/>
+    <ellipse cx="16" cy="7" rx="11" ry="4.2" fill="#8fbaf0" stroke="#2f5aa0"/>
+    <path d="M5 14c0 2.4 4.9 4.2 11 4.2s11-1.8 11-4.2M5 20.5c0 2.4 4.9 4.2 11 4.2s11-1.8 11-4.2"
+          fill="none" stroke="#2f5aa0"/>
+  </symbol>
+
+  <!-- beaker (Hexalith lab) -->
+  <symbol id="ic-flask" viewBox="0 0 32 32">
+    <path d="M13 5h6v8l6.5 12.5A2 2 0 0123.7 29H8.3a2 2 0 01-1.8-3.5L13 13z"
+          fill="#dff0ff" stroke="#2f5aa0"/>
+    <path d="M9.6 22h12.8l3 5.2A1.4 1.4 0 0124.1 29H7.9a1.4 1.4 0 01-1.3-1.8z"
+          fill="#57b944" stroke="#2f5aa0"/>
+    <rect x="12" y="3.5" width="8" height="2.2" rx="1" fill="#2f5aa0"/>
+  </symbol>
+
+  <!-- server stack (Homelab) -->
+  <symbol id="ic-server" viewBox="0 0 32 32">
+    <rect x="6" y="4" width="20" height="10" rx="1.6" fill="#c9d3e0" stroke="#5a6a80"/>
+    <rect x="6" y="18" width="20" height="10" rx="1.6" fill="#c9d3e0" stroke="#5a6a80"/>
+    <circle cx="10" cy="9" r="1.7" fill="#57b944"/>
+    <circle cx="10" cy="23" r="1.7" fill="#57b944"/>
+    <rect x="14" y="8" width="9" height="2" rx="1" fill="#7a8aa0"/>
+    <rect x="14" y="22" width="9" height="2" rx="1" fill="#7a8aa0"/>
+  </symbol>
+</svg>
+
+<!-- ===== Bliss wallpaper layer (SVG evocation) ===== -->
+<div class="bliss" aria-hidden="true">
+  <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#1e63cf"/>
+        <stop offset="30%" stop-color="#3e86e6"/>
+        <stop offset="55%" stop-color="#8dc0f2"/>
+        <stop offset="66%" stop-color="#cfe6f6"/>
+        <stop offset="68%" stop-color="#eaf3d9"/>
+      </linearGradient>
+      <linearGradient id="hill" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#9ccb52"/>
+        <stop offset="45%" stop-color="#7bb23c"/>
+        <stop offset="100%" stop-color="#4c7d1f"/>
+      </linearGradient>
+      <radialGradient id="cloud" cx="50%" cy="50%" r="50%">
+        <stop offset="0" stop-color="#ffffff" stop-opacity=".9"/>
+        <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <rect width="1200" height="800" fill="url(#sky)"/>
+    <ellipse cx="250" cy="150" rx="230" ry="70" fill="url(#cloud)"/>
+    <ellipse cx="350" cy="180" rx="170" ry="52" fill="url(#cloud)"/>
+    <ellipse cx="920" cy="120" rx="260" ry="66" fill="url(#cloud)"/>
+    <ellipse cx="1010" cy="160" rx="150" ry="44" fill="url(#cloud)"/>
+    <!-- rolling green hill with a soft curved horizon -->
+    <path d="M0 560 C 260 470, 560 470, 820 520 C 980 550, 1100 520, 1200 470 L1200 800 L0 800 Z"
+          fill="url(#hill)"/>
+    <path d="M0 560 C 260 470, 560 470, 820 520 C 980 550, 1100 520, 1200 470"
+          fill="none" stroke="#b7dc74" stroke-width="6" opacity=".5"/>
+  </svg>
+</div>
 
 <!-- ===== Proto switch banner ===== -->
 <div class="proto-bar">
@@ -455,15 +603,19 @@
 <main class="desktop">
 
   <!-- ===== Hero window ===== -->
-  <section class="win hero" id="hero" aria-labelledby="hero-title">
-    <div class="titlebar">
-      <span class="tico" aria-hidden="true">👋</span>
-      <span class="ttl">Bienvenue — Ianis Puichaud</span>
-      <span class="tbtns" aria-hidden="true">
-        <span class="tbtn">_</span><span class="tbtn">▢</span><span class="tbtn close">✕</span>
-      </span>
+  <section class="win window hero" id="hero" aria-labelledby="hero-title">
+    <div class="title-bar">
+      <div class="title-bar-text">
+        <svg class="tbico" aria-hidden="true"><use href="#ic-app"/></svg>
+        Bienvenue — Ianis Puichaud
+      </div>
+      <div class="title-bar-controls">
+        <button aria-label="Minimize" type="button" tabindex="-1"></button>
+        <button aria-label="Maximize" type="button" tabindex="-1"></button>
+        <button aria-label="Close" type="button" tabindex="-1"></button>
+      </div>
     </div>
-    <div class="winbody">
+    <div class="window-body">
       <div class="kicker">Administrateur Systèmes &amp; Réseaux · Nantes</div>
       <h1 id="hero-title">J'administre à l'échelle.<br><span>J'automatise pour durer.</span></h1>
       <p class="role">Admin Systèmes &amp; Réseaux</p>
@@ -475,23 +627,27 @@
       </p>
       <div class="badge"><span class="dot" aria-hidden="true"></span>Disponible en alternance · Master Infra &amp; Cloud · sept. 2026</div>
       <div class="ctas">
-        <a class="btn default" href="#projets">📁 Voir les projets</a>
-        <a class="btn" href="#contact">✉️ Me contacter</a>
-        <a class="btn" href="/cv.pdf" target="_blank" rel="noopener">📄 CV.pdf</a>
+        <a class="btn default" href="#projets"><svg class="bico" aria-hidden="true"><use href="#ic-folder"/></svg>Voir les projets</a>
+        <a class="btn" href="#contact"><svg class="bico" aria-hidden="true"><use href="#ic-mail"/></svg>Me contacter</a>
+        <a class="btn" href="/cv.pdf" target="_blank" rel="noopener"><svg class="bico" aria-hidden="true"><use href="#ic-doc"/></svg>CV.pdf</a>
       </div>
     </div>
   </section>
 
   <!-- ===== Metrics window ===== -->
-  <section class="win" id="metrics" aria-label="Chiffres clés">
-    <div class="titlebar">
-      <span class="tico" aria-hidden="true">📊</span>
-      <span class="ttl">Poste de travail — Propriétés</span>
-      <span class="tbtns" aria-hidden="true">
-        <span class="tbtn">_</span><span class="tbtn">▢</span><span class="tbtn close">✕</span>
-      </span>
+  <section class="win window" id="metrics" aria-label="Chiffres clés">
+    <div class="title-bar">
+      <div class="title-bar-text">
+        <svg class="tbico" aria-hidden="true"><use href="#ic-computer"/></svg>
+        Poste de travail — Propriétés
+      </div>
+      <div class="title-bar-controls">
+        <button aria-label="Minimize" type="button" tabindex="-1"></button>
+        <button aria-label="Maximize" type="button" tabindex="-1"></button>
+        <button aria-label="Close" type="button" tabindex="-1"></button>
+      </div>
     </div>
-    <div class="winbody">
+    <div class="window-body">
       <div class="metrics">
         <div class="metric"><div class="v">21 000+</div><div class="k">postes en support N2</div></div>
         <div class="metric"><div class="v">13 <small>LXC</small></div><div class="k">décrits par l'IaC</div></div>
@@ -502,28 +658,32 @@
   </section>
 
   <!-- ===== Projects — Explorer window ===== -->
-  <section class="win" id="projets" aria-labelledby="projets-title">
-    <div class="titlebar">
-      <span class="tico" aria-hidden="true">📂</span>
-      <span class="ttl" id="projets-title">Explorateur — Mes projets</span>
-      <span class="tbtns" aria-hidden="true">
-        <span class="tbtn">_</span><span class="tbtn">▢</span><span class="tbtn close">✕</span>
-      </span>
+  <section class="win window" id="projets" aria-labelledby="projets-title">
+    <div class="title-bar">
+      <div class="title-bar-text">
+        <svg class="tbico" aria-hidden="true"><use href="#ic-folder"/></svg>
+        <span id="projets-title">Explorateur — Mes projets</span>
+      </div>
+      <div class="title-bar-controls">
+        <button aria-label="Minimize" type="button" tabindex="-1"></button>
+        <button aria-label="Maximize" type="button" tabindex="-1"></button>
+        <button aria-label="Close" type="button" tabindex="-1"></button>
+      </div>
     </div>
     <div class="menustrip" aria-hidden="true">
       <span><u>F</u>ichier</span><span><u>E</u>dition</span><span><u>A</u>ffichage</span><span>Aid<u>e</u></span>
     </div>
-    <div class="winbody">
+    <div class="window-body">
       <!-- Large icons: click scrolls to + highlights the matching card -->
       <div class="explorer-icons" role="list">
         <a class="icon-tile" href="#p-datacommune" role="listitem">
-          <span class="glyph" aria-hidden="true">🗄️</span><span class="cap">DataCommune</span></a>
+          <svg class="glyph-svg" aria-hidden="true"><use href="#ic-db"/></svg><span class="cap">DataCommune</span></a>
         <a class="icon-tile" href="#p-hexalith" role="listitem">
-          <span class="glyph" aria-hidden="true">🧪</span><span class="cap">Hexalith</span></a>
+          <svg class="glyph-svg" aria-hidden="true"><use href="#ic-flask"/></svg><span class="cap">Hexalith</span></a>
         <a class="icon-tile" href="#p-homelab" role="listitem">
-          <span class="glyph" aria-hidden="true">🖧</span><span class="cap">Homelab</span></a>
+          <svg class="glyph-svg" aria-hidden="true"><use href="#ic-server"/></svg><span class="cap">Homelab</span></a>
         <a class="icon-tile" href="#p-automatisation-ad" role="listitem">
-          <span class="glyph" aria-hidden="true">⚙️</span><span class="cap">Automatisation AD</span></a>
+          <svg class="glyph-svg" aria-hidden="true"><use href="#ic-tools"/></svg><span class="cap">Automatisation AD</span></a>
       </div>
 
       <!-- Project 01 -->
@@ -680,15 +840,19 @@
   </section>
 
   <!-- ===== MS-DOS window — infra tree (recruiter wink) ===== -->
-  <section class="win dos" id="infra" aria-label="Arborescence infrastructure">
-    <div class="titlebar">
-      <span class="tico" aria-hidden="true">🖥️</span>
-      <span class="ttl">Invite de commandes — pvesh</span>
-      <span class="tbtns" aria-hidden="true">
-        <span class="tbtn">_</span><span class="tbtn">▢</span><span class="tbtn close">✕</span>
-      </span>
+  <section class="win window dos" id="infra" aria-label="Arborescence infrastructure">
+    <div class="title-bar">
+      <div class="title-bar-text">
+        <svg class="tbico" aria-hidden="true"><use href="#ic-cmd"/></svg>
+        Invite de commandes — pvesh
+      </div>
+      <div class="title-bar-controls">
+        <button aria-label="Minimize" type="button" tabindex="-1"></button>
+        <button aria-label="Maximize" type="button" tabindex="-1"></button>
+        <button aria-label="Close" type="button" tabindex="-1"></button>
+      </div>
     </div>
-    <div class="winbody">
+    <div class="window-body">
       <div class="dos-screen">
 <pre>Microsoft(R) Homelab MS-DOS
 (C) Ianis Puichaud. Tous droits reserves.
@@ -716,42 +880,47 @@ datacenter
   </section>
 
   <!-- ===== Skills — System properties window ===== -->
-  <section class="win" id="competences" aria-labelledby="comp-title">
-    <div class="titlebar">
-      <span class="tico" aria-hidden="true">🧰</span>
-      <span class="ttl" id="comp-title">Propriétés système — Compétences</span>
-      <span class="tbtns" aria-hidden="true">
-        <span class="tbtn">_</span><span class="tbtn">▢</span><span class="tbtn close">✕</span>
-      </span>
-    </div>
-    <div class="winbody">
-      <div class="sys-tabs" aria-hidden="true">
-        <span class="sys-tab on">Général</span><span class="sys-tab">Périphériques</span>
+  <section class="win window" id="competences" aria-labelledby="comp-title">
+    <div class="title-bar">
+      <div class="title-bar-text">
+        <svg class="tbico" aria-hidden="true"><use href="#ic-tools"/></svg>
+        <span id="comp-title">Propriétés système — Compétences</span>
       </div>
-      <div class="sys-panel">
-        <p class="muted" style="margin-bottom:14px;font-size:14px">
+      <div class="title-bar-controls">
+        <button aria-label="Minimize" type="button" tabindex="-1"></button>
+        <button aria-label="Maximize" type="button" tabindex="-1"></button>
+        <button aria-label="Close" type="button" tabindex="-1"></button>
+      </div>
+    </div>
+    <div class="window-body">
+      <menu role="tablist" aria-hidden="true">
+        <button aria-selected="true" tabindex="-1">Général</button>
+        <button aria-selected="false" tabindex="-1">Périphériques</button>
+      </menu>
+      <div class="sys-panel" role="tabpanel">
+        <p class="muted" style="margin-bottom:14px;font-size:13px">
           Un outil n'apparaît ici que s'il est utilisé dans un contexte que je peux expliquer.
         </p>
         <div class="skills-grid">
           <div class="skill-col">
             <h3>Entreprise</h3>
             <div class="where">Parc corporate &gt; 21 000 postes, environnement verrouillé</div>
-            <div class="chk"><span class="box" aria-hidden="true"></span><span class="lbl">Windows 10/11 · Microsoft 365<span class="proof">support &amp; admin en prod</span></span></div>
-            <div class="chk"><span class="box" aria-hidden="true"></span><span class="lbl">Active Directory · Entra ID · Intune<span class="proof">identités &amp; parc au quotidien</span></span></div>
-            <div class="chk"><span class="box" aria-hidden="true"></span><span class="lbl">CyberArk EPM · Zscaler<span class="proof">sécurité, utilisé en prod</span></span></div>
-            <div class="chk"><span class="box" aria-hidden="true"></span><span class="lbl">ServiceNow · Nexthink · Lansweeper<span class="proof">ITSM &amp; supervision</span></span></div>
-            <div class="chk"><span class="box" aria-hidden="true"></span><span class="lbl">PowerShell · Python<span class="proof">scripting quotidien, outils déployés</span></span></div>
-            <div class="chk"><span class="box" aria-hidden="true"></span><span class="lbl">Hyper-V · VMware<span class="proof">virtualisation — usage ponctuel</span></span></div>
+            <div class="chk"><input type="checkbox" id="s1" checked onclick="return false"><label for="s1">Windows 10/11 · Microsoft 365<span class="proof">support &amp; admin en prod</span></label></div>
+            <div class="chk"><input type="checkbox" id="s2" checked onclick="return false"><label for="s2">Active Directory · Entra ID · Intune<span class="proof">identités &amp; parc au quotidien</span></label></div>
+            <div class="chk"><input type="checkbox" id="s3" checked onclick="return false"><label for="s3">CyberArk EPM · Zscaler<span class="proof">sécurité, utilisé en prod</span></label></div>
+            <div class="chk"><input type="checkbox" id="s4" checked onclick="return false"><label for="s4">ServiceNow · Nexthink · Lansweeper<span class="proof">ITSM &amp; supervision</span></label></div>
+            <div class="chk"><input type="checkbox" id="s5" checked onclick="return false"><label for="s5">PowerShell · Python<span class="proof">scripting quotidien, outils déployés</span></label></div>
+            <div class="chk"><input type="checkbox" id="s6" checked onclick="return false"><label for="s6">Hyper-V · VMware<span class="proof">virtualisation — usage ponctuel</span></label></div>
           </div>
           <div class="skill-col">
             <h3>Labs</h3>
             <div class="where">Homelab 24/7, laboratoire GitOps et produit data en solo</div>
-            <div class="chk"><span class="box" aria-hidden="true"></span><span class="lbl">Proxmox VE · LXC · Docker<span class="proof">exploité 24/7, restore testé</span></span></div>
-            <div class="chk"><span class="box" aria-hidden="true"></span><span class="lbl">Ansible · Terraform<span class="proof">13 LXC provisionnés en IaC</span></span></div>
-            <div class="chk"><span class="box" aria-hidden="true"></span><span class="lbl">GitHub Actions<span class="proof">runner self-hosted en service</span></span></div>
-            <div class="chk"><span class="box" aria-hidden="true"></span><span class="lbl">Grafana · Prometheus · Loki<span class="proof">observabilité, incident joué</span></span></div>
-            <div class="chk"><span class="box" aria-hidden="true"></span><span class="lbl">Caddy · Tailscale · Pocket ID<span class="proof">edge &amp; SSO passkeys en lab</span></span></div>
-            <div class="chk"><span class="box" aria-hidden="true"></span><span class="lbl">FastAPI · PostgreSQL / PostGIS<span class="proof">projet déployé, 85 chemins</span></span></div>
+            <div class="chk"><input type="checkbox" id="s7" checked onclick="return false"><label for="s7">Proxmox VE · LXC · Docker<span class="proof">exploité 24/7, restore testé</span></label></div>
+            <div class="chk"><input type="checkbox" id="s8" checked onclick="return false"><label for="s8">Ansible · Terraform<span class="proof">13 LXC provisionnés en IaC</span></label></div>
+            <div class="chk"><input type="checkbox" id="s9" checked onclick="return false"><label for="s9">GitHub Actions<span class="proof">runner self-hosted en service</span></label></div>
+            <div class="chk"><input type="checkbox" id="s10" checked onclick="return false"><label for="s10">Grafana · Prometheus · Loki<span class="proof">observabilité, incident joué</span></label></div>
+            <div class="chk"><input type="checkbox" id="s11" checked onclick="return false"><label for="s11">Caddy · Tailscale · Pocket ID<span class="proof">edge &amp; SSO passkeys en lab</span></label></div>
+            <div class="chk"><input type="checkbox" id="s12" checked onclick="return false"><label for="s12">FastAPI · PostgreSQL / PostGIS<span class="proof">projet déployé, 85 chemins</span></label></div>
           </div>
         </div>
       </div>
@@ -759,22 +928,26 @@ datacenter
   </section>
 
   <!-- ===== Contact window ===== -->
-  <section class="win" id="contact" aria-labelledby="contact-title">
-    <div class="titlebar">
-      <span class="tico" aria-hidden="true">✉️</span>
-      <span class="ttl" id="contact-title">Nouveau message — Me contacter</span>
-      <span class="tbtns" aria-hidden="true">
-        <span class="tbtn">_</span><span class="tbtn">▢</span><span class="tbtn close">✕</span>
-      </span>
+  <section class="win window" id="contact" aria-labelledby="contact-title">
+    <div class="title-bar">
+      <div class="title-bar-text">
+        <svg class="tbico" aria-hidden="true"><use href="#ic-mail"/></svg>
+        <span id="contact-title">Nouveau message — Me contacter</span>
+      </div>
+      <div class="title-bar-controls">
+        <button aria-label="Minimize" type="button" tabindex="-1"></button>
+        <button aria-label="Maximize" type="button" tabindex="-1"></button>
+        <button aria-label="Close" type="button" tabindex="-1"></button>
+      </div>
     </div>
-    <div class="winbody">
+    <div class="window-body">
       <p class="lede" style="margin-bottom:16px">
         Disponible en alternance pour un Master Infra &amp; Cloud à partir de septembre 2026.
         Le plus simple pour échanger :
       </p>
       <div class="contact-row">
-        <a class="btn default" href="mailto:ianispuichaud@gmail.com">✉️ ianispuichaud@gmail.com</a>
-        <a class="btn" href="/cv.pdf" target="_blank" rel="noopener">📄 Télécharger le CV</a>
+        <a class="btn default" href="mailto:ianispuichaud@gmail.com"><svg class="bico" aria-hidden="true"><use href="#ic-mail"/></svg>ianispuichaud@gmail.com</a>
+        <a class="btn" href="/cv.pdf" target="_blank" rel="noopener"><svg class="bico" aria-hidden="true"><use href="#ic-doc"/></svg>Télécharger le CV</a>
       </div>
     </div>
   </section>
@@ -782,49 +955,58 @@ datacenter
 </main>
 
 <!-- ===== Easter-egg error dialog (light, dismissible, non-blocking) ===== -->
-<div class="dlg" id="egg" role="alertdialog" aria-labelledby="egg-ttl" aria-describedby="egg-msg" hidden>
-  <div class="titlebar">
-    <span class="ttl" id="egg-ttl">Ianis.exe</span>
-    <span class="tbtns">
-      <button class="tbtn close" type="button" data-egg-close aria-label="Fermer">✕</button>
-    </span>
+<div class="dlg window" id="egg" role="alertdialog" aria-labelledby="egg-ttl" aria-describedby="egg-msg" hidden>
+  <div class="title-bar">
+    <div class="title-bar-text" id="egg-ttl">Ianis.exe</div>
+    <div class="title-bar-controls">
+      <button aria-label="Close" type="button" data-egg-close></button>
+    </div>
   </div>
-  <div class="dlg-body">
-    <span class="warn" aria-hidden="true">⚠️</span>
-    <p id="egg-msg">Une erreur inattendue s'est produite&nbsp;: candidat motivé détecté.<br>
-      Voulez-vous vraiment continuer sans le recruter&nbsp;?</p>
-  </div>
-  <div class="dlg-foot">
-    <a class="btn default" href="#contact" data-egg-close>Recruter</a>
-    <button class="btn" type="button" data-egg-close>Annuler</button>
+  <div class="window-body">
+    <div class="dlg-body">
+      <svg class="warn" aria-hidden="true"><use href="#ic-warn"/></svg>
+      <p id="egg-msg">Une erreur inattendue s'est produite&nbsp;: candidat motivé détecté.<br>
+        Voulez-vous vraiment continuer sans le recruter&nbsp;?</p>
+    </div>
+    <div class="dlg-foot">
+      <a class="btn default" href="#contact" data-egg-close>Recruter</a>
+      <button class="btn" type="button" data-egg-close>Annuler</button>
+    </div>
   </div>
 </div>
 
 <!-- ===== Notification balloon (systray, XP touch) ===== -->
 <div class="balloon" id="balloon" role="status" hidden>
   <button class="x" type="button" id="balloon-x" aria-label="Fermer la notification">✕</button>
-  <b>💡 Astuce</b>
+  <b><svg aria-hidden="true"><use href="#ic-info"/></svg>Astuce</b>
   Ouvrez le menu <em>démarrer</em> pour naviguer entre les sections.
 </div>
 
-<!-- ===== Start menu (Luna) ===== -->
+<!-- ===== Start menu (Luna, two zones) ===== -->
 <nav class="start-menu" id="startmenu" hidden aria-label="Menu Démarrer">
   <div class="sm-head">
-    <span class="avatar" aria-hidden="true">👤</span>
+    <span class="avatar" aria-hidden="true"><svg><use href="#ic-user"/></svg></span>
     <span class="who">Ianis Puichaud<small>Admin Systèmes &amp; Réseaux</small></span>
   </div>
-  <ul>
-    <li><a href="#hero"><span class="mi" aria-hidden="true">👋</span>Bienvenue</a></li>
-    <li><a href="#metrics"><span class="mi" aria-hidden="true">📊</span>Chiffres clés</a></li>
-    <li><a href="#projets"><span class="mi" aria-hidden="true">📂</span>Mes projets</a></li>
-    <li><a href="#infra"><span class="mi" aria-hidden="true">🖥️</span>Infra (MS-DOS)</a></li>
-    <li><a href="#competences"><span class="mi" aria-hidden="true">🧰</span>Compétences</a></li>
-    <li><a href="#contact"><span class="mi" aria-hidden="true">✉️</span>Me contacter</a></li>
-    <hr>
-    <li><a href="/cv.pdf" target="_blank" rel="noopener"><span class="mi" aria-hidden="true">📄</span>CV.pdf</a></li>
-  </ul>
+  <div class="sm-cols">
+    <ul class="sm-left">
+      <li><a href="#hero"><svg class="mi-svg" aria-hidden="true"><use href="#ic-app"/></svg>Bienvenue</a></li>
+      <li><a href="#metrics"><svg class="mi-svg" aria-hidden="true"><use href="#ic-computer"/></svg>Chiffres clés</a></li>
+      <li><a href="#projets"><svg class="mi-svg" aria-hidden="true"><use href="#ic-folder"/></svg>Mes projets</a></li>
+      <li><a href="#infra"><svg class="mi-svg" aria-hidden="true"><use href="#ic-cmd"/></svg>Infra (MS-DOS)</a></li>
+      <li><a href="#competences"><svg class="mi-svg" aria-hidden="true"><use href="#ic-tools"/></svg>Compétences</a></li>
+      <hr>
+      <li><a href="#contact"><svg class="mi-svg" aria-hidden="true"><use href="#ic-mail"/></svg>Me contacter</a></li>
+    </ul>
+    <ul class="sm-right">
+      <li class="col-title">Liens</li>
+      <li><a href="/cv.pdf" target="_blank" rel="noopener"><svg class="mi-svg" aria-hidden="true"><use href="#ic-doc"/></svg>CV.pdf</a></li>
+      <li><a href="https://datacommune.fr" target="_blank" rel="noopener"><svg class="mi-svg" aria-hidden="true"><use href="#ic-db"/></svg>DataCommune</a></li>
+    </ul>
+  </div>
   <div class="sm-foot">
-    <a href="#contact"><span class="mi" aria-hidden="true">🔌</span>Me contacter</a>
+    <a href="#contact"><svg class="mi-svg" aria-hidden="true"><use href="#ic-plug"/></svg>Me contacter</a>
+    <a href="/cv.pdf" target="_blank" rel="noopener"><svg class="mi-svg" aria-hidden="true"><use href="#ic-doc"/></svg>CV.pdf</a>
   </div>
 </nav>
 
@@ -832,12 +1014,14 @@ datacenter
 <div class="taskbar">
   <button class="start-btn" id="startbtn" type="button" aria-haspopup="true"
           aria-expanded="false" aria-controls="startmenu">
-    <span class="flag" aria-hidden="true">🪟</span>démarrer
+    <svg class="flag" aria-hidden="true"><use href="#ic-flag"/></svg>démarrer
   </button>
-  <span class="task-open" aria-hidden="true">👋 Bienvenue — Ianis Puichaud</span>
+  <span class="task-open" aria-hidden="true">
+    <svg aria-hidden="true"><use href="#ic-app"/></svg>Bienvenue — Ianis Puichaud
+  </span>
   <span class="tray">
-    <span class="ico" aria-hidden="true">🔊</span>
-    <span class="ico" aria-hidden="true">🛡️</span>
+    <span class="ico" aria-hidden="true"><svg><use href="#ic-vol"/></svg></span>
+    <span class="ico" aria-hidden="true"><svg><use href="#ic-shield"/></svg></span>
     <span class="clock" id="clock" role="timer" aria-label="Heure">--:--</span>
   </span>
 </div>
