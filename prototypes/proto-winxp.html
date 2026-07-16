@@ -225,8 +225,13 @@
   .skill-col h3{font-family:var(--font-ui);font-size:13px;font-weight:700;margin-bottom:2px}
   .skill-col .where{font-size:12px;color:#555;margin-bottom:12px}
   .chk{margin-bottom:11px;font-size:13px}
-  .chk label{cursor:default;line-height:1.4}
-  .chk .proof{display:block;font-size:11px;color:#2f7d1f;margin-left:-1px;margin-top:1px}
+  /* xp.css sets label{display:inline-flex}: that turns .proof into a flex
+     item on the same line. Force block flow so the proof wraps below. */
+  .chk label{display:block;cursor:default;line-height:1.4}
+  /* pin the xp.css checkbox glyphs to the first text line of long labels */
+  .chk [type=checkbox]+label:before{top:2px}
+  .chk [type=checkbox]:checked+label:after{top:3px}
+  .chk .proof{display:block;font-size:11px;color:#2f7d1f;margin-top:1px}
 
   /* ---- Contact ---------------------------------------------------------- */
   .contact-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
