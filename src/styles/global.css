@@ -1,19 +1,22 @@
   :root {
-    /* Palette Marbre & Bronze — alignée CV + datacommune.fr */
-    --marble: #FAF6F0;
-    --marble-dark: #EDE5D8;
-    --parchment: #F5EEE3;
-    --surface: #EFE6D7;   /* fond des cartes — un cran plus foncé pour les faire ressortir */
-    --bronze: #A0744F;
-    --bronze-dark: #80552F;
-    --bronze-light: #E8D5C0;
-    --gold: #C9A84C;
+    /* Palette Forêt & Ivoire — démarquée de datacommune.fr (choix 2026-07-16).
+       NB : noms de vars historiques conservés — bronze* porte désormais les verts. */
+    --marble: #FAF8F1;
+    --marble-dark: #EAE7DA;
+    --parchment: #F2EFE4;
+    --surface: #EBE8DA;   /* fond des cartes — un cran plus foncé pour les faire ressortir */
+    --bronze: #52755F;
+    --bronze-dark: #2F5644;
+    --bronze-light: #D9E0D2;
+    --gold: #B9A35C;
+    --gold-dark: #8A7439;    /* variante texte : contraste AA sur ivoire */
     --terracotta: #B85C3A;
-    --ink: #2A1F14;
-    --ink-muted: #6B5B4D;
-    --stone: #D4C4AD;
-    --sidebar: #3A2F24;      /* brun sidebar du CV */
-    --column: #1E1A15;
+    --terracotta-dark: #A34E2F;  /* variante texte : contraste AA sur marbre */
+    --ink: #20261F;
+    --ink-muted: #5E6558;
+    --stone: #CCCBB6;
+    --sidebar: #273329;      /* vert-noir profond */
+    --column: #131A15;
     --green: #376741;
 
     /* Géométrie — système Marbre (angles nets + chanfrein lapidaire) */
@@ -35,7 +38,7 @@
     line-height: 1.65;
     -webkit-font-smoothing: antialiased;
   }
-  ::selection { background: rgba(160,116,79,.25); color: var(--ink); }
+  ::selection { background: rgba(82,117,95,.25); color: var(--ink); }
 
   .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
   section { padding: 64px 0; }
@@ -43,7 +46,7 @@
   a { color: var(--bronze-dark); text-decoration: none; }
   a:hover { text-decoration: underline; text-underline-offset: 4px; }
   a, button {
-    -webkit-tap-highlight-color: rgba(160, 116, 79, .2);
+    -webkit-tap-highlight-color: rgba(82, 117, 95, .2);
     touch-action: manipulation;
   }
 
@@ -61,21 +64,6 @@
     transition: top .15s;
   }
   .skip-link:focus { top: 12px; text-decoration: none; }
-
-  /* ============ DIVIDER (losange) ============ */
-  .divider {
-    display: flex; align-items: center; justify-content: center;
-    max-width: 24rem; margin: 0 auto;
-  }
-  .divider::before, .divider::after {
-    content: ''; flex: 1; height: 1px; background: var(--stone);
-  }
-  .divider::before { margin-right: .75rem; }
-  .divider::after { margin-left: .75rem; }
-  .divider .diamond {
-    width: 6px; height: 6px; background: var(--stone);
-    transform: rotate(45deg); flex-shrink: 0;
-  }
 
   /* ============ HEADER ============ */
   .site-header {
@@ -123,10 +111,11 @@
     color: var(--marble);
     text-align: center;
     padding: 88px 0 76px;
+    border-bottom: 1px solid var(--stone);  /* filet séparateur unique, utilisé entre toutes les sections */
   }
   #hero .kicker {
     font-size: 12.5px; font-weight: 600; letter-spacing: .22em;
-    text-transform: uppercase; color: var(--gold);
+    text-transform: uppercase; color: var(--bronze-light);
   }
   #hero h1 {
     font-family: var(--serif);
@@ -134,7 +123,6 @@
     font-weight: 700; line-height: 1.14;
     margin-top: 18px; color: var(--marble);
   }
-  #hero h1 span { color: var(--gold); }
   #hero .sub {
     max-width: 640px; margin: 24px auto 0;
     font-size: 18px; color: var(--marble-dark); opacity: .92;
@@ -145,8 +133,8 @@
     margin-top: 30px;
     font-family: var(--mono); font-size: 13px; font-weight: 500;
     color: var(--gold);
-    background: rgba(201,168,76,.10);
-    border: 1px solid rgba(201,168,76,.4);
+    background: rgba(185,163,92,.10);
+    border: 1px solid rgba(185,163,92,.4);
     border-radius: var(--r-pill);
     padding: 9px 20px;
   }
@@ -189,7 +177,8 @@
   .btn.ghost:hover { border-color: var(--bronze); color: var(--bronze-dark); }
 
   /* ============ METRICS ============ */
-  #metrics { padding: 0; margin-top: -34px; position: relative; z-index: 2; }
+  /* padding-bottom : décolle la carte du border-top de la section suivante (sinon double ligne) */
+  #metrics { padding: 0 0 48px; margin-top: -34px; position: relative; z-index: 2; }
   #metrics .grid {
     display: grid; grid-template-columns: repeat(4, 1fr);
     border: 2px solid var(--stone); border-radius: var(--r-panel);
@@ -232,7 +221,7 @@
   }
   .sec-head .rule {
     flex: 1; height: 2px;
-    background: linear-gradient(to right, var(--bronze), rgba(160,116,79,.06));
+    background: linear-gradient(to right, var(--bronze), rgba(82,117,95,.06));
   }
   .sec-intro {
     color: var(--ink-muted); font-size: 15.5px;
@@ -264,13 +253,13 @@
     background: var(--marble); border: 2.5px solid var(--bronze);
   }
   .tl-item.running::before {
-    border-color: var(--terracotta); background: var(--terracotta);
+    border-color: var(--green); background: var(--green);
     animation: pulse-dot 2.2s infinite;
   }
   @keyframes pulse-dot {
-    0%   { box-shadow: 0 0 0 0 rgba(184,92,58,.5); }
-    70%  { box-shadow: 0 0 0 8px rgba(184,92,58,0); }
-    100% { box-shadow: 0 0 0 0 rgba(184,92,58,0); }
+    0%   { box-shadow: 0 0 0 0 rgba(55,103,65,.45); }
+    70%  { box-shadow: 0 0 0 8px rgba(55,103,65,0); }
+    100% { box-shadow: 0 0 0 0 rgba(55,103,65,0); }
   }
   .tl-item.queued::before { border-color: var(--stone); }
   .tl-date {
@@ -323,6 +312,7 @@
   footer {
     background: var(--column); color: var(--marble-dark);
     padding: 26px 0 32px; margin-top: 64px;
+    border-top: 1px solid var(--stone);
   }
   footer .wrap {
     display: flex; justify-content: space-between; align-items: center;
@@ -349,7 +339,7 @@
       justify-content: center; min-height: 44px;
       padding: 10px; font-size: 11.5px; letter-spacing: .07em;
     }
-    #metrics { margin-top: -28px; }
+    #metrics { margin-top: -28px; padding-bottom: 36px; }
     #metrics .grid { grid-template-columns: 1fr 1fr; }
     #metrics .cell { padding: 19px 10px 16px; }
     #metrics .v { height: 36px; font-size: 27px; }

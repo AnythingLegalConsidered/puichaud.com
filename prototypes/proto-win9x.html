@@ -1,0 +1,856 @@
+<!-- ==========================================================================
+     PROTO 4 / 4 — WIN9x (habillage Windows 95/98 sur scroll classique)
+     Standalone prototype: all CSS + JS inline, no external resources.
+     System font stacks only (Tahoma / MS Sans Serif / Verdana). Real FR content.
+     Concept: a normal scrolling page dressed as a Win9x desktop — every section
+     is a window; all information is reachable by scroll, interaction is a bonus.
+     ========================================================================== -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROTO 4 — Win9x · Ianis Puichaud</title>
+<style>
+  /* ---- Design tokens ---------------------------------------------------- */
+  :root{
+    --teal:#008080;         /* classic desktop background        */
+    --silver:#c0c0c0;       /* window / button chrome            */
+    --silver-lo:#b0b0b0;
+    --hi:#ffffff;           /* 3D highlight (top/left)           */
+    --hi2:#dfdfdf;          /* softer highlight                  */
+    --sh:#808080;           /* 3D shadow (bottom/right)          */
+    --sh2:#404040;          /* deep shadow                       */
+    --title1:#000080;       /* active title bar gradient start   */
+    --title2:#1084d0;       /* active title bar gradient end     */
+    --ink:#000000;
+    --link:#00007f;
+    --dos-green:#00c000;
+    --font-ui:Tahoma,"MS Sans Serif",Verdana,Geneva,system-ui,sans-serif;
+    --font-mono:"Consolas","Lucida Console","Courier New",monospace;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+  body{
+    margin:0;
+    font-family:var(--font-ui);
+    font-size:15px;
+    line-height:1.5;
+    color:var(--ink);
+    background:var(--teal);
+    /* faint checker so the "desktop" reads as a surface, not flat color */
+    background-image:
+      linear-gradient(45deg,rgba(255,255,255,.03) 25%,transparent 25%,transparent 75%,rgba(255,255,255,.03) 75%),
+      linear-gradient(45deg,rgba(255,255,255,.03) 25%,transparent 25%,transparent 75%,rgba(255,255,255,.03) 75%);
+    background-size:24px 24px;
+    background-position:0 0,12px 12px;
+    -webkit-font-smoothing:none;
+    padding-top:34px;           /* room for proto banner        */
+    padding-bottom:52px;        /* room for the taskbar         */
+    cursor:default;
+  }
+  a{color:var(--link)}
+  img{max-width:100%}
+  h1,h2,h3,h4,p,ul{margin:0}
+  ul{padding:0;list-style:none}
+
+  /* ---- 3D relief helpers (authentic Win9x bevels) ----------------------- */
+  /* Raised: outer highlight top-left, outer shadow bottom-right + inner ring */
+  .raise{
+    border:2px solid;
+    border-color:var(--hi2) var(--sh2) var(--sh2) var(--hi2);
+    box-shadow:inset 1px 1px 0 var(--hi),inset -1px -1px 0 var(--sh);
+    background:var(--silver);
+  }
+  /* Sunken: inverse — used for text fields, list panes, status wells */
+  .sink{
+    border:2px solid;
+    border-color:var(--sh) var(--hi) var(--hi) var(--sh);
+    box-shadow:inset 1px 1px 0 var(--sh2),inset -1px -1px 0 var(--hi2);
+    background:#fff;
+  }
+
+  /* ---- Proto switch banner (same pattern as sibling protos) ------------- */
+  .proto-bar{
+    position:fixed;top:0;left:0;right:0;z-index:2000;
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    height:34px;padding:0 12px;
+    background:#1d1d1d;color:#fff;
+    font:700 12px/1 var(--font-ui);letter-spacing:.03em;
+  }
+  .proto-bar b{color:#3bd6c6}
+  .proto-bar nav{display:flex;gap:6px;margin-left:auto}
+  .proto-bar a{
+    text-decoration:none;padding:5px 8px;border-radius:3px;
+    background:#2b2b2b;color:#fff;border:1px solid #3a3a3a;
+  }
+  .proto-bar a.here{background:#3bd6c6;color:#062b28;border-color:#062b28}
+  .proto-bar a:hover{background:#0a63c9;color:#fff}
+
+  /* ---- Window shell ----------------------------------------------------- */
+  .desktop{width:min(940px,94vw);margin-inline:auto;padding:26px 0 40px}
+  .win{
+    background:var(--silver);
+    border:2px solid;
+    border-color:var(--hi2) var(--sh2) var(--sh2) var(--hi2);
+    box-shadow:inset 1px 1px 0 var(--hi),inset -1px -1px 0 var(--sh),
+               4px 4px 0 rgba(0,0,0,.28);
+    margin-bottom:30px;
+  }
+  .titlebar{
+    display:flex;align-items:center;gap:8px;
+    padding:3px 3px 3px 6px;
+    background:linear-gradient(90deg,var(--title1),var(--title2));
+    color:#fff;font-weight:700;font-size:14px;
+    user-select:none;
+  }
+  .titlebar .tico{font-size:14px;line-height:1;filter:saturate(0) brightness(3)}
+  .titlebar .ttl{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    text-shadow:1px 1px 0 rgba(0,0,0,.35)}
+  /* Decorative window controls — minimize / maximize / close */
+  .tbtns{display:flex;gap:2px}
+  .tbtn{
+    width:20px;height:18px;padding:0;
+    display:inline-flex;align-items:center;justify-content:center;
+    font:700 11px/1 var(--font-ui);color:var(--ink);
+    background:var(--silver);cursor:default;
+    border:2px solid;border-color:var(--hi) var(--sh2) var(--sh2) var(--hi);
+    box-shadow:inset 1px 1px 0 var(--hi),inset -1px -1px 0 var(--sh);
+  }
+  .tbtn:active{border-color:var(--sh2) var(--hi) var(--hi) var(--sh2);
+    box-shadow:inset 1px 1px 0 var(--sh)}
+  .tbtn:focus-visible{outline:1px dotted var(--ink);outline-offset:-4px}
+  .winbody{padding:18px 20px}
+
+  /* ---- Menu strip (decorative, under some title bars) ------------------- */
+  .menustrip{
+    display:flex;gap:2px;padding:2px 4px;font-size:14px;
+    border-bottom:1px solid var(--sh);
+  }
+  .menustrip span{padding:2px 8px}
+  .menustrip u{text-decoration:underline}
+
+  /* ---- Buttons ---------------------------------------------------------- */
+  .btn{
+    display:inline-flex;align-items:center;gap:7px;
+    font-family:var(--font-ui);font-size:15px;
+    padding:8px 16px;color:var(--ink);text-decoration:none;
+    background:var(--silver);cursor:pointer;
+    border:2px solid;border-color:var(--hi) var(--sh2) var(--sh2) var(--hi);
+    box-shadow:inset 1px 1px 0 var(--hi),inset -1px -1px 0 var(--sh);
+  }
+  .btn:hover{background:#cfcfcf}
+  .btn:active{
+    border-color:var(--sh2) var(--hi) var(--hi) var(--sh2);
+    box-shadow:inset 1px 1px 0 var(--sh);
+    padding:9px 15px 7px 17px;   /* push content down-right when pressed */
+  }
+  .btn:focus-visible{outline:1px dotted var(--ink);outline-offset:-5px}
+  .btn.default{font-weight:700}
+
+  /* ---- Proto banner already reserved 34px; sections & typography -------- */
+  .lede{font-size:16px;line-height:1.6;max-width:62ch}
+  .lede b{background:#000080;color:#fff;padding:0 3px}
+  .muted{color:#33352f}
+
+  /* ---- Hero ------------------------------------------------------------- */
+  .hero .kicker{
+    display:inline-block;background:#fff;border:1px solid var(--sh);
+    padding:4px 8px;font-size:13px;margin-bottom:14px;
+  }
+  .hero h1{font-size:clamp(26px,5.4vw,42px);line-height:1.12;margin:0 0 6px}
+  .hero h1 span{color:#000080}
+  .hero .role{font-size:17px;font-weight:700;margin-bottom:14px}
+  .badge{
+    display:inline-flex;align-items:center;gap:8px;margin:16px 0 22px;
+    padding:6px 12px;font-size:14px;background:#ffffe1;border:1px solid var(--sh2);
+  }
+  .badge .dot{width:10px;height:10px;border-radius:50%;background:#008000;
+    box-shadow:0 0 0 1px #004000;animation:blink 1.4s step-end infinite}
+  @keyframes blink{50%{opacity:.35}}
+  @media (prefers-reduced-motion:reduce){.badge .dot{animation:none}}
+  .ctas{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}
+
+  /* ---- Metrics (status well cells) -------------------------------------- */
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .metric{background:#fff;padding:14px 12px;text-align:center;
+    border:2px solid;border-color:var(--sh) var(--hi) var(--hi) var(--sh);
+    box-shadow:inset 1px 1px 0 var(--sh2)}
+  .metric .v{font-size:26px;font-weight:700;color:#000080;line-height:1}
+  .metric .v small{font-size:14px;color:#000}
+  .metric .k{font-size:13px;margin-top:6px;color:#222}
+
+  /* ---- Explorer (projects) ---------------------------------------------- */
+  .explorer-icons{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:6px;
+    padding:12px;margin-bottom:14px;background:#fff;
+    border:2px solid;border-color:var(--sh) var(--hi) var(--hi) var(--sh);
+  }
+  .icon-tile{
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    padding:10px 6px;text-align:center;text-decoration:none;color:var(--ink);
+    background:transparent;border:1px dotted transparent;cursor:pointer;font-size:13px;
+  }
+  .icon-tile:hover{background:#e9eefb}
+  .icon-tile:focus-visible,.icon-tile.sel{
+    background:#000080;color:#fff;border:1px dotted #fff;outline:none}
+  .icon-tile .glyph{font-size:34px;line-height:1}
+  .icon-tile .cap{font-weight:700}
+
+  .project{
+    background:#fff;margin-bottom:12px;
+    border:2px solid;border-color:var(--sh) var(--hi) var(--hi) var(--sh);
+  }
+  .project:target{outline:2px solid #ff8c00;outline-offset:2px}
+  .proj-head{
+    display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;
+    padding:10px 14px;background:#ececec;border-bottom:1px solid var(--sh);
+  }
+  .proj-head .num{font-family:var(--font-mono);color:#000080;font-weight:700}
+  .proj-head h3{font-size:18px}
+  .proj-head .status{
+    margin-left:auto;font-size:12px;padding:2px 8px;background:#000080;color:#fff}
+  .proj-head .meta{width:100%;font-size:13px;color:#444}
+  .proj-body{padding:14px}
+  .proj-body p{margin-bottom:10px}
+  .facts{display:flex;flex-wrap:wrap;gap:16px;margin:10px 0 12px}
+  .fact{border-left:3px solid #000080;padding-left:8px}
+  .fact .fv{font-weight:700;font-size:17px;color:#000080}
+  .fact .fk{font-size:12px;color:#444}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .tag{font-size:12px;background:#d8d8d8;padding:2px 7px;border:1px solid var(--sh)}
+  .proj-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}
+  .proj-cols h4{font-size:13px;text-transform:uppercase;letter-spacing:.04em;
+    color:#000080;margin-bottom:5px}
+  .proj-cols li{font-size:14px;padding-left:16px;position:relative;margin-bottom:5px}
+  .proj-cols li::before{content:"▸";position:absolute;left:0;color:#000080}
+  .limits li::before{content:"!";color:#a00000;font-weight:700}
+
+  /* ---- MS-DOS window ---------------------------------------------------- */
+  .dos .winbody{padding:0}
+  .dos-screen{
+    background:#000;color:#c8c8c8;font-family:var(--font-mono);
+    font-size:14px;line-height:1.45;padding:14px 16px;overflow-x:auto;
+    border:2px solid;border-color:var(--sh2) var(--sh) var(--sh) var(--sh2);
+  }
+  .dos-screen pre{margin:0;white-space:pre}
+  .dos-screen .run{color:var(--dos-green);font-weight:700}
+  .dos-screen .stop{color:#ff6b6b}
+  .dos-screen .path{color:#7ad0ff}
+  .dos-screen .cur{background:#c8c8c8;color:#000}
+
+  /* ---- Skills (System properties) --------------------------------------- */
+  .sys-tabs{display:flex;gap:2px;margin-bottom:-2px;padding-left:6px}
+  .sys-tab{
+    font-size:14px;padding:5px 14px;background:var(--silver);
+    border:2px solid;border-color:var(--hi) var(--sh) transparent var(--hi);
+    border-bottom:none;position:relative;top:2px}
+  .sys-tab.on{background:#fff;top:0;padding-bottom:7px}
+  .sys-panel{background:#fff;padding:16px;
+    border:2px solid;border-color:var(--sh) var(--hi) var(--hi) var(--sh)}
+  .skills-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  .skill-col h3{font-size:15px;margin-bottom:2px}
+  .skill-col .where{font-size:13px;color:#555;margin-bottom:10px}
+  .chk{display:flex;gap:9px;align-items:flex-start;margin-bottom:9px;font-size:14px}
+  .chk .box{
+    flex:none;width:15px;height:15px;margin-top:2px;background:#fff;position:relative;
+    border:2px solid;border-color:var(--sh) var(--hi) var(--hi) var(--sh);
+    box-shadow:inset 1px 1px 0 var(--sh2)}
+  .chk .box::after{content:"";position:absolute;left:4px;top:0;width:4px;height:9px;
+    border:solid #006000;border-width:0 2px 2px 0;transform:rotate(45deg)}
+  .chk .lbl{flex:1}
+  .chk .proof{display:block;font-size:12px;color:#006000}
+
+  /* ---- Contact ---------------------------------------------------------- */
+  .contact-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+  .contact-row .btn{min-width:150px;justify-content:center}
+
+  /* ---- Easter-egg error dialog ------------------------------------------ */
+  .dlg{
+    position:fixed;z-index:1500;left:50%;top:38%;transform:translate(-50%,-50%);
+    width:min(340px,88vw);background:var(--silver);
+    border:2px solid;border-color:var(--hi2) var(--sh2) var(--sh2) var(--hi2);
+    box-shadow:inset 1px 1px 0 var(--hi),inset -1px -1px 0 var(--sh),
+               5px 5px 0 rgba(0,0,0,.4);
+  }
+  .dlg[hidden]{display:none}
+  .dlg .titlebar{cursor:default}
+  .dlg-body{display:flex;gap:14px;padding:18px 16px 8px;align-items:flex-start}
+  .dlg-body .warn{font-size:32px;line-height:1}
+  .dlg-body p{font-size:14px}
+  .dlg-foot{display:flex;justify-content:center;gap:10px;padding:8px 16px 16px}
+
+  /* ---- Taskbar ---------------------------------------------------------- */
+  .taskbar{
+    position:fixed;left:0;right:0;bottom:0;z-index:1800;height:40px;
+    display:flex;align-items:center;gap:6px;padding:4px 6px;
+    background:var(--silver);
+    border-top:2px solid var(--hi);
+    box-shadow:inset 0 1px 0 #fff;
+  }
+  .start-btn{
+    display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:15px;
+    padding:5px 12px 5px 8px;color:var(--ink);background:var(--silver);cursor:pointer;
+    border:2px solid;border-color:var(--hi) var(--sh2) var(--sh2) var(--hi);
+    box-shadow:inset 1px 1px 0 var(--hi),inset -1px -1px 0 var(--sh);
+  }
+  .start-btn[aria-expanded="true"]{
+    border-color:var(--sh2) var(--hi) var(--hi) var(--sh2);
+    box-shadow:inset 1px 1px 0 var(--sh)}
+  .start-btn:focus-visible{outline:1px dotted var(--ink);outline-offset:-5px}
+  .start-btn .flag{font-size:16px}
+  .task-open{
+    flex:1;min-width:0;display:flex;align-items:center;gap:6px;
+    font-size:13px;padding:5px 10px;color:#000;overflow:hidden;white-space:nowrap;
+    border:2px solid;border-color:var(--sh2) var(--hi) var(--hi) var(--sh2);
+    box-shadow:inset 1px 1px 0 var(--sh)}
+  .clock{
+    flex:none;font-size:14px;padding:6px 12px;min-width:74px;text-align:center;
+    border:2px solid;border-color:var(--sh) var(--hi) var(--hi) var(--sh);
+    box-shadow:inset 1px 1px 0 var(--sh2)}
+
+  /* ---- Start menu ------------------------------------------------------- */
+  .start-menu{
+    position:fixed;left:6px;bottom:44px;z-index:1900;width:250px;
+    background:var(--silver);
+    border:2px solid;border-color:var(--hi2) var(--sh2) var(--sh2) var(--hi2);
+    box-shadow:inset 1px 1px 0 var(--hi),inset -1px -1px 0 var(--sh),
+               4px 4px 0 rgba(0,0,0,.35);
+    display:flex;
+  }
+  .start-menu[hidden]{display:none}
+  .start-menu .rail{
+    width:32px;flex:none;
+    background:linear-gradient(180deg,#1084d0,#000080);
+    writing-mode:vertical-rl;transform:rotate(180deg);
+    color:#fff;font-weight:700;font-size:16px;letter-spacing:.06em;
+    text-align:center;padding:12px 0}
+  .start-menu .rail b{color:#ffe14d}
+  .start-menu ul{flex:1;padding:4px}
+  .start-menu a{
+    display:flex;align-items:center;gap:10px;padding:8px 10px;
+    font-size:15px;color:var(--ink);text-decoration:none}
+  .start-menu a .mi{font-size:18px;width:22px;text-align:center}
+  .start-menu a:hover,.start-menu a:focus-visible{
+    background:#000080;color:#fff;outline:none}
+  .start-menu hr{border:none;border-top:1px solid var(--sh);
+    border-bottom:1px solid var(--hi);margin:4px 6px}
+
+  /* ---- Boot screen ------------------------------------------------------ */
+  .boot{
+    position:fixed;inset:0;z-index:3000;background:#000;color:#fff;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:26px;font-family:var(--font-ui);cursor:pointer}
+  .boot[hidden]{display:none}
+  .boot .logo{display:flex;flex-direction:column;align-items:center;gap:14px}
+  .boot .win-flag{
+    display:grid;grid-template-columns:34px 34px;grid-template-rows:34px 34px;
+    gap:5px;transform:skewX(-12deg)}
+  .boot .win-flag i{display:block;border-radius:2px 2px 4px 4px}
+  .boot .win-flag i:nth-child(1){background:#ff3b30}
+  .boot .win-flag i:nth-child(2){background:#34c759}
+  .boot .win-flag i:nth-child(3){background:#0a84ff}
+  .boot .win-flag i:nth-child(4){background:#ffcc00}
+  .boot .brand{font-size:30px;font-weight:700;letter-spacing:.01em}
+  .boot .brand small{display:block;font-size:15px;font-weight:400;color:#bbb;
+    letter-spacing:.2em;text-align:right;margin-top:2px}
+  .boot .track{width:200px;height:20px;padding:2px;background:#111;
+    border:2px solid;border-color:#000 #444 #444 #000}
+  .boot .fill{height:100%;width:0;background:#0a84ff;
+    background-image:linear-gradient(90deg,#0a84ff 60%,#3aa0ff 60%);
+    background-size:14px 100%;animation:load 1s linear forwards}
+  @keyframes load{to{width:100%}}
+  .boot .hint{font-size:12px;color:#888}
+
+  /* ---- Responsive ------------------------------------------------------- */
+  @media (max-width:720px){
+    .metrics{grid-template-columns:repeat(2,1fr)}
+    .explorer-icons{grid-template-columns:repeat(2,1fr)}
+    .proj-cols{grid-template-columns:1fr}
+    .skills-grid{grid-template-columns:1fr}
+    .task-open{display:none}          /* hide window pill, keep Start + clock */
+  }
+  @media (max-width:420px){
+    body{font-size:15px}
+    .explorer-icons{grid-template-columns:repeat(2,1fr)}
+    .winbody{padding:14px}
+  }
+</style>
+
+<!-- ===== Proto switch banner ===== -->
+<div class="proto-bar">
+  <span><b>PROTO 4/4</b> — Win9x</span>
+  <nav>
+    <a href="proto-pop-brutalisme.html">1 · Pop</a>
+    <a href="proto-console-neon.html">2 · Console</a>
+    <a href="proto-kinetic-gradients.html">3 · Kinetic</a>
+    <a class="here" href="proto-win9x.html">4 · Win9x</a>
+  </nav>
+</div>
+
+<!-- ===== Boot screen (JS may remove it; shown once per session) ===== -->
+<div class="boot" id="boot" hidden aria-hidden="true">
+  <div class="logo">
+    <div class="win-flag" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <div class="brand">Ianis&nbsp;98<small>PUICHAUD EDITION</small></div>
+  </div>
+  <div class="track"><div class="fill" id="bootfill"></div></div>
+  <div class="hint">Cliquez pour passer…</div>
+</div>
+
+<main class="desktop">
+
+  <!-- ===== Hero window ===== -->
+  <section class="win hero" id="hero" aria-labelledby="hero-title">
+    <div class="titlebar">
+      <span class="tico" aria-hidden="true">👋</span>
+      <span class="ttl">Bienvenue — Ianis Puichaud</span>
+      <span class="tbtns" aria-hidden="true">
+        <span class="tbtn">_</span><span class="tbtn">▢</span><span class="tbtn">✕</span>
+      </span>
+    </div>
+    <div class="winbody">
+      <div class="kicker">Administrateur Systèmes &amp; Réseaux · Nantes</div>
+      <h1 id="hero-title">J'administre à l'échelle.<br><span>J'automatise pour durer.</span></h1>
+      <p class="role">Admin Systèmes &amp; Réseaux</p>
+      <p class="lede">
+        Chez <b>Equans</b>, j'interviens sur les identités, les postes Windows et la
+        sécurité d'un parc de <b>plus de 21 000 postes</b>. Hors entreprise, je
+        transforme cette expérience en systèmes reproductibles : <b>13 LXC en IaC</b>,
+        un laboratoire GitOps mesuré et <b>DataCommune</b>, produit data en ligne.
+      </p>
+      <div class="badge"><span class="dot" aria-hidden="true"></span>Disponible en alternance · Master Infra &amp; Cloud · sept. 2026</div>
+      <div class="ctas">
+        <a class="btn default" href="#projets">📁 Voir les projets</a>
+        <a class="btn" href="#contact">✉️ Me contacter</a>
+        <a class="btn" href="/cv.pdf" target="_blank" rel="noopener">📄 CV.pdf</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Metrics window ===== -->
+  <section class="win" id="metrics" aria-label="Chiffres clés">
+    <div class="titlebar">
+      <span class="tico" aria-hidden="true">📊</span>
+      <span class="ttl">Poste de travail — Propriétés</span>
+      <span class="tbtns" aria-hidden="true">
+        <span class="tbtn">_</span><span class="tbtn">▢</span><span class="tbtn">✕</span>
+      </span>
+    </div>
+    <div class="winbody">
+      <div class="metrics">
+        <div class="metric"><div class="v">21 000+</div><div class="k">postes en support N2</div></div>
+        <div class="metric"><div class="v">13 <small>LXC</small></div><div class="k">décrits par l'IaC</div></div>
+        <div class="metric"><div class="v">27</div><div class="k">datasets unifiés</div></div>
+        <div class="metric"><div class="v">15–133 <small>s</small></div><div class="k">RTO mesuré en lab</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Projects — Explorer window ===== -->
+  <section class="win" id="projets" aria-labelledby="projets-title">
+    <div class="titlebar">
+      <span class="tico" aria-hidden="true">📂</span>
+      <span class="ttl" id="projets-title">Explorateur — Mes projets</span>
+      <span class="tbtns" aria-hidden="true">
+        <span class="tbtn">_</span><span class="tbtn">▢</span><span class="tbtn">✕</span>
+      </span>
+    </div>
+    <div class="menustrip" aria-hidden="true">
+      <span><u>F</u>ichier</span><span><u>E</u>dition</span><span><u>A</u>ffichage</span><span>Aid<u>e</u></span>
+    </div>
+    <div class="winbody">
+      <!-- Large icons: click scrolls to + highlights the matching card -->
+      <div class="explorer-icons" role="list">
+        <a class="icon-tile" href="#p-datacommune" role="listitem">
+          <span class="glyph" aria-hidden="true">🗄️</span><span class="cap">DataCommune</span></a>
+        <a class="icon-tile" href="#p-hexalith" role="listitem">
+          <span class="glyph" aria-hidden="true">🧪</span><span class="cap">Hexalith</span></a>
+        <a class="icon-tile" href="#p-homelab" role="listitem">
+          <span class="glyph" aria-hidden="true">🖧</span><span class="cap">Homelab</span></a>
+        <a class="icon-tile" href="#p-automatisation-ad" role="listitem">
+          <span class="glyph" aria-hidden="true">⚙️</span><span class="cap">Automatisation AD</span></a>
+      </div>
+
+      <!-- Project 01 -->
+      <article class="project" id="p-datacommune">
+        <div class="proj-head">
+          <span class="num">01</span><h3>DataCommune</h3>
+          <span class="status">En ligne</span>
+          <span class="meta">Produit data · 2025 →</span>
+        </div>
+        <div class="proj-body">
+          <p>Une plateforme de données publiques que je conçois, développe et exploite seul : ingestion, API, interface et chaîne de déploiement.</p>
+          <div class="facts">
+            <div class="fact"><div class="fv">27</div><div class="fk">jeux de données</div></div>
+            <div class="fact"><div class="fv">37,5 M</div><div class="fk">lignes auditées</div></div>
+            <div class="fact"><div class="fv">85</div><div class="fk">chemins OpenAPI</div></div>
+          </div>
+          <div class="proj-cols">
+            <div><h4>Réalisé</h4><ul>
+              <li>21 pipelines ETL avec contrôles de volume, de schéma et de couverture.</li>
+              <li>API FastAPI sur PostgreSQL / PostGIS, auth hybride, quotas.</li>
+              <li>Frontend SvelteKit 5 sur Cloudflare Workers ; API conteneurisée en homelab.</li>
+              <li>CI/CD GitHub Actions, runner auto-hébergé, retour arrière testé.</li>
+            </ul></div>
+            <div><h4>Résultats</h4><ul>
+              <li>Instance publique active sur la Loire-Atlantique et la Vendée.</li>
+              <li>Matrice de qualité sur 21 pipelines et 6 proxys de données.</li>
+              <li>Fiches Commune rendues côté serveur, indexables.</li>
+            </ul>
+            <h4 style="margin-top:12px">Limites</h4><ul class="limits">
+              <li>France entière = cible d'architecture, pas le volume de la démo.</li>
+              <li>Facturation désactivée tant que la qualité n'est pas validée.</li>
+            </ul></div>
+          </div>
+          <div class="tags">
+            <span class="tag">FastAPI</span><span class="tag">PostGIS</span><span class="tag">SvelteKit</span>
+            <span class="tag">ETL</span><span class="tag">GitHub Actions</span>
+          </div>
+          <p style="margin-top:12px"><a href="https://datacommune.fr" target="_blank" rel="noopener">→ Ouvrir DataCommune</a></p>
+        </div>
+      </article>
+
+      <!-- Project 02 -->
+      <article class="project" id="p-hexalith">
+        <div class="proj-head">
+          <span class="num">02</span><h3>Hexalith</h3>
+          <span class="status">Lab validé</span>
+          <span class="meta">GitOps &amp; IAM · 2026</span>
+        </div>
+        <div class="proj-body">
+          <p>Un laboratoire complémentaire à mon expérience pro, construit pour pratiquer l'IaC, l'IAM, l'observabilité et la reprise après sinistre de bout en bout.</p>
+          <div class="facts">
+            <div class="fact"><div class="fv">27</div><div class="fk">PR fusionnées</div></div>
+            <div class="fact"><div class="fv">6</div><div class="fk">LXC provisionnés</div></div>
+            <div class="fact"><div class="fv">15–133 s</div><div class="fk">RTO mesuré</div></div>
+          </div>
+          <div class="proj-cols">
+            <div><h4>Réalisé</h4><ul>
+              <li>Provisionnement Proxmox par Terraform, configuration par Ansible.</li>
+              <li>SSO validé en SAML (GLPI) et OpenID Connect (Grafana).</li>
+              <li>Onboarding automatisé : identité, ticket ITSM, notification, offboarding.</li>
+              <li>Supervision Prometheus / Loki / Grafana, incident volontaire joué.</li>
+            </ul></div>
+            <div><h4>Résultats</h4><ul>
+              <li>10 sondes / 10 et 18 cibles / 18 disponibles au contrôle nominal.</li>
+              <li>Alerte ≈ 102 s, résolution détectée ≈ 61 s après reprise.</li>
+              <li>Restaurations destructives : ≈ 15 s (n8n), 133 s (Authentik).</li>
+            </ul>
+            <h4 style="margin-top:12px">Limites</h4><ul class="limits">
+              <li>Mesures sur lab, pas un engagement de production.</li>
+              <li>Budget / planning 13 semaines = conception du scénario.</li>
+            </ul></div>
+          </div>
+          <div class="tags">
+            <span class="tag">Terraform</span><span class="tag">Ansible</span><span class="tag">Authentik</span>
+            <span class="tag">Grafana</span><span class="tag">GitHub Actions</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Project 03 -->
+      <article class="project" id="p-homelab">
+        <div class="proj-head">
+          <span class="num">03</span><h3>Homelab</h3>
+          <span class="status">Exploité 24/7</span>
+          <span class="meta">Infrastructure personnelle · 2024 →</span>
+        </div>
+        <div class="proj-body">
+          <p>Mon terrain d'exploitation réel : des services personnels migrés progressivement vers une base reproductible, privée et restaurable.</p>
+          <div class="facts">
+            <div class="fact"><div class="fv">13</div><div class="fk">LXC en IaC</div></div>
+            <div class="fact"><div class="fv">3-2-1</div><div class="fk">sauvegardes</div></div>
+            <div class="fact"><div class="fv">24/7</div><div class="fk">exploitation</div></div>
+          </div>
+          <div class="proj-cols">
+            <div><h4>Réalisé</h4><ul>
+              <li>Une source de vérité par information, doc générée depuis Terraform.</li>
+              <li>Migration service par service : créer, restaurer, tester, basculer.</li>
+              <li>Accès distant privé par Tailscale, auth passkey.</li>
+              <li>Observabilité centralisée, SSH durci, secrets SOPS/age.</li>
+            </ul></div>
+            <div><h4>Résultats</h4><ul>
+              <li>13 conteneurs en IaC, protégés contre la suppression.</li>
+              <li>Sauvegardes locales et hors site, restaurations documentées.</li>
+              <li>Bascule LAN-only par vagues avec contrôles fonctionnels.</li>
+            </ul>
+            <h4 style="margin-top:12px">Limites</h4><ul class="limits">
+              <li>Un seul nœud Proxmox : sauvegarde prouvée, HA non.</li>
+              <li>Dépôt et topologie détaillée restent privés.</li>
+            </ul></div>
+          </div>
+          <div class="tags">
+            <span class="tag">Proxmox</span><span class="tag">Terraform</span><span class="tag">Ansible</span>
+            <span class="tag">Tailscale</span><span class="tag">SOPS</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Project 04 -->
+      <article class="project" id="p-automatisation-ad">
+        <div class="proj-head">
+          <span class="num">04</span><h3>Automatisation AD</h3>
+          <span class="status">Utilisé en entreprise</span>
+          <span class="meta">PowerShell · 2025</span>
+        </div>
+        <div class="proj-body">
+          <p>Trois outils PowerShell pour fiabiliser des opérations Active Directory répétitives dans un environnement très contraint.</p>
+          <div class="facts">
+            <div class="fact"><div class="fv">3</div><div class="fk">outils ciblés</div></div>
+            <div class="fact"><div class="fv">21 000+</div><div class="fk">postes concernés</div></div>
+            <div class="fact"><div class="fv">0</div><div class="fk">secret publié</div></div>
+          </div>
+          <div class="proj-cols">
+            <div><h4>Réalisé</h4><ul>
+              <li>Mode simulation pour rendre les changements visibles avant exécution.</li>
+              <li>Exports de contrôle et sauvegardes avant les opérations sensibles.</li>
+              <li>Revue de code par un développeur, périmètre volontairement limité.</li>
+            </ul></div>
+            <div><h4>Résultats</h4><ul>
+              <li>Opérations répétitives regroupées dans trois interfaces ciblées.</li>
+              <li>Traçabilité améliorée pour audits de droits et sorties de personnel.</li>
+            </ul>
+            <h4 style="margin-top:12px">Limites</h4><ul class="limits">
+              <li>Code et données privés (contexte d'entreprise).</li>
+              <li>L'outil assiste la décision, ne remplace pas la validation humaine.</li>
+            </ul></div>
+          </div>
+          <div class="tags">
+            <span class="tag">PowerShell</span><span class="tag">Active Directory</span>
+            <span class="tag">IAM</span><span class="tag">Guardrails</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===== MS-DOS window — infra tree (recruiter wink) ===== -->
+  <section class="win dos" id="infra" aria-label="Arborescence infrastructure">
+    <div class="titlebar">
+      <span class="tico" aria-hidden="true">🖥️</span>
+      <span class="ttl">Invite de commandes — pvesh</span>
+      <span class="tbtns" aria-hidden="true">
+        <span class="tbtn">_</span><span class="tbtn">▢</span><span class="tbtn">✕</span>
+      </span>
+    </div>
+    <div class="winbody">
+      <div class="dos-screen">
+<pre>Microsoft(R) Homelab MS-DOS
+(C) Ianis Puichaud. Tous droits reserves.
+
+<span class="path">C:\HOMELAB&gt;</span> pvesh get /nodes/pve-ianis/lxc --tree
+
+datacenter
+└─ pve-ianis  <span class="run">[ONLINE]</span>
+   ├─ ct-101  caddy-edge          <span class="run">[RUNNING]</span>
+   ├─ ct-102  authentik-sso       <span class="run">[RUNNING]</span>
+   ├─ ct-103  grafana-obs         <span class="run">[RUNNING]</span>
+   ├─ ct-104  prometheus          <span class="run">[RUNNING]</span>
+   ├─ ct-105  loki-logs           <span class="run">[RUNNING]</span>
+   ├─ ct-106  postgres-postgis    <span class="run">[RUNNING]</span>
+   ├─ ct-107  datacommune-api     <span class="run">[RUNNING]</span>
+   ├─ ct-108  gha-runner          <span class="run">[RUNNING]</span>
+   ├─ ct-109  tailscale-exit      <span class="run">[RUNNING]</span>
+   └─ ct-110  pbs-backup          <span class="stop">[STOPPED]</span>  (snapshot 03:00)
+
+13 conteneurs declares en IaC · sauvegarde 3-2-1 · restore teste
+
+<span class="path">C:\HOMELAB&gt;</span> <span class="cur">_</span></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Skills — System properties window ===== -->
+  <section class="win" id="competences" aria-labelledby="comp-title">
+    <div class="titlebar">
+      <span class="tico" aria-hidden="true">🧰</span>
+      <span class="ttl" id="comp-title">Propriétés système — Compétences</span>
+      <span class="tbtns" aria-hidden="true">
+        <span class="tbtn">_</span><span class="tbtn">▢</span><span class="tbtn">✕</span>
+      </span>
+    </div>
+    <div class="winbody">
+      <div class="sys-tabs" aria-hidden="true">
+        <span class="sys-tab on">Général</span><span class="sys-tab">Périphériques</span>
+      </div>
+      <div class="sys-panel">
+        <p class="muted" style="margin-bottom:14px;font-size:14px">
+          Un outil n'apparaît ici que s'il est utilisé dans un contexte que je peux expliquer.
+        </p>
+        <div class="skills-grid">
+          <div class="skill-col">
+            <h3>Entreprise</h3>
+            <div class="where">Parc corporate &gt; 21 000 postes, environnement verrouillé</div>
+            <div class="chk"><span class="box" aria-hidden="true"></span><span class="lbl">Windows 10/11 · Microsoft 365<span class="proof">support &amp; admin en prod</span></span></div>
+            <div class="chk"><span class="box" aria-hidden="true"></span><span class="lbl">Active Directory · Entra ID · Intune<span class="proof">identités &amp; parc au quotidien</span></span></div>
+            <div class="chk"><span class="box" aria-hidden="true"></span><span class="lbl">CyberArk EPM · Zscaler<span class="proof">sécurité, utilisé en prod</span></span></div>
+            <div class="chk"><span class="box" aria-hidden="true"></span><span class="lbl">ServiceNow · Nexthink · Lansweeper<span class="proof">ITSM &amp; supervision</span></span></div>
+            <div class="chk"><span class="box" aria-hidden="true"></span><span class="lbl">PowerShell · Python<span class="proof">scripting quotidien, outils déployés</span></span></div>
+            <div class="chk"><span class="box" aria-hidden="true"></span><span class="lbl">Hyper-V · VMware<span class="proof">virtualisation — usage ponctuel</span></span></div>
+          </div>
+          <div class="skill-col">
+            <h3>Labs</h3>
+            <div class="where">Homelab 24/7, laboratoire GitOps et produit data en solo</div>
+            <div class="chk"><span class="box" aria-hidden="true"></span><span class="lbl">Proxmox VE · LXC · Docker<span class="proof">exploité 24/7, restore testé</span></span></div>
+            <div class="chk"><span class="box" aria-hidden="true"></span><span class="lbl">Ansible · Terraform<span class="proof">13 LXC provisionnés en IaC</span></span></div>
+            <div class="chk"><span class="box" aria-hidden="true"></span><span class="lbl">GitHub Actions<span class="proof">runner self-hosted en service</span></span></div>
+            <div class="chk"><span class="box" aria-hidden="true"></span><span class="lbl">Grafana · Prometheus · Loki<span class="proof">observabilité, incident joué</span></span></div>
+            <div class="chk"><span class="box" aria-hidden="true"></span><span class="lbl">Caddy · Tailscale · Pocket ID<span class="proof">edge &amp; SSO passkeys en lab</span></span></div>
+            <div class="chk"><span class="box" aria-hidden="true"></span><span class="lbl">FastAPI · PostgreSQL / PostGIS<span class="proof">projet déployé, 85 chemins</span></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Contact window ===== -->
+  <section class="win" id="contact" aria-labelledby="contact-title">
+    <div class="titlebar">
+      <span class="tico" aria-hidden="true">✉️</span>
+      <span class="ttl" id="contact-title">Nouveau message — Me contacter</span>
+      <span class="tbtns" aria-hidden="true">
+        <span class="tbtn">_</span><span class="tbtn">▢</span><span class="tbtn">✕</span>
+      </span>
+    </div>
+    <div class="winbody">
+      <p class="lede" style="margin-bottom:16px">
+        Disponible en alternance pour un Master Infra &amp; Cloud à partir de septembre 2026.
+        Le plus simple pour échanger :
+      </p>
+      <div class="contact-row">
+        <a class="btn default" href="mailto:ianispuichaud@gmail.com">✉️ ianispuichaud@gmail.com</a>
+        <a class="btn" href="/cv.pdf" target="_blank" rel="noopener">📄 Télécharger le CV</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== Easter-egg error dialog (light, dismissible, non-blocking) ===== -->
+<div class="dlg" id="egg" role="alertdialog" aria-labelledby="egg-ttl" aria-describedby="egg-msg" hidden>
+  <div class="titlebar">
+    <span class="ttl" id="egg-ttl">Ianis.exe</span>
+    <span class="tbtns">
+      <button class="tbtn" type="button" data-egg-close aria-label="Fermer">✕</button>
+    </span>
+  </div>
+  <div class="dlg-body">
+    <span class="warn" aria-hidden="true">⚠️</span>
+    <p id="egg-msg">Une erreur inattendue s'est produite&nbsp;: candidat motivé détecté.<br>
+      Voulez-vous vraiment continuer sans le recruter&nbsp;?</p>
+  </div>
+  <div class="dlg-foot">
+    <a class="btn default" href="#contact" data-egg-close>Recruter</a>
+    <button class="btn" type="button" data-egg-close>Annuler</button>
+  </div>
+</div>
+
+<!-- ===== Start menu ===== -->
+<nav class="start-menu" id="startmenu" hidden aria-label="Menu Démarrer">
+  <div class="rail" aria-hidden="true">Ianis<b>98</b></div>
+  <ul>
+    <li><a href="#hero"><span class="mi" aria-hidden="true">👋</span>Bienvenue</a></li>
+    <li><a href="#metrics"><span class="mi" aria-hidden="true">📊</span>Chiffres clés</a></li>
+    <li><a href="#projets"><span class="mi" aria-hidden="true">📂</span>Mes projets</a></li>
+    <li><a href="#infra"><span class="mi" aria-hidden="true">🖥️</span>Infra (MS-DOS)</a></li>
+    <li><a href="#competences"><span class="mi" aria-hidden="true">🧰</span>Compétences</a></li>
+    <li><a href="#contact"><span class="mi" aria-hidden="true">✉️</span>Me contacter</a></li>
+    <hr>
+    <li><a href="/cv.pdf" target="_blank" rel="noopener"><span class="mi" aria-hidden="true">📄</span>CV.pdf</a></li>
+  </ul>
+</nav>
+
+<!-- ===== Taskbar ===== -->
+<div class="taskbar">
+  <button class="start-btn" id="startbtn" type="button" aria-haspopup="true"
+          aria-expanded="false" aria-controls="startmenu">
+    <span class="flag" aria-hidden="true">🪟</span>Démarrer
+  </button>
+  <span class="task-open" aria-hidden="true">👋 Bienvenue — Ianis Puichaud</span>
+  <span class="clock" id="clock" role="timer" aria-label="Heure">--:--</span>
+</div>
+
+<script>
+  /* ---- Boot screen: once per session, skippable, off if reduced-motion --- */
+  (function(){
+    var boot = document.getElementById('boot');
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var seen = false;
+    try{ seen = sessionStorage.getItem('win9x_booted') === '1'; }catch(e){}
+
+    if(reduced || seen){ return; }           // no boot: leave it hidden
+    try{ sessionStorage.setItem('win9x_booted','1'); }catch(e){}
+
+    boot.hidden = false;
+    boot.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+
+    function dismiss(){
+      boot.hidden = true;
+      document.body.style.overflow = '';
+    }
+    boot.addEventListener('click', dismiss);          // skip on click
+    setTimeout(dismiss, 1000);                         // auto-close <= 1s
+  })();
+
+  /* ---- Live clock (real time, HH:MM) ------------------------------------ */
+  (function(){
+    var el = document.getElementById('clock');
+    function tick(){
+      var d = new Date();
+      var h = String(d.getHours()).padStart(2,'0');
+      var m = String(d.getMinutes()).padStart(2,'0');
+      el.textContent = h + ':' + m;
+    }
+    tick(); setInterval(tick, 15000);
+  })();
+
+  /* ---- Start menu toggle (works as mobile nav too) ---------------------- */
+  (function(){
+    var btn = document.getElementById('startbtn');
+    var menu = document.getElementById('startmenu');
+    function open(){ menu.hidden = false; btn.setAttribute('aria-expanded','true'); }
+    function close(){ menu.hidden = true; btn.setAttribute('aria-expanded','false'); }
+    function toggle(){ menu.hidden ? open() : close(); }
+
+    btn.addEventListener('click', function(e){ e.stopPropagation(); toggle(); });
+    // Close after picking a destination — scroll stays the real navigation
+    menu.addEventListener('click', function(e){
+      if(e.target.closest('a')) close();
+    });
+    document.addEventListener('click', function(e){
+      if(!menu.hidden && !menu.contains(e.target) && e.target !== btn) close();
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape') close();
+    });
+  })();
+
+  /* ---- Explorer icons: highlight the targeted project card -------------- */
+  (function(){
+    var tiles = document.querySelectorAll('.icon-tile');
+    tiles.forEach(function(t){
+      t.addEventListener('click', function(){
+        tiles.forEach(function(x){ x.classList.remove('sel'); });
+        t.classList.add('sel');
+      });
+    });
+  })();
+
+  /* ---- Easter egg: pop the dialog once, ~4s in, dismissible ------------- */
+  (function(){
+    var egg = document.getElementById('egg');
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function show(){ egg.hidden = false; }
+    function hide(){ egg.hidden = true; }
+    egg.addEventListener('click', function(e){
+      if(e.target.closest('[data-egg-close]')) hide();
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape' && !egg.hidden) hide();
+    });
+    // Delay so it never blocks the initial read; skip the delay-feel if reduced
+    setTimeout(show, reduced ? 1500 : 4200);
+  })();
+</script>

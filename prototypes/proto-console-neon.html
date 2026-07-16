@@ -1,0 +1,402 @@
+<!-- ==========================================================================
+     PROTO 2 / 3 — CONSOLE HYPERVISEUR NÉON (technical-brutalism funkifié)
+     Standalone prototype: all CSS + JS inline, no external resources.
+     Monospace system stacks only. Real site content (FR).
+     Resurrects the "Proxmox hypervisor console" concept from BRIEF.md.
+     ========================================================================== -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROTO 2 — Console néon · Ianis Puichaud</title>
+<style>
+  :root{
+    --bg:#0A0E14;
+    --bg-2:#0E141F;
+    --panel:#111826;
+    --line:#1d2838;
+    --green:#39FF7A;     /* phosphor green   */
+    --magenta:#FF4DD8;   /* neon magenta     */
+    --cyan:#37E6FF;      /* neon cyan        */
+    --amber:#FFC24D;
+    --dim:#5c7085;
+    --text:#c9e3d6;
+    --mono:ui-monospace,"Cascadia Code","Source Code Pro",Consolas,"Courier New",monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;font-family:var(--mono);background:var(--bg);color:var(--text);
+    font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;
+    padding-top:40px;position:relative;overflow-x:hidden;
+  }
+  a{color:var(--cyan);text-decoration:none}
+  a:hover{color:var(--magenta)}
+
+  /* ---- CRT scanline overlay -------------------------------------------- */
+  body::before{
+    content:"";position:fixed;inset:0;z-index:900;pointer-events:none;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0,rgba(0,0,0,.22) 1px,transparent 1px,transparent 3px);
+    mix-blend-mode:multiply;opacity:.5;
+  }
+  body::after{ /* faint vignette + flicker */
+    content:"";position:fixed;inset:0;z-index:899;pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 40%,transparent 55%,rgba(0,0,0,.55));
+    animation:flicker 6s infinite;
+  }
+  @keyframes flicker{0%,97%,100%{opacity:1}98%{opacity:.85}99%{opacity:.95}}
+
+  /* ---- Proto switch banner --------------------------------------------- */
+  .proto-bar{
+    position:fixed;top:0;left:0;right:0;z-index:1000;
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    height:40px;padding:0 14px;background:#05070b;border-bottom:1px solid var(--line);
+    font-size:12px;letter-spacing:.04em;
+  }
+  .proto-bar b{color:var(--green)}
+  .proto-bar nav{display:flex;gap:6px;margin-left:auto}
+  .proto-bar a{padding:4px 9px;border:1px solid var(--line);border-radius:4px;color:var(--dim)}
+  .proto-bar a.here{border-color:var(--green);color:var(--green)}
+  .proto-bar a:hover{border-color:var(--cyan);color:var(--cyan)}
+
+  .wrap{width:min(1160px,94vw);margin-inline:auto}
+  .neon-g{text-shadow:0 0 6px rgba(57,255,122,.55),0 0 18px rgba(57,255,122,.25)}
+  .neon-m{color:var(--magenta);text-shadow:0 0 6px rgba(255,77,216,.6),0 0 18px rgba(255,77,216,.3)}
+  .neon-c{color:var(--cyan);text-shadow:0 0 6px rgba(55,230,255,.6),0 0 18px rgba(55,230,255,.3)}
+
+  /* ---- Terminal window chrome ------------------------------------------ */
+  .term{
+    margin:26px auto;border:1px solid var(--line);border-radius:10px;overflow:hidden;
+    background:linear-gradient(180deg,var(--bg-2),var(--bg));
+    box-shadow:0 0 0 1px rgba(57,255,122,.06),0 30px 80px rgba(0,0,0,.6);
+  }
+  .term__bar{
+    display:flex;align-items:center;gap:8px;padding:10px 14px;
+    background:#0c1220;border-bottom:1px solid var(--line);
+  }
+  .term__bar .btns{display:flex;gap:7px}
+  .term__bar .btns i{width:12px;height:12px;border-radius:50%;display:block}
+  .btns i:nth-child(1){background:#ff5f57}
+  .btns i:nth-child(2){background:#febc2e}
+  .btns i:nth-child(3){background:#28c840}
+  .term__title{color:var(--dim);font-size:12px;margin-inline:auto;letter-spacing:.05em}
+  .term__body{padding:26px}
+
+  /* ---- Boot sequence + hero -------------------------------------------- */
+  .boot{min-height:150px}
+  .boot .row{opacity:0;white-space:pre-wrap;margin:2px 0}
+  .boot .row.show{opacity:1;animation:type .25s ease}
+  @keyframes type{from{opacity:0;transform:translateY(2px)}to{opacity:1;transform:none}}
+  .ok{color:var(--green)}
+  .warn{color:var(--amber)}
+  .info{color:var(--cyan)}
+
+  .hero-head{margin-top:22px}
+  .prompt{color:var(--magenta)}
+  .hero-head h1{
+    font-size:clamp(26px,5vw,50px);line-height:1.05;margin:8px 0 6px;font-weight:700;
+    color:#eafff2;letter-spacing:-.01em;
+  }
+  .hero-head h1 .a{color:var(--green)}
+  .hero-head h1 .b{color:var(--magenta)}
+  .cursor{display:inline-block;width:11px;height:1.05em;background:var(--green);
+    vertical-align:-2px;margin-left:3px;animation:blink 1s steps(1) infinite;box-shadow:0 0 8px var(--green)}
+  @keyframes blink{50%{opacity:0}}
+  .hero-head p{max-width:680px;color:var(--text);margin:14px 0 0}
+  .hero-head p b{color:var(--cyan);font-weight:600}
+  .statusline{
+    margin-top:18px;display:flex;flex-wrap:wrap;gap:10px 20px;font-size:13px;color:var(--dim);
+    border-top:1px dashed var(--line);padding-top:16px;
+  }
+  .statusline b{color:var(--green)}
+  .ctas{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}
+  .btn{
+    font-family:var(--mono);font-size:14px;padding:11px 18px;border-radius:6px;cursor:pointer;
+    border:1px solid var(--green);color:var(--green);background:rgba(57,255,122,.06);
+    transition:.15s;
+  }
+  .btn:hover{background:var(--green);color:#04120a;box-shadow:0 0 18px rgba(57,255,122,.5)}
+  .btn.alt{border-color:var(--magenta);color:var(--magenta);background:rgba(255,77,216,.06)}
+  .btn.alt:hover{background:var(--magenta);color:#12040f;box-shadow:0 0 18px rgba(255,77,216,.5)}
+
+  /* ---- Section heads ---------------------------------------------------- */
+  section{padding:46px 0}
+  .sec-head{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+  .sec-head::before{content:"# ";color:var(--magenta)}
+  h2.big{font-size:clamp(24px,4vw,38px);margin:0 0 22px;color:#eafff2;font-weight:700}
+
+  /* ---- Proxmox tree ----------------------------------------------------- */
+  .console{display:grid;grid-template-columns:340px 1fr;gap:0;border:1px solid var(--line);
+    border-radius:10px;overflow:hidden;background:var(--panel)}
+  .tree{background:#0c1220;border-right:1px solid var(--line);padding:14px 10px;font-size:13.5px}
+  .tree .node{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:5px;cursor:pointer;white-space:nowrap}
+  .tree .node:hover{background:rgba(55,230,255,.08)}
+  .tree .node.dc{color:var(--cyan);font-weight:700}
+  .tree .node.pve{color:var(--amber);margin-left:14px}
+  .tree .ct{margin-left:30px;color:var(--text)}
+  .tree .ct.active{background:rgba(57,255,122,.1);color:var(--green);box-shadow:inset 2px 0 0 var(--green)}
+  .led{width:9px;height:9px;border-radius:50%;flex:none}
+  .led.run{background:var(--green);box-shadow:0 0 8px var(--green);animation:led 1.8s infinite}
+  .led.run.m{background:var(--magenta);box-shadow:0 0 8px var(--magenta)}
+  .led.stop{background:var(--dim)}
+  @keyframes led{0%,100%{opacity:1}50%{opacity:.35}}
+  .badge-run{margin-left:auto;font-size:10px;color:var(--green);border:1px solid rgba(57,255,122,.4);
+    padding:1px 6px;border-radius:999px}
+
+  /* detail panel */
+  .detail{padding:22px 24px;min-height:340px}
+  .detail .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px}
+  .detail .tab{padding:8px 14px;font-size:13px;color:var(--dim);border-bottom:2px solid transparent}
+  .detail .tab.on{color:var(--green);border-color:var(--green)}
+  .pane{display:none}
+  .pane.on{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .detail h3{margin:0 0 2px;font-size:22px;color:#eafff2}
+  .detail .path{font-size:12px;color:var(--dim);margin-bottom:14px}
+  .detail p{color:var(--text);max-width:640px}
+  .kv{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}
+  .kv .cell{border:1px solid var(--line);border-radius:8px;padding:12px;background:#0c1220}
+  .kv .cell .n{font-size:22px;color:var(--cyan);font-weight:700}
+  .kv .cell .l{font-size:11px;color:var(--dim);margin-top:3px}
+  .taglist{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
+  .taglist span{font-size:12px;padding:4px 9px;border:1px solid var(--line);border-radius:4px;color:var(--cyan)}
+
+  /* ---- Skills htop bars ------------------------------------------------- */
+  .htop{display:grid;grid-template-columns:1fr 1fr;gap:14px 30px}
+  .htcol h4{color:var(--magenta);font-size:13px;letter-spacing:.1em;text-transform:uppercase;margin:0 0 12px}
+  .bar{margin:11px 0}
+  .bar .lab{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
+  .bar .lab span:last-child{color:var(--dim);font-size:11px}
+  .bar .track{height:12px;border:1px solid var(--line);border-radius:3px;background:#0c1220;overflow:hidden}
+  .bar .fill{height:100%;width:0;transition:width 1.1s cubic-bezier(.2,.8,.2,1)}
+  .fill.g{background:linear-gradient(90deg,#1c9d4e,var(--green))}
+  .fill.c{background:linear-gradient(90deg,#1c7d9d,var(--cyan))}
+  .fill.m{background:linear-gradient(90deg,#9d1c7d,var(--magenta))}
+  .fill.a{background:linear-gradient(90deg,#9d7d1c,var(--amber))}
+
+  /* ---- Footer ----------------------------------------------------------- */
+  footer{border-top:1px solid var(--line);padding:40px 0 60px;margin-top:20px}
+  footer .prompt{color:var(--magenta)}
+  footer h2{font-size:clamp(22px,4vw,34px);margin:6px 0 20px;color:#eafff2}
+  .contacts{display:flex;flex-wrap:wrap;gap:12px}
+  .contacts a{border:1px solid var(--line);padding:11px 16px;border-radius:6px;font-size:14px}
+  .contacts a:hover{border-color:var(--green);box-shadow:0 0 14px rgba(57,255,122,.35)}
+
+  @media(max-width:820px){
+    .console{grid-template-columns:1fr}
+    .tree{border-right:none;border-bottom:1px solid var(--line)}
+    .htop{grid-template-columns:1fr}
+    .kv{grid-template-columns:1fr}
+  }
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+    .boot .row{opacity:1!important}
+    .fill{transition:none!important}
+    .cursor{opacity:1}
+  }
+</style>
+
+<!-- ===== Proto switch banner ===== -->
+<div class="proto-bar">
+  <span><b>PROTO 2/3</b> — Console néon</span>
+  <nav>
+    <a href="proto-pop-brutalisme.html">1 · Pop</a>
+    <a class="here" href="proto-console-neon.html">2 · Console</a>
+    <a href="proto-kinetic-gradients.html">3 · Kinetic</a>
+  </nav>
+</div>
+
+<div class="wrap">
+
+  <!-- ===== Terminal hero: boot sequence ===== -->
+  <div class="term">
+    <div class="term__bar">
+      <div class="btns"><i></i><i></i><i></i></div>
+      <div class="term__title">ianis@pve-ianis: ~/portfolio — 80×24</div>
+    </div>
+    <div class="term__body">
+      <div class="boot" id="boot">
+        <div class="row"><span class="dim">$ systemctl start ianis.service</span></div>
+        <div class="row"><span class="ok">[  OK  ]</span> Reached target <span class="info">Proxmox VE Hypervisor</span>.</div>
+        <div class="row"><span class="ok">[  OK  ]</span> Started <span class="info">ianis.service</span> — SysOps runtime.</div>
+        <div class="row"><span class="ok">[  OK  ]</span> Mounted 13 LXC described by Infrastructure-as-Code.</div>
+        <div class="row"><span class="ok">[  OK  ]</span> Backups <span class="info">3-2-1</span> verified — restore tested.</div>
+        <div class="row"><span class="warn">[ NOTE ]</span> 0 public port exposed · Tailscale mesh up.</div>
+        <div class="row"><span class="ok">[  OK  ]</span> Available for alternance — Master Infra &amp; Cloud, sept. 2026.</div>
+      </div>
+
+      <div class="hero-head" id="heroHead" style="opacity:0">
+        <div><span class="prompt">ianis@pve-ianis</span>:<span class="neon-c">~</span>$ whoami</div>
+        <h1><span class="a neon-g">J'administre à l'échelle.</span><br><span class="b neon-m">J'automatise pour durer.</span><span class="cursor"></span></h1>
+        <p>
+          Administrateur Systèmes &amp; Réseaux à Nantes. Chez <b>Equans</b>, j'interviens sur les
+          identités, les postes Windows et la sécurité d'un parc de <b>plus de 21 000 postes</b>.
+          Hors entreprise : <b>13 LXC en IaC</b>, un lab GitOps mesuré, et <b>DataCommune</b> en ligne.
+        </p>
+        <div class="statusline">
+          <span>node: <b>pve-ianis</b></span>
+          <span>uptime: <b>24/7</b></span>
+          <span>ct: <b>13 running</b></span>
+          <span>backups: <b>3-2-1 ✓</b></span>
+          <span>exposed_ports: <b>0</b></span>
+        </div>
+        <div class="ctas">
+          <a class="btn" href="#console">./voir-les-preuves.sh →</a>
+          <a class="btn alt" href="mailto:ianis@puichaud.com">cat cv.pdf</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Console: Proxmox tree ===== -->
+  <section id="console">
+    <div class="sec-head">datacenter / projets</div>
+    <h2 class="big">Arborescence <span class="neon-c">pve-ianis</span></h2>
+    <div class="console">
+      <!-- Tree -->
+      <div class="tree" id="tree">
+        <div class="node dc"><span class="led run"></span>▾ datacenter</div>
+        <div class="node pve"><span class="led run"></span>▾ pve-ianis</div>
+        <div class="ct node active" data-k="datacommune"><span class="led run"></span>ct-102 · datacommune <span class="badge-run">RUNNING</span></div>
+        <div class="ct node" data-k="hexalith"><span class="led run m"></span>ct-101 · hexalith <span class="badge-run">RUNNING</span></div>
+        <div class="ct node" data-k="homelab"><span class="led run"></span>ct-100 · homelab <span class="badge-run">RUNNING</span></div>
+        <div class="ct node" data-k="ad"><span class="led stop"></span>ct-200 · automatisation-ad <span class="badge-run" style="color:var(--dim);border-color:var(--line)">CORP</span></div>
+      </div>
+
+      <!-- Detail -->
+      <div class="detail" id="detail">
+        <div class="tabs">
+          <div class="tab on" data-t="summary">Summary</div>
+          <div class="tab" data-t="stack">Stack</div>
+        </div>
+        <div id="detailBody"><!-- injected --></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Metrics ===== -->
+  <section>
+    <div class="sec-head">datacenter / metrics</div>
+    <h2 class="big">État global</h2>
+    <div class="kv">
+      <div class="cell"><div class="n neon-g">21 000+</div><div class="l">postes en support N2</div></div>
+      <div class="cell"><div class="n">13 LXC</div><div class="l">décrits par l'IaC</div></div>
+      <div class="cell"><div class="n neon-m">27</div><div class="l">datasets unifiés</div></div>
+      <div class="cell"><div class="n neon-c">15–133 s</div><div class="l">RTO mesuré en lab</div></div>
+    </div>
+  </section>
+
+  <!-- ===== Skills htop ===== -->
+  <section id="skills">
+    <div class="sec-head">datacenter / skills · htop</div>
+    <h2 class="big">Charge par compétence</h2>
+    <div class="htop">
+      <div class="htcol">
+        <h4>Entreprise — parc 21 000+</h4>
+        <div class="bar"><div class="lab"><span>Active Directory · Entra · Intune</span><span>identités</span></div><div class="track"><div class="fill g" data-w="92"></div></div></div>
+        <div class="bar"><div class="lab"><span>Windows 10/11 · M365</span><span>support &amp; admin</span></div><div class="track"><div class="fill c" data-w="88"></div></div></div>
+        <div class="bar"><div class="lab"><span>PowerShell · Python</span><span>scripting</span></div><div class="track"><div class="fill m" data-w="80"></div></div></div>
+        <div class="bar"><div class="lab"><span>CyberArk EPM · Zscaler</span><span>sécurité</span></div><div class="track"><div class="fill a" data-w="66"></div></div></div>
+      </div>
+      <div class="htcol">
+        <h4>Labs — homelab 24/7</h4>
+        <div class="bar"><div class="lab"><span>Proxmox · LXC · Docker</span><span>exploitation</span></div><div class="track"><div class="fill g" data-w="90"></div></div></div>
+        <div class="bar"><div class="lab"><span>Terraform · Ansible</span><span>IaC</span></div><div class="track"><div class="fill c" data-w="85"></div></div></div>
+        <div class="bar"><div class="lab"><span>Grafana · Prometheus · Loki</span><span>observabilité</span></div><div class="track"><div class="fill m" data-w="78"></div></div></div>
+        <div class="bar"><div class="lab"><span>FastAPI · PostgreSQL / PostGIS</span><span>data</span></div><div class="track"><div class="fill a" data-w="74"></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Footer ===== -->
+  <footer>
+    <div><span class="prompt">ianis@pve-ianis</span>:<span class="neon-c">~</span>$ ./contact.sh</div>
+    <h2 class="neon-g">On se parle ?</h2>
+    <div class="contacts">
+      <a href="mailto:ianis@puichaud.com">✉ ianis@puichaud.com</a>
+      <a href="https://github.com/AnythingLegalConsidered">⌥ github.com/AnythingLegalConsidered</a>
+      <a href="https://puichaud.com">◆ puichaud.com</a>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  "use strict";
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---- Project data (real content) ---- */
+  var DATA = {
+    datacommune:{name:"DataCommune",path:"datacenter > pve-ianis > ct-102",status:"En ligne · Produit data · 2025 →",
+      summary:"Une plateforme de données publiques que je conçois, développe et exploite seul : ingestion, API, interface et chaîne de déploiement.",
+      facts:[["27","jeux de données"],["37,5 M","lignes auditées"],["85","chemins OpenAPI"]],
+      tags:["FastAPI","PostGIS","SvelteKit","ETL","GitHub Actions"]},
+    hexalith:{name:"Hexalith",path:"datacenter > pve-ianis > ct-101",status:"Lab validé · GitOps & IAM · 2026",
+      summary:"Un laboratoire construit pour pratiquer l'IaC, l'IAM, l'observabilité et la reprise après sinistre de bout en bout.",
+      facts:[["27","PR fusionnées"],["6","LXC provisionnés"],["15–133 s","RTO mesuré"]],
+      tags:["Terraform","Ansible","Authentik","Grafana","GitHub Actions"]},
+    homelab:{name:"Homelab",path:"datacenter > pve-ianis > ct-100",status:"Exploité 24/7 · Infra personnelle · 2024 →",
+      summary:"Mon terrain d'exploitation réel : des services personnels migrés vers une base reproductible, privée et restaurable.",
+      facts:[["13","LXC en IaC"],["3-2-1","sauvegardes"],["24/7","exploitation"]],
+      tags:["Proxmox","Terraform","Ansible","Tailscale","SOPS"]},
+    ad:{name:"Automatisation AD",path:"datacenter > pve-ianis > ct-200",status:"Utilisé en entreprise · PowerShell · 2025",
+      summary:"Trois outils PowerShell pour fiabiliser des opérations Active Directory répétitives dans un environnement très contraint.",
+      facts:[["3","outils ciblés"],["21 000+","postes concernés"],["0","secret publié"]],
+      tags:["PowerShell","Active Directory","IAM","Guardrails"]}
+  };
+
+  var curKey = "datacommune", curTab = "summary";
+  function render(){
+    var d = DATA[curKey];
+    var body = document.getElementById("detailBody");
+    if(curTab==="summary"){
+      body.innerHTML =
+        '<h3>'+d.name+'</h3><div class="path">'+d.path+' · '+d.status+'</div>'+
+        '<p>'+d.summary+'</p>'+
+        '<div class="kv">'+d.facts.map(function(f){return '<div class="cell"><div class="n">'+f[0]+'</div><div class="l">'+f[1]+'</div></div>';}).join("")+'</div>';
+    }else{
+      body.innerHTML =
+        '<h3>'+d.name+' — stack</h3><div class="path">'+d.path+'</div>'+
+        '<div class="taglist">'+d.tags.map(function(t){return '<span>'+t+'</span>';}).join("")+'</div>';
+    }
+  }
+  /* tree click */
+  document.querySelectorAll(".tree .ct").forEach(function(n){
+    n.addEventListener("click",function(){
+      document.querySelectorAll(".tree .ct").forEach(function(x){x.classList.remove("active");});
+      n.classList.add("active"); curKey=n.dataset.k; render();
+    });
+  });
+  /* tabs */
+  document.querySelectorAll(".detail .tab").forEach(function(t){
+    t.addEventListener("click",function(){
+      document.querySelectorAll(".detail .tab").forEach(function(x){x.classList.remove("on");});
+      t.classList.add("on"); curTab=t.dataset.t; render();
+    });
+  });
+  render();
+
+  /* ---- Boot sequence animation ---- */
+  var rows = document.querySelectorAll("#boot .row");
+  var heroHead = document.getElementById("heroHead");
+  function showHero(){ heroHead.style.transition="opacity .5s"; heroHead.style.opacity="1"; }
+  if(reduce){
+    rows.forEach(function(r){r.classList.add("show");});
+    showHero();
+  }else{
+    var i=0;
+    (function step(){
+      if(i<rows.length){ rows[i].classList.add("show"); i++; setTimeout(step,340); }
+      else { setTimeout(showHero,250); }
+    })();
+  }
+
+  /* ---- Skill bars fill when scrolled into view ---- */
+  var fills = document.querySelectorAll(".fill");
+  function fill(el){ el.style.width = el.dataset.w + "%"; }
+  if(reduce){ fills.forEach(fill); }
+  else if("IntersectionObserver" in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if(e.isIntersecting){ fill(e.target); io.unobserve(e.target); } });
+    },{threshold:.4});
+    fills.forEach(function(f){io.observe(f);});
+  } else { fills.forEach(fill); }
+</script>

@@ -12,61 +12,88 @@ const [dataCommune, hexalith, homelab, automation] = projects;
       les limites de ce que j’ai réellement construit.
     </p>
 
-    <article class="project-lead">
-      <div class="project-copy">
-        <div class="project-index">{dataCommune.number} · produit exploité</div>
-        <div class="project-title-row">
+    <!-- 01 · DataCommune — capture à gauche, copy à droite -->
+    <article class="case-row" style={`--accent: ${dataCommune.accent}`}>
+      <a class="case-shot" href={`/projets/${dataCommune.slug}/`} aria-label={`${dataCommune.imageAlt} — lire l’étude de cas ${dataCommune.name}`}>
+        <span class="pv-chrome" aria-hidden="true"><i></i><i></i><i></i><b>{dataCommune.domain}</b></span>
+        <img src={dataCommune.image} alt={dataCommune.imageAlt} width="1280" height="577" loading="lazy" decoding="async" />
+      </a>
+      <div class="case-copy">
+        <div class="case-index">{dataCommune.number}</div>
+        <div class="case-title-row">
           <h3>{dataCommune.name}</h3>
-          <span class="project-status"><i aria-hidden="true"></i>{dataCommune.status}</span>
+          <span class="case-status"><i aria-hidden="true"></i>{dataCommune.status}</span>
         </div>
-        <p class="project-summary">{dataCommune.summary}</p>
-        <dl class="proof-grid">
+        <p class="case-summary">{dataCommune.summary}</p>
+        <dl class="case-facts">
           {dataCommune.facts.map((fact) => (
             <div><dt>{fact.value}</dt><dd>{fact.label}</dd></div>
           ))}
         </dl>
-        <p class="project-outcome">{dataCommune.outcome}</p>
-        <div class="project-actions">
+        <div class="case-actions">
           <a class="case-link" href={`/projets/${dataCommune.slug}/`}>Lire l’étude de cas <span aria-hidden="true">→</span></a>
           {dataCommune.external && <a class="external-link" href={dataCommune.external.href} target="_blank" rel="noopener">Voir le produit ↗</a>}
         </div>
       </div>
-      <a class="project-visual" href={`/projets/${dataCommune.slug}/`} aria-label={`Interface publique · capture réelle — découvrir l’étude de cas ${dataCommune.name}`}>
-        <img src={dataCommune.image} alt={dataCommune.imageAlt} width="1280" height="577" loading="lazy" decoding="async" />
-        <span>Interface publique · capture réelle</span>
+    </article>
+
+    <!-- 02 · Hexalith — copy à gauche, capture à droite -->
+    <article class="case-row rev" style={`--accent: ${hexalith.accent}`}>
+      <div class="case-copy">
+        <div class="case-index">{hexalith.number}</div>
+        <div class="case-title-row">
+          <h3>{hexalith.name}</h3>
+        </div>
+        <p class="case-summary">{hexalith.summary}</p>
+        <dl class="case-facts">
+          {hexalith.facts.map((fact) => (
+            <div><dt>{fact.value}</dt><dd>{fact.label}</dd></div>
+          ))}
+        </dl>
+        <div class="case-actions">
+          <a class="case-link" href={`/projets/${hexalith.slug}/`}>Voir les preuves <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+      <a class="case-shot" href={`/projets/${hexalith.slug}/`} aria-label={`${hexalith.imageAlt} — voir les preuves ${hexalith.name}`}>
+        <span class="pv-chrome" aria-hidden="true"><i></i><i></i><i></i><b>{hexalith.domain}</b></span>
+        <img src={hexalith.image} alt={hexalith.imageAlt} width="1280" height="577" loading="lazy" decoding="async" />
       </a>
     </article>
 
-    <div class="project-pair">
-      {[hexalith, homelab].map((project) => (
-        <article class="project-brief">
-          <div class="project-index">{project.number} · {project.meta}</div>
-          <h3>{project.name}</h3>
-          <p>{project.summary}</p>
-          <dl class="proof-grid compact">
-            {project.facts.map((fact) => (
-              <div><dt>{fact.value}</dt><dd>{fact.label}</dd></div>
-            ))}
-          </dl>
-          <p class="project-limit">{project.limits[0]}</p>
-          <a class="case-link" href={`/projets/${project.slug}/`}>Voir les preuves <span aria-hidden="true">→</span></a>
-        </article>
-      ))}
-    </div>
-
-    <article class="project-note">
-      <div>
-        <div class="project-index">{automation.number} · contexte confidentiel</div>
-        <h3>{automation.name}</h3>
-        <p>{automation.summary}</p>
+    <!-- 03 · Homelab — topologie terminal à gauche (repo privé, pas de capture), copy à droite -->
+    <article class="case-row" style={`--accent: ${homelab.accent}`}>
+      <div class="case-topo" aria-hidden="true">
+        <div class="case-topo-bar"><span>homelab.topology</span><em>IaC · repo privé</em></div>
+        <div class="case-topo-body">
+          <div><b>git</b> → Terraform + Ansible → Proxmox</div>
+          <div>13 LXC en IaC</div>
+          <div>PBS + restic — <b>3-2-1 restaurée-testée</b></div>
+        </div>
       </div>
-      <dl class="proof-grid compact">
-        {automation.facts.map((fact) => (
-          <div><dt>{fact.value}</dt><dd>{fact.label}</dd></div>
-        ))}
-      </dl>
-      <a class="case-link" href={`/projets/${automation.slug}/`}>Lire le périmètre public <span aria-hidden="true">→</span></a>
+      <div class="case-copy">
+        <div class="case-index">{homelab.number}</div>
+        <div class="case-title-row">
+          <h3>{homelab.name}</h3>
+        </div>
+        <p class="case-summary">{homelab.summary}</p>
+        <dl class="case-facts">
+          {homelab.facts.map((fact) => (
+            <div><dt>{fact.value}</dt><dd>{fact.label}</dd></div>
+          ))}
+        </dl>
+        <div class="case-actions">
+          <a class="case-link" href={`/projets/${homelab.slug}/`}>Voir les preuves <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
     </article>
+
+    <!-- 04 · Automatisation AD — mention discrète, une ligne -->
+    <div class="case-note" style={`--accent: ${automation.accent}`}>
+      <span class="case-index">{automation.number}</span>
+      <strong>{automation.name}</strong>
+      <p>{automation.summary}</p>
+      <a class="case-link" href={`/projets/${automation.slug}/`}>Lire le périmètre public <span aria-hidden="true">→</span></a>
+    </div>
   </div>
 </section>
 
@@ -77,185 +104,122 @@ const [dataCommune, hexalith, homelab, automation] = projects;
     border-bottom: 1px solid var(--stone);
   }
 
-  .project-lead {
+  /* rangées éditoriales alternées, séparées par le filet standard */
+  .case-row {
     display: grid;
-    grid-template-columns: 1.02fr .98fr;
-    border: 2px solid var(--bronze-dark);
-    background: var(--surface);
-    box-shadow: 0 18px 48px rgba(42, 31, 20, .1);
-  }
-
-  .project-copy { padding: 34px; }
-
-  .project-index {
-    font: 500 10.5px/1.4 var(--mono);
-    color: var(--bronze-dark);
-    letter-spacing: .1em;
-    text-transform: uppercase;
-  }
-
-  .project-title-row {
-    display: flex;
+    grid-template-columns: 55% 1fr;
+    gap: 44px;
     align-items: center;
-    gap: 14px;
-    margin-top: 8px;
+    padding-block: 46px;
+  }
+  .case-row:first-of-type { padding-top: 4px; }
+  .case-row + .case-row { border-top: 1px solid var(--stone); }
+  .case-row.rev { grid-template-columns: 1fr 55%; }
+
+  .case-index {
+    font: 500 12px/1 var(--mono); color: var(--accent);
+    letter-spacing: .12em; text-transform: uppercase;
+    margin-bottom: 10px;
   }
 
-  h3 {
-    font: 700 28px/1.15 var(--serif);
-    color: var(--ink);
-  }
+  .case-title-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  h3 { font: 700 clamp(24px, 3.4vw, 30px)/1.12 var(--serif); color: var(--ink); }
 
-  .project-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font: 500 11px/1 var(--mono);
-    color: var(--green);
+  .case-status {
+    display: inline-flex; align-items: center; gap: 6px;
+    font: 500 11px/1 var(--mono); color: var(--green);
   }
+  .case-status i { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
 
-  .project-status i {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--green);
+  .case-summary { margin-top: 12px; color: var(--ink); font-size: 15px; }
+
+  /* chiffres en ligne — aucune grille, aucun filet vertical */
+  .case-facts {
+    display: flex; flex-wrap: wrap; align-items: baseline;
+    gap: 6px 4px; margin: 20px 0 22px;
   }
-
-  .project-summary {
-    margin-top: 16px;
-    color: var(--ink);
-    font-size: 15px;
+  .case-facts div { display: inline-flex; align-items: baseline; gap: 8px; }
+  .case-facts div:not(:last-child)::after {
+    content: '·'; color: var(--stone); margin: 0 10px 0 14px;
   }
-
-  .proof-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    margin: 24px 0;
-    border-block: 1px solid var(--stone);
-  }
-
-  .proof-grid div { padding: 14px 12px 13px 0; }
-  .proof-grid div + div { padding-left: 12px; border-left: 1px solid var(--stone); }
-  .proof-grid dt { font: 700 20px/1 var(--serif); color: var(--ink); }
-  .proof-grid dd {
-    margin-top: 6px;
-    font: 500 9.5px/1.4 var(--mono);
-    text-transform: uppercase;
-    letter-spacing: .06em;
+  .case-facts dt { font: 700 20px/1 var(--serif); color: var(--accent); }
+  .case-facts dd {
+    font: 500 10px/1.3 var(--mono);
+    text-transform: uppercase; letter-spacing: .06em;
     color: var(--ink-muted);
   }
 
-  .project-outcome,
-  .project-limit { color: var(--ink-muted); font-size: 13.5px; }
-
-  .project-actions {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    margin-top: 24px;
-  }
-
+  .case-actions { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
   .case-link,
   .external-link {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    font-size: 13px;
-    font-weight: 650;
+    display: inline-flex; align-items: center; gap: 8px;
+    min-height: 40px; font-size: 13px; font-weight: 650;
   }
-
-  .case-link span { margin-left: 8px; transition: transform .15s ease; }
+  .case-link span { transition: transform .15s ease; }
   .case-link:hover span { transform: translateX(4px); }
   .external-link { color: var(--ink-muted); font-weight: 500; }
 
-  .project-visual {
-    position: relative;
-    overflow: hidden;
-    min-height: 100%;
-    background: var(--column);
-    border-left: 1px solid var(--bronze-dark);
+  /* capture — barre chrome : signale que c'est un site externe */
+  .case-shot {
+    display: block;
+    border: 1px solid var(--stone); border-radius: var(--r-panel);
+    overflow: hidden; background: var(--column);
+    box-shadow: 0 14px 40px rgba(19, 26, 21, .12);
   }
-
-  .project-visual img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    filter: saturate(.78) contrast(.98);
-    transition: transform .45s cubic-bezier(.22, .61, .36, 1), filter .2s;
+  .case-shot img { display: block; width: 100%; height: auto; }
+  .pv-chrome {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: var(--column);
   }
+  .pv-chrome i { width: 8px; height: 8px; border-radius: 50%; background: rgba(250, 246, 240, .25); }
+  .pv-chrome b { margin-left: 6px; font: 500 10px/1 var(--mono); color: var(--marble-dark); }
 
-  .project-visual:hover img { transform: scale(1.025); filter: saturate(1); }
-  .project-visual span {
-    position: absolute;
-    left: 16px;
-    bottom: 14px;
-    padding: 6px 9px;
-    background: rgba(30, 26, 21, .88);
-    color: var(--marble);
-    font: 500 9.5px/1 var(--mono);
-    letter-spacing: .05em;
-    text-transform: uppercase;
+  /* mini-topologie terminal (esprit .infra-panel) */
+  .case-topo {
+    border: 1px solid #ffffff1f; border-radius: var(--r-panel);
+    background: #1B241E; overflow: hidden;
+    font-family: var(--mono);
+    box-shadow: 0 14px 40px rgba(19, 26, 21, .28);
   }
-
-  .project-pair {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px;
-    margin-top: 18px;
+  .case-topo-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 16px; background: #212B24;
+    border-bottom: 1px solid #00000040; font-size: 12px;
   }
+  .case-topo-bar span { color: var(--marble-dark); opacity: .8; }
+  .case-topo-bar em { font-style: normal; color: var(--gold); font-size: 11px; }
+  .case-topo-body { padding: 16px 16px 18px; }
+  .case-topo-body div { font-size: 13px; color: var(--marble); line-height: 1.5; padding: 5px 0; }
+  .case-topo-body b { color: #fff; font-weight: 600; }
 
-  .project-brief,
-  .project-note {
-    border: 1px solid var(--stone);
-    border-top: 3px solid var(--bronze);
-    background: var(--marble);
-    padding: 28px;
+  /* AD — une ligne discrète */
+  .case-note {
+    border-top: 1px solid var(--stone);
+    padding-top: 34px;
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px;
+    color: var(--ink-muted); font-size: 14px; line-height: 1.6;
   }
-
-  .project-brief h3,
-  .project-note h3 { margin-top: 7px; font-size: 21px; }
-  .project-brief > p,
-  .project-note p { margin-top: 12px; font-size: 14px; color: var(--ink-muted); }
-  .project-brief .case-link { margin-top: 13px; }
-
-  .proof-grid.compact { margin: 20px 0 12px; }
-  .proof-grid.compact dt { font-size: 17px; }
-  .proof-grid.compact dd { font-size: 8.5px; }
-
-  .project-note {
-    display: grid;
-    grid-template-columns: 1.2fr 1fr auto;
-    gap: 24px;
-    align-items: center;
-    margin-top: 18px;
-    border-top-color: var(--stone);
-  }
-
-  .project-note .proof-grid { margin: 0; }
+  .case-note .case-index { margin-bottom: 0; }
+  .case-note strong { font: 700 18px/1.2 var(--serif); color: var(--ink); }
+  .case-note p { flex: 1; min-width: 260px; }
+  .case-note .case-link { min-height: 0; white-space: nowrap; margin-left: auto; }
 
   @media (max-width: 760px) {
-    .project-lead { grid-template-columns: 1fr; }
-    .project-copy { padding: 25px 22px; }
-    .project-index { font-size: 11px; }
-    .project-visual { min-height: 190px; border-left: 0; border-top: 1px solid var(--bronze-dark); }
-    .project-pair { grid-template-columns: 1fr; }
-    .project-brief,
-    .project-note { padding: 24px 22px; }
-    .project-note { grid-template-columns: 1fr; gap: 8px; }
-    .project-note .proof-grid { margin: 14px 0 0; }
+    .case-row,
+    .case-row.rev { grid-template-columns: 1fr; gap: 24px; padding-block: 38px; }
+    /* capture / topologie toujours au-dessus de la copy */
+    .case-row > .case-copy { order: 2; }
+    .case-row > .case-shot,
+    .case-row > .case-topo { order: 1; }
+    .case-note { padding-top: 30px; }
+    .case-note .case-link { margin-left: 0; min-height: 40px; }
   }
 
   @media (max-width: 440px) {
-    .project-title-row { align-items: flex-start; flex-direction: column; gap: 7px; }
-    .project-copy,
-    .project-brief,
-    .project-note { padding-inline: 18px; }
-    .proof-grid div { padding-inline: 6px; }
-    .proof-grid div + div { padding-left: 6px; }
-    .proof-grid div:first-child { padding-left: 0; }
-    .proof-grid dt { font-size: 18px; }
-    .proof-grid dd { font-size: 10.5px; line-height: 1.35; }
-    .project-actions { align-items: flex-start; flex-direction: column; gap: 2px; }
+    .case-title-row { align-items: flex-start; }
+    h3 { font-size: 24px; }
+    .case-facts div:not(:last-child)::after { margin: 0 6px 0 10px; }
+    .case-facts dt { font-size: 18px; }
+    .case-facts dd { font-size: 10.5px; }
   }
 </style>

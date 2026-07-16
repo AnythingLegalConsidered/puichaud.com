@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comparateur DA — 3 prototypes</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    display: flex; flex-direction: column;
+    font-family: ui-monospace, Consolas, monospace;
+    background: #111;
+  }
+  /* Top bar: proto switcher */
+  .bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px;
+    background: #1a1a1a; border-bottom: 2px solid #000;
+    flex-wrap: wrap;
+  }
+  .bar .label { color: #888; font-size: 12px; margin-right: 4px; }
+  .bar button {
+    font: inherit; font-size: 13px; font-weight: 700;
+    padding: 8px 14px; cursor: pointer;
+    background: #2a2a2a; color: #ccc;
+    border: 2px solid #000; border-radius: 4px;
+    transition: transform .1s;
+  }
+  .bar button:hover { transform: translateY(-1px); }
+  .bar button[aria-pressed="true"] { color: #111; }
+  /* Each tab gets its proto's accent color when active */
+  #btn-1[aria-pressed="true"] { background: #FFD02F; }
+  #btn-2[aria-pressed="true"] { background: #39FF88; }
+  #btn-3[aria-pressed="true"] { background: #FF5CA8; }
+  #btn-4[aria-pressed="true"] { background: #008080; color: #fff; }
+  #btn-5[aria-pressed="true"] { background: #3593FF; color: #fff; }
+  #btn-split[aria-pressed="true"] { background: #4DD8FF; color: #111; }
+  .bar .hint { color: #666; font-size: 11px; margin-left: auto; }
+  /* Viewer */
+  .viewer { flex: 1; display: flex; min-height: 0; }
+  .viewer iframe {
+    border: none; width: 100%; height: 100%;
+    background: #fff; display: none;
+  }
+  /* Single mode: only the active frame is visible */
+  .viewer iframe.active { display: block; }
+  /* Split mode: all three side by side */
+  .viewer.split iframe { display: block; flex: 1; border-right: 2px solid #000; }
+  .viewer.split iframe:last-child { border-right: none; }
+  @media (max-width: 800px) {
+    .viewer.split { flex-direction: column; }
+    .viewer.split iframe { border-right: none; border-bottom: 2px solid #000; }
+  }
+</style>
+</head>
+<body>
+  <div class="bar" role="tablist" aria-label="Choix du prototype">
+    <span class="label">PROTO :</span>
+    <button id="btn-1" data-frame="f1" aria-pressed="true">1 · Pop-brutalisme</button>
+    <button id="btn-2" data-frame="f2" aria-pressed="false">2 · Console néon</button>
+    <button id="btn-3" data-frame="f3" aria-pressed="false">3 · Kinetic gradients</button>
+    <button id="btn-4" data-frame="f4" aria-pressed="false">4 · Win9x</button>
+    <button id="btn-5" data-frame="f5" aria-pressed="false">5 · Windows XP</button>
+    <button id="btn-split" aria-pressed="false">⊞ Côte à côte</button>
+    <span class="hint">touches 1-5 · S = split</span>
+  </div>
+  <div class="viewer" id="viewer">
+    <iframe id="f1" class="active" src="proto-pop-brutalisme.html" title="Proto 1 — Pop-brutalisme" loading="eager"></iframe>
+    <iframe id="f2" src="proto-console-neon.html" title="Proto 2 — Console néon" loading="eager"></iframe>
+    <iframe id="f3" src="proto-kinetic-gradients.html" title="Proto 3 — Kinetic gradients" loading="eager"></iframe>
+    <iframe id="f4" src="proto-win9x.html" title="Proto 4 — Win9x" loading="eager"></iframe>
+    <iframe id="f5" src="proto-winxp.html" title="Proto 5 — Windows XP" loading="eager"></iframe>
+  </div>
+<script>
+  const viewer = document.getElementById('viewer');
+  const tabs = [...document.querySelectorAll('.bar button[data-frame]')];
+  const splitBtn = document.getElementById('btn-split');
+
+  function show(frameId) {
+    viewer.classList.remove('split');
+    splitBtn.setAttribute('aria-pressed', 'false');
+    document.querySelectorAll('.viewer iframe').forEach(f =>
+      f.classList.toggle('active', f.id === frameId));
+    tabs.forEach(b =>
+      b.setAttribute('aria-pressed', String(b.dataset.frame === frameId)));
+  }
+
+  function toggleSplit() {
+    const on = !viewer.classList.contains('split');
+    viewer.classList.toggle('split', on);
+    splitBtn.setAttribute('aria-pressed', String(on));
+    if (!on) show(document.querySelector('.viewer iframe.active')?.id || 'f1');
+  }
+
+  tabs.forEach(b => b.addEventListener('click', () => show(b.dataset.frame)));
+  splitBtn.addEventListener('click', toggleSplit);
+
+  document.addEventListener('keydown', e => {
+    if (e.key === '1') show('f1');
+    if (e.key === '2') show('f2');
+    if (e.key === '3') show('f3');
+    if (e.key === '4') show('f4');
+    if (e.key === '5') show('f5');
+    if (e.key.toLowerCase() === 's') toggleSplit();
+  });
+</script>
+</body>
+</html>
