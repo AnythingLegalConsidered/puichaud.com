@@ -389,6 +389,8 @@
     .wrap { padding-inline: 18px; }
     #hero { padding-top: 38px; }
     #hero .sub { font-size: 15px; }
+    /* colonnes trop étroites : le libellé des boutons wrappait */
+    #hero .ctas { grid-template-columns: 1fr; max-width: 260px; }
     .sec-head { gap: 10px; }
     .sec-head h2 { font-size: 17px; letter-spacing: .11em; }
     .sec-head .rule { min-width: 20px; }
